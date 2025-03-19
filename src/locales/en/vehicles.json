@@ -1,0 +1,23 @@
+{
+  "make": "Make",
+  "model": "Model",
+  "year": "Year",
+  "licensePlate": "License Plate",
+  "vin": "VIN",
+  "mileage": "Mileage",
+  "status": "Status",
+  "observations": "Observations",
+  "actions": "Actions",
+  "addNewVehicle": "Add New Vehicle",
+  "selectVehicle": "Select Vehicle",
+  "enterMake": "Enter make",
+  "enterModel": "Enter model",
+  "enterColor": "Enter color",
+  "enterYear": "Enter year",
+  "enterLicensePlate": "Enter license plate",
+  "enterVIN": "Enter VIN",
+  "enterMileage": "Enter mileage",
+  "selectStatus": "Select status",
+  "enterObservations": "Enter observations",
+  "confirmDeleteVehicle": "Are you sure you want to delete this vehicle?"
+}

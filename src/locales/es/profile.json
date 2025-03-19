@@ -1,0 +1,20 @@
+{
+      "profile": "Perfil",
+      "logout": "Cerrar sesión",
+      "accountDetails": "Detalles de la cuenta",
+      "id": "ID",
+      "email": "Correo electrónico",
+      "phone": "Teléfono",
+      "driversLicensePhoto": "Foto de la licencia de conducir",
+      "policeRecordsPhoto": "Foto de los antecedentes policiales",
+      "criminalRecordsPhoto": "Foto de los antecedentes penales",
+      "editProfile": "Editar perfil",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "uploadPhoto": "Subir foto",
+      "updateProfileSuccessfully": "¡Perfil actualizado con éxito!",
+      "name": "Nombre",
+      "phoneNumber": "Número de teléfono",
+      "areYouADriver": "¿Es usted un conductor?",
+      "updating": "Actualizando..."
+    }

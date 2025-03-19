@@ -1,0 +1,22 @@
+{
+  "fullName": "Nombre completo",
+  "address": "Dirección",
+  "phone": "Teléfono",
+  "email": "Correo electrónico",
+  "driversLicense": "Licencia de conducir",
+  "policeRecord": "Antecedentes policiales",
+  "criminalRecord": "Antecedentes penales",
+  "profilePhoto": "Foto de perfil",
+  "actions": "Acciones",
+  "addDriver": "Agregar conductor",
+  "addNewDriver": "Agregar nuevo conductor",
+  "enterFullName": "Ingrese el nombre completo",
+  "enterAddress": "Ingrese la dirección",
+  "enterPhone": "Ingrese el teléfono",
+  "enterEmail": "Ingrese el correo electrónico",
+  "driversLicensePhoto": "Foto de la licencia de conducir",
+  "policeRecordsPhoto": "Foto de los antecedentes policiales",
+  "criminalRecordsPhoto": "Foto de los antecedentes penales",
+  "profilePhoto": "Foto de perfil",
+  "confirmDeleteDriver": "¿Está seguro de que desea eliminar este conductor?"
+}

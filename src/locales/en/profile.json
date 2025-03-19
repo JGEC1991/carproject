@@ -1,0 +1,15 @@
+{
+  "profile": "Profile",
+  "logout": "Logout",
+  "accountDetails": "Account Details",
+  "id": "ID",
+  "email": "Email",
+  "phone": "Phone",
+  "driversLicensePhoto": "Drivers License Photo",
+  "policeRecordsPhoto": "Police Records Photo",
+  "criminalRecordsPhoto": "Criminal Records Photo",
+  "editProfile": "Edit Profile",
+  "save": "Save",
+  "cancel": "Cancel",
+  "uploadPhoto": "Upload Photo"
+}

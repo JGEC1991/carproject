@@ -1,0 +1,22 @@
+{
+  "fullName": "Full Name",
+  "address": "Address",
+  "phone": "Phone",
+  "email": "Email",
+  "driversLicense": "Driver's License",
+  "policeRecord": "Police Record",
+  "criminalRecord": "Criminal Record",
+  "profilePhoto": "Profile Photo",
+  "actions": "Actions",
+  "addDriver": "Add Driver",
+  "addNewDriver": "Add New Driver",
+  "enterFullName": "Enter full name",
+  "enterAddress": "Enter address",
+  "enterPhone": "Enter phone",
+  "enterEmail": "Enter email",
+  "driversLicensePhoto": "Driver's License Photo",
+  "policeRecordsPhoto": "Police Records Photo",
+  "criminalRecordsPhoto": "Criminal Records Photo",
+  "profilePhoto": "Profile Photo",
+  "confirmDeleteDriver": "Are you sure you want to delete this driver?"
+}

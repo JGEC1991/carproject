@@ -1,0 +1,23 @@
+{
+  "details": "Detalles",
+  "photos": "Fotos",
+  "fullName": "Nombre completo",
+  "address": "Dirección",
+  "phone": "Teléfono",
+  "email": "Correo electrónico",
+  "driversLicense": "Licencia de conducir",
+  "policeRecord": "Antecedentes policiales",
+  "criminalRecord": "Antecedentes penales",
+  "profilePhoto": "Foto de perfil",
+  "editDriver": "Editar Conductor",
+  "driverDetails": "Detalles del Conductor",
+  "enterFullName": "Ingrese el nombre completo",
+  "enterAddress": "Ingrese la dirección",
+  "enterPhone": "Ingrese el teléfono",
+  "enterEmail": "Ingrese el correo electrónico",
+  "driversLicensePhoto": "Foto de la licencia de conducir",
+  "policeRecordsPhoto": "Foto de los antecedentes policiales",
+  "criminalRecordsPhoto": "Foto de los antecedentes penales",
+  "profilePhoto": "Foto de perfil",
+  "saveChanges": "Guardar cambios"
+}
