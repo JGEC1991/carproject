@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { useNavigate } from 'react-router-dom';
-import LanguageSelector from './components/LanguageSelector';
 
 const Home = () => {
   const [email, setEmail] = useState('')
@@ -95,12 +94,11 @@ const Home = () => {
   return (
     <div className="flex flex-col items-center justify-center h-full">
       <h1 className="text-3xl font-semibold mb-4">
-        Simplify Your Car Rental Business
+        Welcome to JerentCars
       </h1>
       <p className="text-gray-600 mb-8">
-        All-in-one platform to manage your car rentals with ease.
+        Manage your car rentals with ease.
       </p>
-      <LanguageSelector />
 
       {confirmationSent ? (
         <div className="text-green-500 mb-8">
@@ -182,7 +180,7 @@ const Home = () => {
                   <label
                     className="block text-gray-700 text-sm font-bold mb-2"
                     htmlFor="email"
-                  >
+                    >
                     Email
                   </label>
                   <input

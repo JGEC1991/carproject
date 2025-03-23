@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
     import { supabase } from '../../supabaseClient';
-    import { useTranslation } from 'react-i18next';
 
     function VehicleRecordCard({ vehicle, isEditMode = false }) {
       const [activeTab, setActiveTab] = useState('details');
@@ -23,7 +22,6 @@ import React, { useState, useEffect, useRef } from 'react';
       // Modal state for image zoom
       const [zoomedImage, setZoomedImage] = useState(null);
       const modalRef = useRef(null);
-      const { t } = useTranslation('vehicleRecordCard');
 
       const handleUpload = async (photo, folder, setPhotoState, fieldName) => {
         if (!photo) return;
@@ -47,7 +45,7 @@ import React, { useState, useEffect, useRef } from 'react';
             contentType: photo.type,
           });
         setPhotoState(null);
-        if (error) alert(t('errorUploadingPhoto') + error.message);
+        if (error) alert('Error uploading photo: ' + error.message);
 
         if(data){
             // Construct the full public URL for the uploaded image
@@ -88,7 +86,7 @@ import React, { useState, useEffect, useRef } from 'react';
         if (rightPhoto) await handleUpload(rightPhoto, 'right', setRightPhoto, 'right_image_url');
         if (leftPhoto) await handleUpload(leftPhoto, 'left', setLeftPhoto, 'left_image_url');
         if (dashboardPhoto) await handleUpload(dashboardPhoto, 'dashboard', setDashboardPhoto, 'dashboard_image_url');
-        alert(t('vehicleRecordUpdatedSuccessfully'));
+        alert('Vehicle record updated successfully!');
       };
 
       // Handle image click to zoom
@@ -106,10 +104,10 @@ import React, { useState, useEffect, useRef } from 'react';
         <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
           <div className="border-b pb-4 mb-6">
             <h2 className="text-2xl font-bold text-gray-800">
-              {isEditMode ? t('editVehicle') : t('vehicleDetails')}
+              {isEditMode ? 'Edit Vehicle' : 'Vehicle Details'}
             </h2>
             <p className="text-gray-600">
-              {licensePlate ? `${t('licensePlate')}: ${licensePlate}` : t('addNewVehicle')}
+              {licensePlate ? `License Plate: ${licensePlate}` : 'Add New Vehicle'}
             </p>
           </div>
 
@@ -119,13 +117,13 @@ import React, { useState, useEffect, useRef } from 'react';
               className={`px-4 py-2 rounded-t-lg ${activeTab === 'details' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
               onClick={() => setActiveTab('details')}
             >
-              {t('details')}
+              Details
             </button>
             <button
               className={`px-4 py-2 rounded-t-lg ${activeTab === 'photos' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
               onClick={() => setActiveTab('photos')}
             >
-              {t('photos')}
+              Photos
             </button>
           </div>
 
@@ -133,93 +131,93 @@ import React, { useState, useEffect, useRef } from 'react';
           {activeTab === 'details' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('make')}</label>
+                <label className="block text-sm font-medium text-gray-700">Make</label>
                 <input
                   type="text"
                   value={make}
                   onChange={(e) => setMake(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('enterMake')}
+                  placeholder="Enter make"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('model')}</label>
+                <label className="block text-sm font-medium text-gray-700">Model</label>
                 <input
                   type="text"
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('enterModel')}
+                  placeholder="Enter model"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('color')}</label>
+                <label className="block text-sm font-medium text-gray-700">Color</label>
                 <input
                   type="text"
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('enterColor')}
+                  placeholder="Enter color"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('year')}</label>
+                <label className="block text-sm font-medium text-gray-700">Year</label>
                 <input
                   type="number"
                   value={year}
                   onChange={(e) => setYear(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('enterYear')}
+                  placeholder="Enter year"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('licensePlate')}</label>
+                <label className="block text-sm font-medium text-gray-700">License Plate</label>
                 <input
                   type="text"
                   value={licensePlate}
                   onChange={(e) => setLicensePlate(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('enterLicensePlate')}
+                  placeholder="Enter license plate"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('vin')}</label>
+                <label className="block text-sm font-medium text-gray-700">VIN</label>
                 <input
                   type="text"
                   value={vin}
                   onChange={(e) => setVin(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('enterVIN')}
+                  placeholder="Enter VIN"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('mileage')}</label>
+                <label className="block text-sm font-medium text-gray-700">Mileage</label>
                 <input
                   type="number"
                   value={mileage}
                   onChange={(e) => setMileage(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('enterMileage')}
+                  placeholder="Enter mileage"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('status')}</label>
+                <label className="block text-sm font-medium text-gray-700">Status</label>
                 <input
                   type="text"
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('selectStatus')}
+                  placeholder="Select status"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('observations')}</label>
+                <label className="block text-sm font-medium text-gray-700">Observations</label>
                 <textarea
                   value={observations}
                   onChange={(e) => setObservations(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                   rows={4}
-                  placeholder={t('enterObservations')}
+                  placeholder="Enter observations"
                 />
               </div>
             </div>
@@ -228,11 +226,11 @@ import React, { useState, useEffect, useRef } from 'react';
           {/* Photos Tab */}
           {activeTab === 'photos' && (
             <div className="col-span-1 md:col-span-2 space-y-6">
-              <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">{t('vehiclePhotos')}</h3>
+              <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Vehicle Photos</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Photo upload sections */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">{t('frontView')}</label>
+                  <label className="block text-sm font-medium text-gray-700">Front View</label>
                   <div className="relative">
                     <input
                       type="file"
@@ -241,12 +239,12 @@ import React, { useState, useEffect, useRef } from 'react';
                       accept="image/*"
                     />
                     {vehicle?.front_image_url && (
-                      <img src={vehicle.front_image_url} alt={t('front')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.front_image_url)} style={{ width: '130%', height: '130%' }} />
+                      <img src={vehicle.front_image_url} alt="Front" className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.front_image_url)} style={{ width: '130%', height: '130%' }} />
                     )}
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">{t('rearView')}</label>
+                  <label className="block text-sm font-medium text-gray-700">Rear View</label>
                   <div className="relative">
                     <input
                       type="file"
@@ -255,12 +253,12 @@ import React, { useState, useEffect, useRef } from 'react';
                       accept="image/*"
                     />
                     {vehicle?.rear_image_url && (
-                      <img src={vehicle.rear_image_url} alt={t('rear')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.rear_image_url)} style={{ width: '130%', height: '130%' }} />
+                      <img src={vehicle.rear_image_url} alt="Rear" className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.rear_image_url)} style={{ width: '130%', height: '130%' }} />
                     )}
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">{t('rightSide')}</label>
+                  <label className="block text-sm font-medium text-gray-700">Right Side</label>
                   <div className="relative">
                     <input
                       type="file"
@@ -269,4 +267,4 @@ import React, { useState, useEffect, useRef } from 'react';
                       accept="image/*"
                     />
                     {vehicle?.right_image_url && (
-                      <img src={vehicle.right_image_url} alt={t('right')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-
+                      <img src={vehicle.right_image_url} alt="Right" className="mt-2 rounded-lg w-full h-40 object-cover cursor-

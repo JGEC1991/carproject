@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
 
 const StatCard = ({ title, value, icon, color, percentChange, description }) => {
   return (
@@ -41,36 +40,35 @@ StatCard.propTypes = {
 };
 
 const Dashboard = ({ stats, recentItems, activities }) => {
-  const { t } = useTranslation('app');
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-gray-800">{t('dashboard')}</h1>
+      <h1 className="text-2xl font-semibold text-gray-800">Dashboard</h1>
       
       {/* Statistics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
-          title={t('totalVehicles')} 
+          title="Total Vehicles" 
           value={stats?.vehicles || '0'} 
           icon="directions_car"
           color="bg-blue-100 text-blue-600"
         />
         <StatCard 
-          title={t('activeDrivers')} 
+          title="Active Drivers" 
           value={stats?.drivers || '0'} 
           icon="people"
           color="bg-green-100 text-green-600"
           percentChange={5.2}
         />
         <StatCard 
-          title={t('monthlyRevenue')} 
+          title="Monthly Revenue" 
           value={`$${stats?.revenue || '0'}`} 
           icon="payments"
           color="bg-purple-100 text-purple-600"
           percentChange={12.3}
         />
         <StatCard 
-          title={t('upcomingMaintenance')} 
+          title="Upcoming Maintenance" 
           value={stats?.maintenance || '0'} 
           icon="build"
           color="bg-amber-100 text-amber-600"
@@ -84,9 +82,9 @@ const Dashboard = ({ stats, recentItems, activities }) => {
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="border-b border-gray-200">
             <div className="px-6 py-4 flex items-center justify-between">
-              <h2 className="text-lg font-medium text-gray-800">{t('recentVehicles')}</h2>
+              <h2 className="text-lg font-medium text-gray-800">Recent Vehicles</h2>
               <button className="text-sm font-medium text-blue-600 hover:text-blue-800">
-                {t('viewAll')}
+                View All
               </button>
             </div>
           </div>
@@ -125,7 +123,7 @@ const Dashboard = ({ stats, recentItems, activities }) => {
               ))
             ) : (
               <div className="px-6 py-4 text-center text-gray-500">
-                {t('noRecentItems')}
+                No recent items
               </div>
             )}
           </div>
@@ -135,9 +133,9 @@ const Dashboard = ({ stats, recentItems, activities }) => {
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="border-b border-gray-200">
             <div className="px-6 py-4 flex items-center justify-between">
-              <h2 className="text-lg font-medium text-gray-800">{t('recentActivity')}</h2>
+              <h2 className="text-lg font-medium text-gray-800">Recent Activity</h2>
               <button className="text-sm font-medium text-blue-600 hover:text-blue-800">
-                {t('viewAll')}
+                View All
               </button>
             </div>
           </div>
@@ -175,7 +173,7 @@ const Dashboard = ({ stats, recentItems, activities }) => {
               ))
             ) : (
               <div className="px-6 py-4 text-center text-gray-500">
-                {t('noRecentActivity')}
+                No recent activity
               </div>
             )}
           </div>

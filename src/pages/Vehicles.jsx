@@ -30,13 +30,13 @@ const Vehicles = () => {
   const [activeTab, setActiveTab] = useState('information');
 
   const columns = [
-    { key: 'make', title: 'Make' },
-    { key: 'model', title: 'Model' },
-    { key: 'year', title: 'Year' },
-    { key: 'color', title: 'Color' },
-    { key: 'license_plate', title: 'License Plate' },
-    { key: 'vin', title: 'VIN' },
-    { key: 'status', title: 'Status' },
+    { key: 'make', title: 'Make', sortable: true },
+    { key: 'model', title: 'Model', sortable: true },
+    { key: 'year', title: 'Year', sortable: true },
+    { key: 'color', title: 'Color', sortable: true },
+    { key: 'license_plate', title: 'License Plate', sortable: true },
+    { key: 'vin', title: 'VIN', sortable: true },
+    { key: 'status', title: 'Status', sortable: true },
   ]
 
   useEffect(() => {
@@ -407,36 +407,10 @@ const Vehicles = () => {
       </Popout>
 
       <Popout isOpen={showViewForm} onClose={handleCloseViewForm}>
-        <h2 className="text-xl font-semibold mb-4">Vehicle Details</h2>
-        <div>
-          <p><strong>Make:</strong> {selectedVehicle?.make}</p>
-          <p><strong>Model:</strong> {selectedVehicle?.model}</p>
-          <p><strong>Year:</strong> {selectedVehicle?.year}</p>
-          <p><strong>Color:</strong> {selectedVehicle?.color}</p>
-          <p><strong>License Plate:</strong> {selectedVehicle?.license_plate}</p>
-          <p><strong>VIN:</strong> {selectedVehicle?.vin}</p>
-          <p><strong>Status:</strong> {selectedVehicle?.status}</p>
-          <p><strong>Front Image:</strong></p>
-          {selectedVehicle?.front_image_url && <img src={selectedVehicle.front_image_url} alt="Front" className="h-20 w-auto" />}
-          <p><strong>Rear Image:</strong></p>
-          {selectedVehicle?.rear_image_url && <img src={selectedVehicle.rear_image_url} alt="Rear" className="h-20 w-auto" />}
-          <p><strong>Right Image:</strong></p>
-          {selectedVehicle?.right_image_url && <img src={selectedVehicle.right_image_url} alt="Right" className="h-20 w-auto" />}
-          <p><strong>Left Image:</strong></p>
-          {selectedVehicle?.left_image_url && <img src={selectedVehicle.left_image_url} alt="Left" className="h-20 w-auto" />}
-          <p><strong>Dashboard Image:</strong></p>
-          {selectedVehicle?.dashboard_image_url && <img src={selectedVehicle.dashboard_image_url} alt="Dashboard" className="h-20 w-auto" />}
-          <p><strong>Observations:</strong> {selectedVehicle?.observations}</p>
-        </div>
+        {selectedVehicle && (
+          <RevenueRecordCard revenue={selectedVehicle} />
+        )}
       </Popout>
-
-      <Table
-        data={vehicles}
-        columns={columns}
-        onView={handleViewVehicle}
-        onEdit={handleEditVehicle}
-        onDelete={handleDeleteVehicle}
-      />
     </div>
   )
 }

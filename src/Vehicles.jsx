@@ -18,7 +18,6 @@ import { useState, useEffect } from 'react';
     } from "@material-tailwind/react";
     import { ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/solid";
     import Popout from '../components/Popout';
-    import { useTranslation } from 'react-i18next';
 
     const Vehicles = () => {
       const [loading, setLoading] = useState(true);
@@ -44,7 +43,6 @@ import { useState, useEffect } from 'react';
       });
       const [uploading, setUploading] = useState(false);
       const [activeTab, setActiveTab] = useState('information');
-      const { t } = useTranslation(['vehicles', 'translation']);
 
       const [sortBy, setSortBy] = useState(null);
       const [sortDirection, setSortDirection] = useState('asc');
@@ -53,13 +51,13 @@ import { useState, useEffect } from 'react';
       const vehiclesPerPage = 5;
 
       const columns = [
-        { key: 'make', title: t('make', { ns: 'vehicles' }), sortable: true },
-        { key: 'model', title: t('model', { ns: 'vehicles' }), sortable: true },
-        { key: 'year', title: t('year', { ns: 'vehicles' }), sortable: true },
-        { key: 'color', title: t('color', { ns: 'vehicles' }), sortable: true },
-        { key: 'license_plate', title: t('licensePlate', { ns: 'vehicles' }), sortable: true },
-        { key: 'vin', title: t('vin', { ns: 'vehicles' }), sortable: true },
-        { key: 'status', title: t('status', { ns: 'vehicles' }), sortable: true },
+        { key: 'make', title: 'Make', sortable: true },
+        { key: 'model', title: 'Model', sortable: true },
+        { key: 'year', title: 'Year', sortable: true },
+        { key: 'color', title: 'Color', sortable: true },
+        { key: 'license_plate', title: 'License Plate', sortable: true },
+        { key: 'vin', title: 'VIN', sortable: true },
+        { key: 'status', title: 'Status', sortable: true },
       ];
 
       useEffect(() => {
@@ -286,7 +284,7 @@ import { useState, useEffect } from 'react';
       };
 
       const handleDeleteVehicle = async (vehicle) => {
-        if (window.confirm(t('confirmDeleteVehicle', { ns: 'vehicles', make: vehicle.make, model: vehicle.model }))) {
+        if (window.confirm(`Are you sure you want to delete ${vehicle.make} ${vehicle.model}?`)) {
           setLoading(true);
           setError(null);
 
@@ -344,7 +342,7 @@ import { useState, useEffect } from 'react';
       };
 
       if (loading) {
-        return <div className="flex items-center justify-center h-full">{t('loading', { ns: 'translation' })}...</div>;
+        return <div className="flex items-center justify-center h-full">Loading...</div>;
       }
 
       if (error) {
@@ -358,7 +356,7 @@ import { useState, useEffect } from 'react';
               <div className="mb-4 flex flex-col justify-between gap-8 md:flex-row md:items-center">
                 <div>
                   <Typography variant="h5" color="blue-gray">
-                    {t('vehicles', { ns: 'vehicles' })}
+                    Vehicles
                   </Typography>
                 </div>
                 <div className="flex w-full shrink-0 gap-2 md:w-max">
@@ -366,7 +364,7 @@ import { useState, useEffect } from 'react';
                     <Input label="Search" icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="h-5 w-5"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607m0 0v3.367a2.25 2.25 0 01-2.25 2.25H5.196" /></svg>} value={searchTerm} onChange={handleSearchChange} />
                   </div>
                   <Button color="green" onClick={handleAddVehicleClick}>
-                    {t('addNewVehicle', { ns: 'vehicles' })}
+                    Add New Vehicle
                   </Button>
                 </div>
               </div>
@@ -378,7 +376,7 @@ import { useState, useEffect } from 'react';
                       {columns.map((column) => (
                         <Th key={column.key} className="p-4 border-b border-blue-gray-50">
                           <div className="flex items-center gap-2">
-                            {t(column.title, { ns: 'vehicles' })}
+                            {column.title}
                             {column.sortable && (
                               <IconButton size="sm" variant="text" color="blue-gray" onClick={() => handleSort(column.key)}>
                                 {sortBy === column.key && sortDirection === 'asc' ? <ArrowDownIcon strokeWidth={3} className="h-4 w-4" /> : <ArrowUpIcon strokeWidth={3} className="h-4 w-4" />}
@@ -387,7 +385,7 @@ import { useState, useEffect } from 'react';
                           </div>
                         </Th>
                       ))}
-                      <Th className="p-4 border-b border-blue-gray-50">{t('actions', { ns: 'vehicles' })}</Th>
+                      <Th className="p-4 border-b border-blue-gray-50">Actions</Th>
                     </Tr>
                   </Thead>
                   <Tbody>
@@ -469,4 +467,3 @@ import { useState, useEffect } from 'react';
       };
 
       export default Vehicles;
-```

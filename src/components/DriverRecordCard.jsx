@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react'
-    import { supabase } from '../../supabaseClient'
+import React, { useState, useRef, useEffect } from 'react';
+    import { supabase } from '../../supabaseClient';
     
     function DriverRecordCard({ driver, isEditMode = false }) {
       const [activeTab, setActiveTab] = useState('details')
