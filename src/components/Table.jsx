@@ -1,6 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
-const Table = ({ data, columns, onView, onEdit, onDelete }) => {
+const Table = ({ data, columns, onView, onEdit, onDelete, onRowClick }) => {
 
   return (
     <div className="overflow-x-auto rounded-lg shadow-md">
@@ -22,7 +23,7 @@ const Table = ({ data, columns, onView, onEdit, onDelete }) => {
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {data.map((row) => (
-            <tr key={row.id} className="hover:bg-gray-100 transition-colors duration-200">
+            <tr key={row.id} className="hover:bg-gray-100 transition-colors duration-200 cursor-pointer" onClick={() => onRowClick(row)}>
               {columns.map((column) => (
                 <td
                   key={`${row.id}-${column.key}`}
@@ -32,8 +33,8 @@ const Table = ({ data, columns, onView, onEdit, onDelete }) => {
                 </td>
               ))}
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <button onClick={() => onView(row)} className="text-blue-500 hover:text-blue-700 mr-2">Ver</button>
-                <button onClick={() => onEdit(row)} className="text-green-500 hover:text-green-700 mr-2">Editar</button>
+                <Link to={`/view/${row.id}`} className="text-blue-500 hover:text-blue-700 mr-2">Ver</Link>
+                <Link to={`/edit/${row.id}`} className="text-green-500 hover:text-green-700 mr-2">Editar</Link>
                 <button onClick={() => onDelete(row)} className="text-red-500 hover:text-red-700">Borrar</button>
               </td>
             </tr>

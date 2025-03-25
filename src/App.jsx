@@ -12,6 +12,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 import Sidebar from './components/Sidebar'; // Added Sidebar import
 import MyProfile from './pages/MyProfile';
+import VehicleRecord from './pages/Vehicles/[id]';
 
 function App() {
   const [session, setSession] = useState(null)
@@ -149,6 +150,16 @@ function App() {
                     element={
                       session ? (
                         <Vehicles />
+                      ) : (
+                        <Navigate to="/" replace />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/vehicles/:id"
+                    element={
+                      session ? (
+                        <VehicleRecord />
                       ) : (
                         <Navigate to="/" replace />
                       )
