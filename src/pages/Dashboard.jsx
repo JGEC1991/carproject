@@ -83,7 +83,7 @@ const Dashboard = () => {
         let startDate;
         const today = new Date();
         switch (timeRange) {
-          case 'weekly':
+          case 'weekely':
             startDate = new Date(today.setDate(today.getDate() - 7));
             break;
           case 'monthly':
@@ -133,7 +133,7 @@ const Dashboard = () => {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-full">Loading...</div>
+    return <div className="flex items-center justify-center h-full">Cargando...</div>
   }
 
   if (error) {
@@ -152,7 +152,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-6">
         {/* Vehicle Statuses */}
         <div className="bg-white shadow rounded-lg p-4">
-          <h2 className="text-lg font-semibold mb-2">Vehicle Statuses</h2>
+          <h2 className="text-lg font-semibold mb-2">Vehiculos por estado</h2>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie
@@ -177,9 +177,9 @@ const Dashboard = () => {
 
         {/* Revenue vs Expenses */}
         <div className="bg-white shadow rounded-lg p-4">
-          <h2 className="text-lg font-semibold mb-2">Revenue vs Expenses</h2>
-          <p>Revenue: ${revenueExpenses.revenue}</p>
-          <p>Expenses: ${revenueExpenses.expenses}</p>
+          <h2 className="text-lg font-semibold mb-2">Balance</h2>
+          <p>Ingresos: ${revenueExpenses.revenue}</p>
+          <p>Gastos: ${revenueExpenses.expenses}</p>
           <p>Balance: ${balance}</p>
         </div>
       </div>
@@ -187,16 +187,16 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-6">
         {/* Revenue by Status */}
         <div className="bg-white shadow rounded-lg p-4">
-          <h2 className="text-lg font-semibold mb-2">Revenue by Status</h2>
-          <p>Complete: ${revenueByStatus.complete || 0}</p>
-          <p>Incomplete: ${revenueByStatus.incomplete || 0}</p>
-          <p>Past Due: ${revenueByStatus.pastdue || 0}</p>
-          <p>Canceled: ${revenueByStatus.canceled || 0}</p>
+          <h2 className="text-lg font-semibold mb-2">Ingresos por estado</h2>
+          <p>Completado: ${revenueByStatus.complete || 0}</p>
+          <p>Incompleto: ${revenueByStatus.incomplete || 0}</p>
+          <p>Vencido: ${revenueByStatus.pastdue || 0}</p>
+          <p>Cancelado: ${revenueByStatus.canceled || 0}</p>
         </div>
 
         {/* Activities by Type */}
         <div className="bg-white shadow rounded-lg p-4">
-          <h2 className="text-lg font-semibold mb-2">Activities by Type</h2>
+          <h2 className="text-lg font-semibold mb-2">Actividades por categoria</h2>
           {Object.entries(activitiesByType).map(([type, count]) => (
             <p key={type}>{type}: {count}</p>
           ))}
@@ -205,12 +205,12 @@ const Dashboard = () => {
 
       {/* Revenue Chart */}
       <div className="bg-white shadow rounded-lg p-4">
-        <h2 className="text-lg font-semibold mb-2">Revenue Over Time</h2>
+        <h2 className="text-lg font-semibold mb-2">Ingresos a travez del tiempo</h2>
         <div className="flex space-x-2 mb-4">
-          <Button color="blue" onClick={() => handleTimeRangeChange('weekly')}>Weekly</Button>
-          <Button color="blue" onClick={() => handleTimeRangeChange('monthly')}>Monthly</Button>
-          <Button color="blue" onClick={() => handleTimeRangeChange('quarterly')}>Quarterly</Button>
-          <Button color="blue" onClick={() => handleTimeRangeChange('all')}>All</Button>
+          <Button color="blue" onClick={() => handleTimeRangeChange('weekly')}>Semanal</Button>
+          <Button color="blue" onClick={() => handleTimeRangeChange('monthly')}>Mensual</Button>
+          <Button color="blue" onClick={() => handleTimeRangeChange('quarterly')}>Trimestral</Button>
+          <Button color="blue" onClick={() => handleTimeRangeChange('all')}>Historico</Button>
         </div>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={revenueData}>
@@ -219,7 +219,7 @@ const Dashboard = () => {
             <YAxis />
             <Tooltip />
             <Legend />
-            <Line type="monotone" dataKey="amount" stroke="#8884d8" activeDot={{ r: 8 }} />
+            <Line type="monotone" dataKey="cantidad" stroke="#8884d8" activeDot={{ r: 8 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>

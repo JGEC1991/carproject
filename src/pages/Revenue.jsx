@@ -15,7 +15,7 @@ const Revenue = () => {
     date: '',
     amount: '',
     description: '',
-    status: 'complete',
+    status: 'completado',
     activity_id: '',
     driver_id: '',
     vehicle_id: '',
@@ -27,13 +27,13 @@ const Revenue = () => {
   const [proofOfPayment, setProofOfPayment] = useState(null);
 
   const columns = [
-    { key: 'date', title: 'Date' },
-    { key: 'amount', title: 'Amount' },
-    { key: 'description', title: 'Description' },
-    { key: 'status', title: 'Status' },
-    { key: 'activity_type', title: 'Activity' },
-    { key: 'driver_name', title: 'Driver' },
-    { key: 'vehicle_name', title: 'Vehicle' },
+    { key: 'date', title: 'Fecha' },
+    { key: 'amount', title: 'Cantidad' },
+    { key: 'description', title: 'Descripcion' },
+    { key: 'status', title: 'Estado' },
+    { key: 'activity_type', title: 'Actividad' },
+    { key: 'driver_name', title: 'Conductor' },
+    { key: 'vehicle_name', title: 'Vehiculo' },
   ]
 
   useEffect(() => {
@@ -137,7 +137,7 @@ const Revenue = () => {
       date: '',
       amount: '',
       description: '',
-      status: 'complete',
+      status: 'completado',
       activity_id: '',
       driver_id: '',
       vehicle_id: '',
@@ -270,7 +270,7 @@ const Revenue = () => {
         date: '',
         amount: '',
         description: '',
-        status: 'complete',
+        status: 'completado',
         activity_id: '',
         driver_id: '',
         vehicle_id: '',
@@ -299,7 +299,7 @@ const Revenue = () => {
       date: revenue.date || '',
       amount: revenue.amount || '',
       description: revenue.description || '',
-      status: revenue.status || 'complete',
+      status: revenue.status || 'completado',
       activity_id: revenue.activity_id || '',
       driver_id: revenue.driver_id || '',
       vehicle_id: revenue.vehicle_id || '',
@@ -309,7 +309,7 @@ const Revenue = () => {
   };
 
   const handleDeleteRevenue = async (revenue) => {
-    if (window.confirm(`Are you sure you want to delete this revenue record?`)) {
+    if (window.confirm(`Seguro que deseas borrar este registro?`)) {
       setLoading(true)
       setError(null)
 
@@ -346,7 +346,7 @@ const Revenue = () => {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-full">Loading...</div>
+    return <div className="flex items-center justify-center h-full">Cargando...</div>
   }
 
   if (error) {
@@ -360,63 +360,63 @@ const Revenue = () => {
           className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded focus:outline-none focus:shadow-outline text-sm"
           onClick={handleAddRevenueClick}
         >
-          Add Revenue
+          Agregar un ingreso
         </button>
       </div>
 
       <Popout isOpen={showAddForm} onClose={handleCloseAddForm}>
-        <h2 className="text-xl font-semibold mb-4">Add New Revenue</h2>
+        <h2 className="text-xl font-semibold mb-4">Agregar ingresos</h2>
         <form onSubmit={handleAddRevenueSubmit} className="max-w-lg">
           <div className="mb-4">
-            <label htmlFor="date" className="block text-gray-700 text-sm font-bold mb-2">Date</label>
+            <label htmlFor="date" className="block text-gray-700 text-sm font-bold mb-2">Fecha</label>
             <input type="date" id="date" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newRevenue.date} onChange={handleInputChange} />
           </div>
           <div className="mb-4">
-            <label htmlFor="amount" className="block text-gray-700 text-sm font-bold mb-2">Amount</label>
+            <label htmlFor="amount" className="block text-gray-700 text-sm font-bold mb-2">Cantidad</label>
             <input type="number" id="amount" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newRevenue.amount} onChange={handleInputChange} />
           </div>
           <div className="mb-4">
-            <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">Description</label>
+            <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">Descripcion</label>
             <textarea id="description" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newRevenue.description} onChange={handleInputChange} />
           </div>
           <div className="mb-4">
-            <label htmlFor="status" className="block text-gray-700 text-sm font-bold mb-2">Status</label>
+            <label htmlFor="status" className="block text-gray-700 text-sm font-bold mb-2">Estado</label>
             <select id="status" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newRevenue.status} onChange={handleInputChange}>
-              <option value="complete">Complete</option>
-              <option value="incomplete">Incomplete</option>
-              <option value="pastdue">Past Due</option>
-              <option value="canceled">Canceled</option>
+              <option value="complete">Completo</option>
+              <option value="incomplete">Incompleto</option>
+              <option value="pastdue">Vencido</option>
+              <option value="canceled">Cancelado</option>
             </select>
           </div>
           <div className="mb-4">
-            <label htmlFor="activity_id" className="block text-gray-700 text-sm font-bold mb-2">Activity</label>
+            <label htmlFor="activity_id" className="block text-gray-700 text-sm font-bold mb-2">Actividad</label>
             <select id="activity_id" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newRevenue.activity_id} onChange={handleInputChange}>
-              <option value="">Select Activity</option>
+              <option value="">Seleccionar una actividad</option>
               {activities.map((activity) => (
                 <option key={activity.id} value={activity.id}>{activity.description}</option>
               ))}
             </select>
           </div>
           <div className="mb-4">
-            <label htmlFor="driver_id" className="block text-gray-700 text-sm font-bold mb-2">Driver</label>
+            <label htmlFor="driver_id" className="block text-gray-700 text-sm font-bold mb-2">Conductor</label>
             <select id="driver_id" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newRevenue.driver_id} onChange={handleInputChange}>
-              <option value="">Select Driver</option>
+              <option value="">Selecciona un conductor</option>
               {drivers.map((driver) => (
                 <option key={driver.id} value={driver.id}>{driver.name}</option>
               ))}
             </select>
           </div>
           <div className="mb-4">
-            <label htmlFor="vehicle_id" className="block text-gray-700 text-sm font-bold mb-2">Vehicle</label>
+            <label htmlFor="vehicle_id" className="block text-gray-700 text-sm font-bold mb-2">Vehiculo</label>
             <select id="vehicle_id" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newRevenue.vehicle_id} onChange={handleInputChange}>
-              <option value="">Select Vehicle</option>
+              <option value="">Selecciona un vehiculo</option>
               {vehicles.map((vehicle) => (
                 <option key={vehicle.id} value={vehicle.id}>{vehicle.make} - {vehicle.model}</option>
               ))}
             </select>
           </div>
            <div className="mb-4">
-            <label htmlFor="proof_of_payment_url" className="block text-gray-700 text-sm font-bold mb-2">Proof of Payment</label>
+            <label htmlFor="proof_of_payment_url" className="block text-gray-700 text-sm font-bold mb-2">Recibo/Factura</label>
             <input
               type="file"
               id="proof_of_payment_url"
@@ -427,7 +427,7 @@ const Revenue = () => {
           </div>
           <div className="flex items-center justify-end">
             <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-              {selectedRevenue ? 'Update' : 'Add'}
+              {selectedRevenue ? 'Actualizar' : 'Agregar'}
             </button>
           </div>
         </form>
