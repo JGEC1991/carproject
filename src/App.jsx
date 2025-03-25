@@ -13,6 +13,8 @@ import { supabase } from './supabaseClient'
 import Sidebar from './components/Sidebar'; // Added Sidebar import
 import MyProfile from './pages/MyProfile';
 import VehicleRecord from './pages/Vehicles/[id]';
+import DriverRecord from './pages/Drivers/[id]';
+import ActivityRecord from './pages/Activities/[id]';
 
 function App() {
   const [session, setSession] = useState(null)
@@ -176,10 +178,30 @@ function App() {
                     }
                   />
                   <Route
+                    path="/drivers/:id"
+                    element={
+                      session ? (
+                        <DriverRecord />
+                      ) : (
+                        <Navigate to="/" replace />
+                      )
+                    }
+                  />
+                  <Route
                     path="/activities"
                     element={
                       session ? (
                         <Activities />
+                      ) : (
+                        <Navigate to="/" replace />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/activities/:id"
+                    element={
+                      session ? (
+                        <ActivityRecord />
                       ) : (
                         <Navigate to="/" replace />
                       )

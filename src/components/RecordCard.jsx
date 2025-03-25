@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const RecordCard = ({ record, fields, title, onSave, onCancel, onEdit, onDelete, viewMode = 'view', imageField = null }) => {
-  const [mode, setMode] = useState(viewMode);
+const RecordCard = ({ record, fields, title, onSave, onCancel, onDelete, imageField = null }) => {
   const [formData, setFormData] = useState({ ...record });
   const [showImageModal, setShowImageModal] = useState(false);
   const [activeImageUrl, setActiveImageUrl] = useState('');
@@ -19,18 +18,6 @@ const RecordCard = ({ record, fields, title, onSave, onCancel, onEdit, onDelete,
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave(formData);
-    setMode('view');
-  };
-
-  const handleEdit = () => {
-    setMode('edit');
-    setFormData({ ...record });
-  };
-
-  const handleCancel = () => {
-    setMode('view');
-    setFormData({ ...record });
-    if (onCancel) onCancel();
   };
 
   const handleDelete = () => {
@@ -76,109 +63,76 @@ const RecordCard = ({ record, fields, title, onSave, onCancel, onEdit, onDelete,
           <label className="block text-gray-700 text-sm font-bold mb-2">
             {field.label}
           </label>
-          {mode === 'edit' ? (
-            <div>
-              <input
-                type="text"
-                name={field.key}
-                value={value || ''}
-                onChange={handleChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                placeholder={field.label}
-              />
-              {value && (
-                <div className="mt-2">
-                  <img
-                    src={value}
-                    alt={field.label}
-                    className="h-32 w-auto object-cover rounded cursor-pointer hover:opacity-90"
-                    onClick={() => handleImageClick(value)}
-                  />
-                </div>
-              )}
-            </div>
-          ) : (
-            <div>
-              {value ? (
+          <div>
+            <input
+              type="text"
+              name={field.key}
+              value={value || ''}
+              onChange={handleChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              placeholder={field.label}
+            />
+            {value && (
+              <div className="mt-2">
                 <img
                   src={value}
                   alt={field.label}
-                  className="h-48 w-auto object-cover rounded cursor-pointer hover:opacity-90 transition-all"
+                  className="h-32 w-auto object-cover rounded cursor-pointer hover:opacity-90"
                   onClick={() => handleImageClick(value)}
                 />
-              ) : (
-                <div className="text-gray-500 italic">{t('noImage', { ns: 'translation', defaultValue: 'No image' })}</div>
-              )}
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
       );
     }
 
     // Standard field rendering
-    if (mode === 'edit') {
-      return (
-        <div key={field.key} className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
-            {field.label}
-          </label>
-          {field.type === 'textarea' ? (
-            <textarea
-              name={field.key}
-              value={value || ''}
-              onChange={handleChange}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32"
-              placeholder={field.label}
-            />
-          ) : field.type === 'select' ? (
-            <select
-              name={field.key}
-              value={value || ''}
-              onChange={handleChange}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            >
-              <option value="">Select...</option>
-              {field.options && field.options.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          ) : field.type === 'checkbox' ? (
-            <input
-              type="checkbox"
-              name={field.key}
-              checked={!!value}
-              onChange={handleChange}
-              className="form-checkbox h-5 w-5 text-blue-600"
-            />
-          ) : (
-            <input
-              type={field.type || 'text'}
-              name={field.key}
-              value={value || ''}
-              onChange={handleChange}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              placeholder={field.label}
-            />
-          )}
-        </div>
-      );
-    }
-
-    // View mode
     return (
       <div key={field.key} className="mb-4">
-        <h3 className="text-gray-600 text-sm font-medium">{field.label}</h3>
-        <div className="mt-1">
-          {field.type === 'checkbox' ? (
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${value ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-              {value ? t('yes', { ns: 'translation', defaultValue: 'Yes' }) : t('no', { ns: 'translation', defaultValue: 'No' })}
-            </span>
-          ) : (
-            <p className="text-gray-900">{value || <span className="text-gray-400 italic">{t('notProvided', { ns: 'translation', defaultValue: 'Not provided' })}</span>}</p>
-          )}
-        </div>
+        <label className="block text-gray-700 text-sm font-bold mb-2">
+          {field.label}
+        </label>
+        {field.type === 'textarea' ? (
+          <textarea
+            name={field.key}
+            value={value || ''}
+            onChange={handleChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32"
+            placeholder={field.label}
+          />
+        ) : field.type === 'select' ? (
+          <select
+            name={field.key}
+            value={value || ''}
+            onChange={handleChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          >
+            <option value="">Select...</option>
+            {field.options && field.options.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        ) : field.type === 'checkbox' ? (
+          <input
+            type="checkbox"
+            name={field.key}
+            checked={!!value}
+            onChange={handleChange}
+            className="form-checkbox h-5 w-5 text-blue-600"
+          />
+        ) : (
+          <input
+            type={field.type || 'text'}
+            name={field.key}
+            value={value || ''}
+            onChange={handleChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            placeholder={field.label}
+          />
+        )}
       </div>
     );
   };
@@ -190,43 +144,20 @@ const RecordCard = ({ record, fields, title, onSave, onCancel, onEdit, onDelete,
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
             <div className="flex space-x-2">
-              {mode === 'view' ? (
-                <>
-                  <button
-                    onClick={handleEdit}
-                    className="inline-flex items-center text-sm px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
-                  >
-                    <span className="material-icons text-sm mr-1">edit</span>
-                    {t('edit', { ns: 'app' })}
-                  </button>
-                  {onDelete && (
-                    <button
-                      onClick={handleDelete}
-                      className="inline-flex items-center text-sm px-3 py-1.5 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
-                    >
-                      <span className="material-icons text-sm mr-1">delete</span>
-                      {t('delete', { ns: 'app' })}
-                    </button>
-                  )}
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={handleSubmit}
-                    className="inline-flex items-center text-sm px-3 py-1.5 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors"
-                  >
-                    <span className="material-icons text-sm mr-1">save</span>
-                    {t('save', { ns: 'app' })}
-                  </button>
-                  <button
-                    onClick={handleCancel}
-                    className="inline-flex items-center text-sm px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-                  >
-                    <span className="material-icons text-sm mr-1">cancel</span>
-                    {t('cancel', { ns: 'app' })}
-                  </button>
-                </>
-              )}
+              <button
+                onClick={handleSubmit}
+                className="inline-flex items-center text-sm px-3 py-1.5 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors"
+              >
+                <span className="material-icons text-sm mr-1">save</span>
+                {t('save', { ns: 'app' })}
+              </button>
+              <button
+                onClick={handleCancel}
+                className="inline-flex items-center text-sm px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                <span className="material-icons text-sm mr-1">cancel</span>
+                {t('cancel', { ns: 'app' })}
+              </button>
             </div>
           </div>
         </div>

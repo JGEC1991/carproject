@@ -23,6 +23,7 @@ function VehicleRecord() {
           alert(error.message);
         } else {
           setVehicle(data);
+          console.log('Vehicle data:', data); // Add console log here
         }
       } catch (error) {
         console.error('Error fetching vehicle:', error.message);
@@ -36,12 +37,16 @@ function VehicleRecord() {
   }, [id]);
 
   if (loading) {
+    console.log('Loading vehicle details...'); // Add console log here
     return <div className="page">Cargando detalles...</div>;
   }
 
   if (!vehicle) {
+    console.log('Vehicle not found.'); // Add console log here
     return <div className="page">No se encontraron vehiculos.</div>;
   }
+
+  console.log('Rendering VehicleRecord component.'); // Add console log here
 
   return (
     <div className="page">

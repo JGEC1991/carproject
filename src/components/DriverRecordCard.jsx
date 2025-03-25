@@ -1,24 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react'
     import { supabase } from '../../supabaseClient'
+    import { useTranslation } from 'react-i18next';
     
-    function DriverRecordCard({ driver, isEditMode = false }) {
-      const [activeTab, setActiveTab] = useState('details')
-      const [driversLicense, setDriversLicense] = useState(null)
-      const [policeRecord, setPoliceRecord] = useState(null)
-      const [criminalRecord, setCriminalRecord] = useState(null)
-      const [profilePhoto, setProfilePhoto] = useState(null)
-      const [driversLicenseUrl, setDriversLicenseUrl] = useState(null)
-      const [policeRecordUrl, setPoliceRecordUrl] = useState(null)
-      const [criminalRecordUrl, setCriminalRecordUrl] = useState(null)
-      const [profilePhotoUrl, setProfilePhotoUrl] = useState(null)
-      const [expandedImage, setExpandedImage] = useState(null)
-      const modalRef = useRef(null)
-    
-      const [fullName, setFullName] = useState(driver?.full_name || '')
-      const [address, setAddress] = useState(driver?.address || '')
-      const [phone, setPhone] = useState(driver?.phone || '')
-      const [email, setEmail] = useState(driver?.email || '')
-    
+    function DriverRecordCard({ driver }) {
+      const [fullName, setFullName] = useState(driver?.full_name || '');
+      const [homeAddress, setHomeAddress] = useState(driver?.home_address || '');
+      const [phone, setPhone] = useState(driver?.phone || '');
+      const [email, setEmail] = useState(driver?.email || '');
+      const [driversLicense, setDriversLicense] = useState(null);
+      const [policeRecord, setPoliceRecord] = useState(null);
+      const [criminalRecord, setCriminalRecord] = useState(null);
+      const [profilePhoto, setProfilePhoto] = useState(null);
+      const modalRef = useRef(null);
+      const { t } = useTranslation('driverRecordCard');
+      const [expandedImage, setExpandedImage] = useState(null);
+
       useEffect(() => {
         const handleClickOutside = (event) => {
           if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -47,7 +43,7 @@ import React, { useState, useRef, useEffect } from 'react'
             })
     
           if (error) {
-            console.error('Error uploading image:', error)
+            console.error('Error al subir imagen:', error)
             alert(error.message)
             return
           }
@@ -64,10 +60,10 @@ import React, { useState, useRef, useEffect } from 'react'
             .eq('id', driver.id)
     
           if (updateError) {
-            console.error('Error updating driver record:', updateError)
+            console.error('Error al actualizar el registro:', updateError)
             alert(updateError.message)
           } else {
-            alert('Image uploaded and driver record updated successfully!')
+            alert('La imagen y el registro se actualizaron exitosamente!')
             // Refresh the driver data to display the new image
             window.location.reload()
           }
@@ -100,7 +96,7 @@ import React, { useState, useRef, useEffect } from 'react'
             .from('drivers')
             .update({
               full_name: fullName,
-              address: address,
+              home_address: homeAddress,
               phone: phone,
               email: email,
             })
@@ -111,24 +107,7 @@ import React, { useState, useRef, useEffect } from 'react'
             alert(error.message)
           } else {
             console.log('Driver updated:', data)
-            alert('Driver updated successfully!')
-          }
-    
-          if (activeTab === 'photos') {
-            // Upload photos only if the 'photos' tab is active
-            // Upload photos only if the 'photos' tab is active
-            if (driversLicense) {
-              await handleImageUpload({ target: { files: [driversLicense] } }, setDriversLicense, 'drivers_license_photo', 'DriversLicense');
-            }
-            if (policeRecord) {
-              await handleImageUpload({ target: { files: [policeRecord] } }, setPoliceRecord, 'police_records_photo', 'PoliceRecord');
-            }
-            if (criminalRecord) {
-              await handleImageUpload({ target: { files: [criminalRecord] } }, setCriminalRecord, 'criminal_records_photo', 'CriminalRecord');
-            }
-            if (profilePhoto) {
-              await handleImageUpload({ target: { files: [profilePhoto] } }, setProfilePhoto, 'profile_photo', 'ProfilePhoto');
-            }
+            alert('Registro actualizado!')
           }
         } catch (error) {
           console.error('Error updating driver:', error.message)
@@ -142,21 +121,40 @@ import React, { useState, useRef, useEffect } from 'react'
     
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-gray-800 mb-2">
-                <strong>Address:</strong> {driver?.address}
-              </p>
-              <p className="text-gray-800 mb-2">
-                <strong>Phone:</strong> {driver?.phone}
-              </p>
-              <p className="text-gray-800 mb-2">
-                <strong>Email:</strong> {driver?.email}
-              </p>
+              <label className="block text-sm font-medium text-gray-700">Nombre</label>
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              />
+              <label className="block text-sm font-medium text-gray-700">Direccion</label>
+              <input
+                type="text"
+                value={homeAddress}
+                onChange={(e) => setHomeAddress(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              />
+              <label className="block text-sm font-medium text-gray-700">Telefono</label>
+              <input
+                type="text"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              />
+              <label className="block text-sm font-medium text-gray-700">Correo Electronico</label>
+              <input
+                type="text"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              />
             </div>
           </div>
     
           <hr className="my-6 border-gray-300" />
     
-          <h3 className="text-xl font-semibold mt-4 mb-2 text-gray-900">Photos</h3>
+          <h3 className="text-xl font-semibold mt-4 mb-2 text-gray-900">Fotos</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {driver?.drivers_license_photo && (
               <div>
@@ -212,6 +210,14 @@ import React, { useState, useRef, useEffect } from 'react'
               </div>
             </div>
           )}
+           <div className="mt-8 flex justify-end">
+            <button
+              onClick={handleSave}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-all"
+            >
+              Guardar
+            </button>
+          </div>
         </div>
       )
     }

@@ -23,6 +23,7 @@ function ActivityRecord() {
           alert(error.message);
         } else {
           setActivity(data);
+          console.log('Activity data:', data); // Add console log here
         }
       } catch (error) {
         console.error('Error fetching activity:', error.message);
@@ -36,18 +37,21 @@ function ActivityRecord() {
   }, [id]);
 
   if (loading) {
+    console.log('Loading activity details...'); // Add console log here
     return <div className="page">Cargando detalles...</div>;
   }
 
   if (!activity) {
+    console.log('Activity not found.'); // Add console log here
     return <div className="page">No se encontraron actividades.</div>;
   }
+
+  console.log('Rendering ActivityRecord component.'); // Add console log here
 
   return (
     <div className="page">
       <h1 className="text-3xl font-semibold mb-4">Detalles de actividad</h1>
       <ActivityRecordCard activity={activity} />
-      <Link to="/activities" className="inline-block mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Regresar a actividades</Link>
     </div>
   );
 }
