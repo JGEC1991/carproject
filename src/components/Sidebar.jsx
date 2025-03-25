@@ -8,14 +8,14 @@ const Sidebar = () => {
   const navigate = useNavigate();
 
   const menuItems = [
-    { path: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
-    { path: '/vehicles', icon: 'directions_car', label: 'Vehicles' },
-    { path: '/drivers', icon: 'people', label: 'Drivers' },
-    { path: '/activities', icon: 'event_note', label: 'Activities' },
-    { path: '/revenue', icon: 'payments', label: 'Revenue' },
-    { path: '/expenses', icon: 'money_off', label: 'Expenses' },
-    { path: '/admin', icon: 'admin_panel_settings', label: 'Admin' },
-    { path: '/my-profile', icon: 'person', label: 'Profile' },
+    { path: '/dashboard', icon: 'dashboard', label: 'Panel' },
+    { path: '/vehicles', icon: 'directions_car', label: 'Vehiculos' },
+    { path: '/drivers', icon: 'people', label: 'Conductores' },
+    { path: '/activities', icon: 'event_note', label: 'Actividades' },
+    { path: '/revenue', icon: 'payments', label: 'Ingresos' },
+    { path: '/expenses', icon: 'money_off', label: 'Gastos' },
+    { path: '/admin', icon: 'admin_panel_settings', label: 'Administrador' },
+    { path: '/my-profile', icon: 'person', label: 'Perfil' },
   ];
 
   const handleLogout = async () => {
@@ -75,7 +75,7 @@ const Sidebar = () => {
             ${collapsed ? 'justify-center' : 'justify-start'}`}
         >
           <span className="material-icons">logout</span>
-          {!collapsed && <span className="ml-3">Logout</span>}
+          {!collapsed && <span className="ml-3">Cerrar Sesion</span>}
         </button>
       </div>
     </div>
