@@ -356,7 +356,7 @@ const Drivers = () => {
             </div>
           )}
           <div className="flex items-center justify-end">
-            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">{selectedDriver ? 'Update' : 'Add'}</button>
+            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">{selectedDriver ? 'Actualizar' : 'Add'}</button>
           </div>
         </form>
       </Popout>

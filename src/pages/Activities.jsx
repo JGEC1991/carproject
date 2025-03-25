@@ -17,7 +17,7 @@ const Activities = () => {
     activity_type: '',
     vehicle_id: '',
     driver_id: '',
-    status: 'Pending',
+    status: 'Pendiente',
   })
   const [newAttachments, setNewAttachments] = useState('')
   const [vehicles, setVehicles] = useState([])
@@ -25,24 +25,24 @@ const Activities = () => {
   const [uploading, setUploading] = useState(false);
 
   const activityTypes = [
-    'Maintenance',
-    'Cleaning',
-    'Repair',
-    'Oil Change',
-    'Driver\'s Daily Payment',
-    'Flat Tire',
-    'Towing',
-    'Other',
+    'Mantenimiento',
+    'Lavado',
+    'Reparacion',
+    'Cambio de aceite',
+    'Pago de tarifa',
+    'Llanta punchada',
+    'Remolcar',
+    'Otro',
   ]
 
   const columns = [
-    { key: 'date', title: 'Date' },
-    { key: 'amount', title: 'Amount' },
-    { key: 'description', title: 'Description' },
-    { key: 'activity_type', title: 'Activity Type' },
-    { key: 'vehicle_name', title: 'Vehicle' },
-    { key: 'driver_name', title: 'Driver' },
-    { key: 'status', title: 'Status' },
+    { key: 'date', title: 'Fecha' },
+    { key: 'amount', title: 'Cantidad' },
+    { key: 'description', title: 'Descripcion' },
+    { key: 'activity_type', title: 'Tipo de actividad' },
+    { key: 'vehicle_name', title: 'Vehiculo' },
+    { key: 'driver_name', title: 'Conductor' },
+    { key: 'status', title: 'Estado' },
   ]
 
   useEffect(() => {
@@ -124,7 +124,7 @@ const Activities = () => {
       activity_type: activityTypes[0], // Set default value
       vehicle_id: '',
       driver_id: '',
-      status: 'Pending',
+      status: 'Pendiente',
     })
     setNewAttachments('')
   }
@@ -259,7 +259,7 @@ const Activities = () => {
         activity_type: activityTypes[0], // Set default value
         vehicle_id: '',
         driver_id: '',
-        status: 'Pending',
+        status: 'Pendiente',
       })
       setNewAttachments('')
       setShowAddForm(false) // Hide the form
@@ -286,13 +286,13 @@ const Activities = () => {
       activity_type: activity.activity_type || '',
       vehicle_id: activity.vehicle_id || '',
       driver_id: activity.driver_id || '',
-      status: activity.status || 'Pending',
+      status: activity.status || 'Pendiente',
     });
     setNewAttachments(activity.attachment_url || '');
   }
 
   const handleDeleteActivity = async (activity) => {
-    if (window.confirm(`Are you sure you want to delete this activity?`)) {
+    if (window.confirm(`Aun quieres borrar la actividad?`)) {
       setLoading(true)
       setError(null)
 
@@ -304,7 +304,7 @@ const Activities = () => {
 
         if (error) {
           if (error.code === '23503') {
-            setError("Activity can't be deleted since it's being used with another record.");
+            setError("La actividad no se puede borrar por que esta asociada con otro registro.");
           } else {
             setError(error.message);
           }
@@ -321,7 +321,7 @@ const Activities = () => {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-full">Loading...</div>
+    return <div className="flex items-center justify-center h-full">Cargando...</div>
   }
 
   if (error) {
@@ -340,18 +340,18 @@ const Activities = () => {
       </div>
 
       <Popout isOpen={showAddForm} onClose={handleCloseAddForm}>
-        <h2 className="text-xl font-semibold mb-4">{selectedActivity ? 'Edit Activity' : 'Add New Activity'}</h2>
+        <h2 className="text-xl font-semibold mb-4">{selectedActivity ? 'Editar actividad' : 'Agregar una actividad'}</h2>
         <form onSubmit={handleAddActivitySubmit} className="max-w-lg">
           <div className="mb-4">
-            <label htmlFor="date" className="block text-gray-700 text-sm font-bold mb-2">Date</label>
+            <label htmlFor="date" className="block text-gray-700 text-sm font-bold mb-2">Fecha</label>
             <input type="date" id="date" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newActivity.date} onChange={handleInputChange} />
           </div>
           <div className="mb-4">
-            <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">Description</label>
+            <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">Descripcion</label>
             <textarea id="description" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newActivity.description} onChange={handleInputChange} />
           </div>
           <div className="mb-4">
-            <label htmlFor="activity_type" className="block text-gray-700 text-sm font-bold mb-2">Activity Type</label>
+            <label htmlFor="activity_type" className="block text-gray-700 text-sm font-bold mb-2">Tipo de actividad</label>
             <select
               id="activity_type"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -364,33 +364,33 @@ const Activities = () => {
             </select>
           </div>
           <div className="mb-4">
-            <label htmlFor="vehicle_id" className="block text-gray-700 text-sm font-bold mb-2">Vehicle</label>
+            <label htmlFor="vehicle_id" className="block text-gray-700 text-sm font-bold mb-2">Vehiculo</label>
             <select id="vehicle_id" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newActivity.vehicle_id} onChange={handleInputChange}>
-              <option value="">Select Vehicle</option>
+              <option value="">Seleccionar un vehiculo</option>
               {vehicles.map((vehicle) => (
                 <option key={vehicle.id} value={vehicle.id}>{vehicle.make} - {vehicle.model}</option>
               ))}
             </select>
           </div>
           <div className="mb-4">
-            <label htmlFor="driver_id" className="block text-gray-700 text-sm font-bold mb-2">Driver</label>
+            <label htmlFor="driver_id" className="block text-gray-700 text-sm font-bold mb-2">Conductor</label>
             <select id="driver_id" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newActivity.driver_id} onChange={handleInputChange}>
-              <option value="">Select Driver</option>
+              <option value="">Seleccionar un conductor</option>
               {drivers.map((driver) => (
                 <option key={driver.id} value={driver.id}>{driver.name}</option>
               ))}
             </select>
           </div>
            <div className="mb-4">
-            <label htmlFor="status" className="block text-gray-700 text-sm font-bold mb-2">Status</label>
+            <label htmlFor="status" className="block text-gray-700 text-sm font-bold mb-2">Estado</label>
             <select id="status" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newActivity.status} onChange={handleInputChange}>
-              <option value="Pending">Pending</option>
-              <option value="Completed">Completed</option>
-              <option value="Past due">Past Due</option>
+              <option value="Pending">Pendiente</option>
+              <option value="Completed">Completado</option>
+              <option value="Past due">Vencido</option>
             </select>
           </div>
           <div className="mb-4">
-            <label htmlFor="attachments" className="block text-gray-700 text-sm font-bold mb-2">Attachments</label>
+            <label htmlFor="attachments" className="block text-gray-700 text-sm font-bold mb-2">Archivos</label>
             <input
               type="file"
               id="attachments"
