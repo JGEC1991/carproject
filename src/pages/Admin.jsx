@@ -90,6 +90,11 @@ const Admin = () => {
 
       const organizationId = userData?.organization_id;
 
+      if (!organizationId) {
+        setError('Unable to determine organization ID.');
+        return;
+      }
+
       // 2. Generate a random password
       const randomPassword = Math.random().toString(36).slice(-8);
 
@@ -127,7 +132,45 @@ const Admin = () => {
         return;
       }
 
-      // 5. Refresh the user list
+      // 5. Insert the user into the public.users table
+      const { error: insertError } = await supabase
+        .from('users')
+        .insert({
+          id: authResponse.user.id,
+          organization_id: organizationId,
+          role: newRole,
+          name: newEmail,
+          email: newEmail,
+        });
+
+      if (insertError) {
+        setError(insertError.message);
+        // Optionally delete the auth user if the insert fails
+        await supabase.auth.admin.deleteUser(authResponse.user.id);
+        return;
+      }
+
+      // 6. Insert the user into the organization_members table
+      const { error: memberError } = await supabase
+        .from('organization_members')
+        .insert({
+          organization_id: organizationId,
+          user_id: authResponse.user.id,
+          role: newRole,
+        });
+
+      if (memberError) {
+        setError(memberError.message);
+        // Optionally delete the auth user and user record if the member insert fails
+        await supabase.auth.admin.deleteUser(authResponse.user.id);
+        await supabase
+          .from('users')
+          .delete()
+          .eq('id', authResponse.user.id);
+        return;
+      }
+
+      // 7. Refresh the user list
       await fetchUsers();
       setNewEmail('');
       setNewRole('user');
