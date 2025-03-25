@@ -16,6 +16,7 @@ const MyProfile = () => {
   const [profile, setProfile] = useState(null);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [newPassword, setNewPassword] = useState(''); // New state for password
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -73,7 +74,20 @@ const MyProfile = () => {
         return;
       }
 
+      // Update password if a new password is provided
+      if (newPassword) {
+        const { error: passwordError } = await supabase.auth.updateUser({
+          password: newPassword,
+        });
+
+        if (passwordError) {
+          setError(passwordError.message);
+          return;
+        }
+      }
+
       alert('Profile updated successfully!');
+      setNewPassword(''); // Clear the password field after successful update
     } catch (err) {
       setError(err.message);
     } finally {
@@ -133,6 +147,20 @@ const MyProfile = () => {
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
+            {/* New Password Input */}
+            <div className="mb-4">
+              <label htmlFor="newPassword" className="block text-gray-700 text-sm font-bold mb-2">
+                Nueva Contraseña
+              </label>
+              <Input
+                type="password"
+                id="newPassword"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Nueva Contraseña"
               />
             </div>
             <div className="flex items-center justify-end">
