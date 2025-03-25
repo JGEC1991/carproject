@@ -27,10 +27,10 @@ const Drivers = () => {
   const [activeTab, setActiveTab] = useState('information');
 
   const columns = [
-    { key: 'name', title: 'Name' },
-    { key: 'license_number', title: 'License Number' },
-    { key: 'phone', title: 'Phone' },
-    { key: 'email', title: 'Email' },
+    { key: 'name', title: 'Nombre' },
+    { key: 'license_number', title: 'Licencia' },
+    { key: 'phone', title: 'Telefono' },
+    { key: 'email', title: 'Correo electronico' },
   ]
 
   useEffect(() => {
@@ -362,23 +362,23 @@ const Drivers = () => {
       </Popout>
 
       <Popout isOpen={showViewForm} onClose={handleCloseViewForm}>
-        <h2 className="text-xl font-semibold mb-4">Driver Details</h2>
+        <h2 className="text-xl font-semibold mb-4">Detalles de conductor</h2>
         <div>
-          <p><strong>Name:</strong> {selectedDriver?.name}</p>
-          <p><strong>License Number:</strong> {selectedDriver?.license_number}</p>
-          <p><strong>Phone:</strong> {selectedDriver?.phone}</p>
-          <p><strong>Email:</strong> {selectedDriver?.email}</p>
-          <p><strong>Photo:</strong></p>
+          <p><strong>Nombre:</strong> {selectedDriver?.name}</p>
+          <p><strong>Licencia:</strong> {selectedDriver?.license_number}</p>
+          <p><strong>Telefono:</strong> {selectedDriver?.phone}</p>
+          <p><strong>Correo Electronico:</strong> {selectedDriver?.email}</p>
+          <p><strong>Foto de perfil:</strong></p>
           {selectedDriver?.photo_url && <img src={selectedDriver.photo_url} alt="Profile" className="h-20 w-auto" />}
-          <p><strong>License Image:</strong></p>
+          <p><strong>Foto de licencia:</strong></p>
           {selectedDriver?.license_image_url && <img src={selectedDriver.license_image_url} alt="License" className="h-20 w-auto" />}
-          <p><strong>Criminal Records:</strong></p>
+          <p><strong>Antecedentes Penales:</strong></p>
           {selectedDriver?.criminal_records_url && <img src={selectedDriver.criminal_records_url} alt="Criminal Records" className="h-20 w-auto" />}
-          <p><strong>Police Records:</strong></p>
+          <p><strong>Amtecedentes Policiales:</strong></p>
           {selectedDriver?.police_records_url && <img src={selectedDriver.police_records_url} alt="Police Records" className="h-20 w-auto" />}
-          <p><strong>National ID:</strong></p>
+          <p><strong>Identificacion Nacional:</strong></p>
           {selectedDriver?.national_id_url && <img src={selectedDriver.national_id_url} alt="National ID" className="h-20 w-auto" />}
-          <p><strong>Home Address:</strong> {selectedDriver?.home_address}</p>
+          <p><strong>Direccion:</strong> {selectedDriver?.home_address}</p>
         </div>
       </Popout>
 

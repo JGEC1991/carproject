@@ -138,7 +138,7 @@ import React, { useState, useRef, useEffect } from 'react'
     
       return (
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800">Driver Details</h2>
+          <h2 className="text-2xl font-bold mb-4 text-gray-800">Detalles de Conductor</h2>
     
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
