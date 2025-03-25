@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase from '../supabaseClient';
+import { supabase } from '../supabaseClient';
 import {
   Card,
   CardHeader,
@@ -19,6 +19,7 @@ import {
 import { ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/solid";
 import Popout from '../components/Popout';
 import DriverRecordCard from '../components/DriverRecordCard';
+import { useTranslation } from 'react-i18next';
 
 const Drivers = () => {
   const [loading, setLoading] = useState(true);
@@ -46,12 +47,13 @@ const Drivers = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const driversPerPage = 5;
+  const { t } = useTranslation(['drivers', 'translation']);
 
   const columns = [
-    { key: 'name', title: 'Name', sortable: true },
-    { key: 'license_number', title: 'License Number', sortable: true },
-    { key: 'phone', title: 'Phone', sortable: true },
-    { key: 'email', title: 'Email', sortable: true },
+    { key: 'name', title: t('fullName', { ns: 'drivers' }), sortable: true },
+    { key: 'license_number', title: t('licenseNumber', { ns: 'drivers' }), sortable: true },
+    { key: 'phone', title: t('phone', { ns: 'drivers' }), sortable: true },
+    { key: 'email', title: t('email', { ns: 'drivers' }), sortable: true },
   ];
 
   useEffect(() => {
@@ -269,7 +271,7 @@ const Drivers = () => {
   };
 
   const handleDeleteDriver = async (driver) => {
-    if (window.confirm('Are you sure you want to delete this driver?')) {
+    if (window.confirm(t('confirmDeleteDriver', { ns: 'drivers' }))) {
       setLoading(true);
       setError(null);
 
@@ -329,7 +331,7 @@ const Drivers = () => {
           <div className="mb-4 flex flex-col justify-between gap-8 md:flex-row md:items-center">
             <div>
               <Typography variant="h5" color="blue-gray">
-                Drivers
+                {t('drivers', { ns: 'drivers' })}
               </Typography>
             </div>
             <div className="flex w-full shrink-0 gap-2 md:w-max">
@@ -337,7 +339,7 @@ const Drivers = () => {
                 <Input label="Search" icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="h-5 w-5"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607m0 0v3.367a2.25 2.25 0 01-2.25 2.25H5.196" /></svg>} value={searchTerm} onChange={handleSearchChange} />
               </div>
               <Button color="green" onClick={handleAddDriverClick}>
-                Add New Driver
+                {t('addNewDriver', { ns: 'drivers' })}
               </Button>
             </div>
           </div>
@@ -349,7 +351,7 @@ const Drivers = () => {
                 {columns.map((column) => (
                   <Th key={column.key} className="p-4 border-b border-blue-gray-50">
                     <div className="flex items-center gap-2">
-                      {column.title}
+                      {t(column.title, { ns: 'drivers' })}
                       {column.sortable && (
                         <IconButton size="sm" variant="text" color="blue-gray" onClick={() => handleSort(column.key)}>
                           {sortBy === column.key && sortDirection === 'asc' ? <ArrowDownIcon strokeWidth={3} className="h-4 w-4" /> : <ArrowUpIcon strokeWidth={3} className="h-4 w-4" />}
@@ -358,85 +360,10 @@ const Drivers = () => {
                     </div>
                   </Th>
                 ))}
-                <Th className="p-4 border-b border-blue-gray-50">Actions</Th>
+                <Th className="p-4 border-b border-blue-gray-50">{t('actions', { ns: 'drivers' })}</Th>
               </Tr>
             </Thead>
             <Tbody>
               {currentDrivers.map((driver) => (
-                <Tr key={driver.id} className="hover:bg-gray-100">
+                <Tr key={driver.id}>
                   {columns.map((column) => (
-                    <Td key={`${driver.id}-${column.key}`} className="p-4 border-b border-blue-gray-50">
-                      {driver[column.key] || '-'}
-                    </Td>
-                  ))}
-                  <Td className="p-4 border-b border-blue-gray-50">
-                    <div className="flex justify-end gap-2">
-                      <Tooltip content="View Driver">
-                        <IconButton variant="text" color="blue" onClick={() => handleViewDriver(driver)}>
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4 w-4">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.225 1.225 0 01.757-.77m0 0a6.218 6.218 0 013.595-3.029m0 0a6.248 6.248 0 012.103-.66c1.13.069 2.231.402 3.31.968a10.309 10.309 0 015.49-2.637c.527 1.054.932 2.274.996 3.64a10.327 10.327 0 01-3.992 5.905m0 0a1.225 1.225 0 011.106.757m0 0a6.248 6.248 0 012.104.66c1.13-.068 2.23-.401 3.31-.968a10.269 10.269 0 01-5.49 2.637c-.527-1.054-.932-2.274-.996-3.64a10.307 10.307 0 013.992-5.905" />
-                          </svg>
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip content="Edit Driver">
-                        <IconButton variant="text" color="green" onClick={() => handleEditDriver(vehicle)}>
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4 w-4">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v5.638a1.125 1.125 0 01-1.125 1.125H5.125a1.125 1.125 0 01-1.125-1.125V12.5" />
-                          </svg>
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip content="Delete Driver">
-                        <IconButton variant="text" color="red" onClick={() => handleDeleteDriver(vehicle)}>
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4 w-4">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 11.182l-2-2m0 0l-2 2m2-2l2 2m-2-2H14.5V14M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </IconButton>
-                      </Tooltip>
-                    </div>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </CardBody>
-        <div className="flex items-center justify-between p-4">
-          <Typography variant="small" color="blue-gray" className="font-normal">
-            Page {currentPage} of {totalPages}
-          </Typography>
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outlined"
-              color="blue-gray"
-              disabled={currentPage === 1}
-              onClick={() => handlePageChange(currentPage - 1)}
-            >
-              Previous
-            </Button>
-            <Button
-              size="sm"
-              variant="outlined"
-              color="blue-gray"
-              disabled={currentPage === totalPages}
-              onClick={() => handlePageChange(currentPage + 1)}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
-      </Card>
-
-      <Popout isOpen={showAddForm} onClose={handleCloseAddForm}>
-        {/* Add/Edit Vehicle Form */}
-      </Popout>
-
-      <Popout isOpen={showViewForm} onClose={handleCloseViewForm}>
-        {selectedVehicle && (
-          <RevenueRecordCard revenue={selectedVehicle} />
-        )}
-      </Popout>
-    </div>
-  );
-};
-
-export default Drivers

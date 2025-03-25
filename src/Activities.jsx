@@ -363,7 +363,7 @@ const Activities = () => {
             <select id="vehicle_id" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newActivity.vehicle_id} onChange={handleInputChange}>
               <option value="">Select Vehicle</option>
               {vehicles.map((vehicle) => (
-                <option key={vehicle.id} value={vehicle.id}>{vehicle.make} {vehicle.model}</option>
+                <option key={vehicle.id} value={vehicle.id}>{vehicle.make} - {vehicle.model}</option>
               ))}
             </select>
           </div>

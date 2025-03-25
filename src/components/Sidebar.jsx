@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 const Sidebar = () => {
   const location = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
 
   const menuItems = [
@@ -34,9 +35,19 @@ const Sidebar = () => {
   };
   
   return (
-    <div className="w-64 fixed inset-y-0 left-0 z-30 bg-gray-800 text-white">
-      <div className="flex items-center justify-center h-16 border-b border-gray-700">
-        <div className="text-xl font-bold">CarFleet</div>
+    <div className={`sidebar ${collapsed ? 'w-16' : 'w-64'} fixed inset-y-0 left-0 z-30 bg-gray-800 text-white transition-all duration-300 ease-in-out`}>
+      <div className="flex items-center justify-between px-4 py-5 border-b border-gray-700">
+        {!collapsed && (
+          <div className="text-xl font-bold text-white">CarFleet</div>
+        )}
+        <button 
+          onClick={() => setCollapsed(!collapsed)} 
+          className="p-1 rounded-md hover:bg-gray-700 focus:outline-none"
+        >
+          <span className="material-icons">
+            {collapsed ? 'chevron_right' : 'chevron_left'}
+          </span>
+        </button>
       </div>
       
       <nav className="mt-5">
@@ -46,10 +57,11 @@ const Sidebar = () => {
               <Link
                 to={item.path}
                 className={`flex items-center px-4 py-3 rounded-md transition-colors duration-200 
-                  ${location.pathname === item.path ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`}
+                  ${location.pathname === item.path ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}
+                  ${collapsed ? 'justify-center' : 'justify-start'}`}
               >
                 <span className="material-icons">{item.icon}</span>
-                <span className="ml-3">{item.label}</span>
+                {!collapsed && <span className="ml-3">{item.label}</span>}
               </Link>
             </li>
           ))}
@@ -59,10 +71,11 @@ const Sidebar = () => {
       <div className="absolute bottom-0 w-full p-4 border-t border-gray-700">
         <button
           onClick={handleLogout}
-          className="flex items-center text-gray-300 hover:text-white transition-colors duration-200"
+          className={`flex items-center text-gray-300 hover:text-white transition-colors duration-200
+            ${collapsed ? 'justify-center' : 'justify-start'}`}
         >
           <span className="material-icons">logout</span>
-          <span className="ml-3">Logout</span>
+          {!collapsed && <span className="ml-3">Logout</span>}
         </button>
       </div>
     </div>

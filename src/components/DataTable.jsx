@@ -168,7 +168,7 @@ const DataTable = ({
                   }`}
                 >
                   <div className="flex items-center space-x-1">
-                    <span>{column.title}</span>
+                    <span>{column.label}</span>
                     {column.sortable && (
                       <span className="text-gray-400">
                         {getSortDirectionIndicator(column.key)}

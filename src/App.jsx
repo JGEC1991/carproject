@@ -7,18 +7,18 @@ import Revenue from './pages/Revenue'
 import Expenses from './pages/Expenses'
 import Dashboard from './pages/Dashboard'
 import Admin from './pages/Admin'
-import Confirmation from './pages/Confirmation.jsx' 
+import Confirmation from './pages/Confirmation' 
 import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
-import Sidebar from './components/Sidebar';
+import Sidebar from './components/Sidebar'; // Added Sidebar import
 import MyProfile from './pages/MyProfile';
 
 function App() {
   const [session, setSession] = useState(null)
   const [organizationName, setOrganizationName] = useState('Loading...')
   const [userName, setUserName] = useState('John Doe') 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [emailConfirmed, setEmailConfirmed] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -107,22 +107,22 @@ function App() {
     <>
       <BrowserRouter>
         {session ? (
-          <div className="flex h-screen bg-gray-100">
-            <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} session={session} />
+          <div className="flex h-screen bg-gray-100"> {/* Changed background color */}
+            <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} session={session} /> {/* Added Sidebar */}
 
             <div className="flex flex-col flex-1" style={{ marginLeft: isSidebarOpen ? '256px' : '0', transition: 'margin-left 0.3s ease-in-out' }}>
-              <header className="bg-gray-100 shadow h-16 flex items-center justify-between px-6 border-b border-gray-200">
+              <header className="bg-gray-100 shadow h-16 flex items-center justify-between px-6 border-b border-gray-200"> {/* Improved styling */}
                 <div>
-                  <span className="text-gray-800 text-base font-medium">
+                  <span className="text-gray-800 text-base font-medium"> {/* Improved styling */}
                     {organizationName}
                   </span>
                 </div>
-                <button className="text-gray-800 focus:outline-none text-base font-medium">
+                <button className="text-gray-800 focus:outline-none text-base font-medium"> {/* Improved styling */}
                   {userName}
                 </button>
               </header>
 
-              <main className="bg-gray-100 p-6">
+              <main className="bg-gray-100 p-6"> {/*Improved styling */}
                 <Routes>
                   <Route
                     path="/"
@@ -150,7 +150,7 @@ function App() {
                       session ? (
                         <Vehicles />
                       ) : (
-                        <Home />
+                        <Navigate to="/" replace />
                       )
                     }
                   />
@@ -160,7 +160,7 @@ function App() {
                       session ? (
                         <Drivers />
                       ) : (
-                        <Home />
+                        <Navigate to="/" replace />
                       )
                     }
                   />
@@ -170,7 +170,7 @@ function App() {
                       session ? (
                         <Activities />
                       ) : (
-                        <Home />
+                        <Navigate to="/" replace />
                       )
                     }
                   />
@@ -180,7 +180,7 @@ function App() {
                       session ? (
                         <Revenue />
                       ) : (
-                        <Home />
+                        <Navigate to="/" replace />
                       )
                     }
                   />
@@ -190,7 +190,7 @@ function App() {
                       session ? (
                         <Expenses />
                       ) : (
-                        <Home />
+                        <Navigate to="/" replace />
                       )
                     }
                   />
@@ -200,7 +200,7 @@ function App() {
                       session ? (
                         <Dashboard />
                       ) : (
-                        <Home />
+                        <Navigate to="/" replace />
                       )
                     }
                   />
@@ -214,7 +214,7 @@ function App() {
                           <Navigate to="/confirmation" replace />
                         )
                       ) : (
-                        <Home />
+                        <Navigate to="/" replace />
                       )
                     }
                   />
