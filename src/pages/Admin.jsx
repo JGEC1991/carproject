@@ -196,7 +196,7 @@ const Admin = () => {
       };
 
       if (loading) {
-        return <div className="flex items-center justify-center h-full">Loading...</div>
+        return <div className="flex items-center justify-center h-full">Cargando...</div>
       }
 
       if (error) {
@@ -209,11 +209,11 @@ const Admin = () => {
 
       return (
         <div className="container mx-auto p-6">
-          <h1 className="text-3xl font-semibold mb-4">Admin Panel</h1>
+          <h1 className="text-3xl font-semibold mb-4">Panel de administracion</h1>
 
           {/* Add User Form */}
           <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-2">Generate Invitation Token</h2>
+            <h2 className="text-xl font-semibold mb-2">Generar un token de invitacion</h2>
             <div className="flex space-x-4">
               <input
                 type="email"
@@ -227,14 +227,14 @@ const Admin = () => {
                 onChange={(e) => setNewRole(e.target.value)}
                 className="shadow appearance-none border rounded w-32 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
+                <option value="user">Usuario</option>
+                <option value="admin">Administrador</option>
               </select>
               <button
                 onClick={handleAddUser}
                 className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               >
-                Generate Invitation
+                Generar Invitacion
               </button>
             </div>
           </div>
@@ -244,16 +244,16 @@ const Admin = () => {
             <thead>
               <tr className="bg-gray-200">
                 <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Name
+                  Nombre
                 </th>
                 <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Email
+                  Correo Electronico
                 </th>
                 <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Role
+                  Rol
                 </th>
                 <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Actions
+                  Acciones
                 </th>
               </tr>
             </thead>
@@ -272,8 +272,8 @@ const Admin = () => {
                       onChange={(e) => handleRoleChange(user.id, e.target.value)}
                       className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     >
-                      <option value="user">User</option>
-                      <option value="admin">Admin</option>
+                      <option value="user">Usuario</option>
+                      <option value="admin">Administrador</option>
                     </select>
                   </td>
                   <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
@@ -281,7 +281,7 @@ const Admin = () => {
                       onClick={() => handleDeleteUser(user.id)}
                       className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                     >
-                      Delete
+                      Borrar
                     </button>
                   </td>
                 </tr>

@@ -81,8 +81,24 @@ const MyProfile = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Logout error:', error.message);
+        alert(error.message);
+      } else {
+        console.log('Logged out');
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Logout error:', error.message);
+      alert(error.message);
+    }
+  };
+
   if (loading) {
-    return <div className="flex items-center justify-center h-full">Cargando...</div>;
+    return <div className="flex items-center justify-center h-full">Loading...</div>;
   }
 
   if (error) {
@@ -94,14 +110,14 @@ const MyProfile = () => {
       <Card>
         <CardHeader floated={false} shadow={false} className="rounded-none">
           <Typography variant="h5" color="blue-gray">
-            Mi perfil
+            My Profile
           </Typography>
         </CardHeader>
         <CardBody>
           <form onSubmit={handleSubmit} className="max-w-lg">
             <div className="mb-4">
               <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">
-                Nombre
+                Name
               </label>
               <Input
                 type="text"
@@ -113,7 +129,7 @@ const MyProfile = () => {
             </div>
             <div className="mb-4">
               <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">
-                Correo Electronico
+                Email
               </label>
               <Input
                 type="email"
@@ -125,7 +141,7 @@ const MyProfile = () => {
             </div>
             <div className="mb-4">
               <label htmlFor="phone" className="block text-gray-700 text-sm font-bold mb-2">
-                Telefono
+                Phone
               </label>
               <Input
                 type="tel"
@@ -141,7 +157,15 @@ const MyProfile = () => {
                 type="submit"
                 disabled={loading}
               >
-                {loading ? 'Updating...' : 'Actualizar perfil'}
+                {loading ? 'Updating...' : 'Update Profile'}
+              </Button>
+              <Button
+                color="red"
+                type="button"
+                onClick={handleLogout}
+                className="ml-2"
+              >
+                Logout
               </Button>
             </div>
           </form>
