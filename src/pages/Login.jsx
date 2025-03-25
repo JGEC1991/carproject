@@ -42,10 +42,10 @@ function Login() {
         {/* Tabs */}
         <div className="flex justify-around mb-6">
           <button className="py-2 px-4 text-blue-500 font-semibold focus:outline-none border-b-2 border-blue-500">
-            Login
+            Iniciar sesion
           </button>
           <Link to="/signup" className="py-2 px-4 text-gray-600 font-semibold focus:outline-none">
-            Sign Up
+            Registrar una cuenta
           </Link>
         </div>
 
@@ -53,7 +53,7 @@ function Login() {
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">
-              Email
+              Correo electronico
             </label>
             <input
               type="email"
@@ -66,7 +66,7 @@ function Login() {
           </div>
           <div className="mb-6">
             <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">
-              Password
+              Contraseña
             </label>
             <input
               type="password"
@@ -82,7 +82,7 @@ function Login() {
               type="submit"
               className="bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             >
-              Login
+              Iniciar
             </button>
           </div>
         </form>
@@ -90,9 +90,9 @@ function Login() {
 
       {/* Welcome Section */}
       <div className="w-full lg:w-1/2 bg-gray-800 text-white flex flex-col justify-center items-center p-12">
-        <h1 className="text-3xl font-bold mb-6">Simplify Your Car Rental Business</h1>
+        <h1 className="text-3xl font-bold mb-6">Simplifica la forma en la que rentas tus vehiculos!</h1>
         <p className="text-lg text-center">
-          All-in-one platform to manage your car rental business efficiently.
+          La plataforma todo en uno para manejar tus vehiculos de manera eficaz.
         </p>
       </div>
     </div>
