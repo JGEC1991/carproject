@@ -53,13 +53,13 @@ import { useState, useEffect } from 'react';
       const vehiclesPerPage = 5;
 
       const columns = [
-        { key: 'make', title: t('make', { ns: 'vehicles' }), sortable: true },
-        { key: 'model', title: t('model', { ns: 'vehicles' }), sortable: true },
-        { key: 'year', title: t('year', { ns: 'vehicles' }), sortable: true },
+        { key: 'make', title: t('marca', { ns: 'vehicles' }), sortable: true },
+        { key: 'model', title: t('modelo', { ns: 'vehicles' }), sortable: true },
+        { key: 'year', title: t('año', { ns: 'vehicles' }), sortable: true },
         { key: 'color', title: t('color', { ns: 'vehicles' }), sortable: true },
-        { key: 'license_plate', title: t('licensePlate', { ns: 'vehicles' }), sortable: true },
+        { key: 'license_plate', title: t('matricula', { ns: 'vehicles' }), sortable: true },
         { key: 'vin', title: t('vin', { ns: 'vehicles' }), sortable: true },
-        { key: 'status', title: t('status', { ns: 'vehicles' }), sortable: true },
+        { key: 'status', title: t('estado', { ns: 'vehicles' }), sortable: true },
       ];
 
       useEffect(() => {
@@ -103,7 +103,7 @@ import { useState, useEffect } from 'react';
             color: selectedVehicle.color || '',
             license_plate: selectedVehicle.license_plate || '',
             vin: selectedVehicle.vin || '',
-            status: selectedVehicle.status || 'available',
+            status: selectedVehicle.status || 'disponible',
             front_image_url: selectedVehicle.front_image_url || '',
             rear_image_url: selectedVehicle.rear_image_url || '',
             right_image_url: selectedVehicle.right_image_url || '',
@@ -124,7 +124,7 @@ import { useState, useEffect } from 'react';
           color: '',
           license_plate: '',
           vin: '',
-          status: 'available',
+          status: 'disponible',
           front_image_url: '',
           rear_image_url: '',
           right_image_url: '',
@@ -257,7 +257,7 @@ import { useState, useEffect } from 'react';
             color: '',
             license_plate: '',
             vin: '',
-            status: 'available',
+            status: 'disponible',
             front_image_url: '',
             rear_image_url: '',
             right_image_url: '',
@@ -344,7 +344,7 @@ import { useState, useEffect } from 'react';
       };
 
       if (loading) {
-        return <div className="flex items-center justify-center h-full">{t('loading', { ns: 'translation' })}...</div>;
+        return <div className="flex items-center justify-center h-full">{t('cargando', { ns: 'translation' })}...</div>;
       }
 
       if (error) {

@@ -18,7 +18,7 @@ const Vehicles = () => {
     color: '',
     license_plate: '',
     vin: '',
-    status: 'available',
+    status: 'disponible',
     front_image_url: '',
     rear_image_url: '',
     right_image_url: '',
@@ -30,13 +30,13 @@ const Vehicles = () => {
   const [activeTab, setActiveTab] = useState('information');
 
   const columns = [
-    { key: 'make', title: 'Make' },
-    { key: 'model', title: 'Model' },
-    { key: 'year', title: 'Year' },
+    { key: 'make', title: 'Marca' },
+    { key: 'model', title: 'Modelo' },
+    { key: 'year', title: 'Año' },
     { key: 'color', title: 'Color' },
-    { key: 'license_plate', title: 'License Plate' },
+    { key: 'license_plate', title: 'Matricula' },
     { key: 'vin', title: 'VIN' },
-    { key: 'status', title: 'Status' },
+    { key: 'status', title: 'Estado' },
   ]
 
   useEffect(() => {
@@ -74,7 +74,7 @@ const Vehicles = () => {
         color: selectedVehicle.color || '',
         license_plate: selectedVehicle.license_plate || '',
         vin: selectedVehicle.vin || '',
-        status: selectedVehicle.status || 'available',
+        status: selectedVehicle.status || 'disponible',
         front_image_url: selectedVehicle.front_image_url || '',
         rear_image_url: selectedVehicle.rear_image_url || '',
         right_image_url: selectedVehicle.right_image_url || '',
@@ -95,7 +95,7 @@ const Vehicles = () => {
         color: '',
         license_plate: '',
         vin: '',
-        status: 'available',
+        status: 'disponible',
         front_image_url: '',
         rear_image_url: '',
         right_image_url: '',
@@ -242,7 +242,7 @@ const Vehicles = () => {
         color: '',
         license_plate: '',
         vin: '',
-        status: 'available',
+        status: 'disponible',
         front_image_url: '',
         rear_image_url: '',
         right_image_url: '',
@@ -271,7 +271,7 @@ const Vehicles = () => {
   }
 
   const handleDeleteVehicle = async (vehicle) => {
-    if (window.confirm(`Are you sure you want to delete ${vehicle.make} ${vehicle.model}?`)) {
+    if (window.confirm(`Seguro que desea eliminar el ${vehicle.make} ${vehicle.model}?`)) {
       setLoading(true)
       setError(null)
 
@@ -296,7 +296,7 @@ const Vehicles = () => {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-full">Loading...</div>
+    return <div className="flex items-center justify-center h-full">Cargando...</div>
   }
 
   if (error) {
@@ -310,7 +310,7 @@ const Vehicles = () => {
           className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded focus:outline-none focus:shadow-outline text-sm"
           onClick={handleAddVehicleClick}
         >
-          Add Vehicle
+          Agregar vehiculo
         </button>
       </div>
 
@@ -321,28 +321,28 @@ const Vehicles = () => {
             onClick={() => setActiveTab('information')}
             className={`px-4 py-2 font-medium text-sm ${activeTab === 'information' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            Information
+            Informacion
           </button>
           <button
             onClick={() => setActiveTab('photos')}
             className={`px-4 py-2 font-medium text-sm ${activeTab === 'photos' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            Photos
+            Fotos
           </button>
         </div>
         <form onSubmit={handleAddVehicleSubmit} className="max-w-lg">
           {activeTab === 'information' && (
             <div>
               <div className="mb-4">
-                <label htmlFor="make" className="block text-gray-700 text-sm font-bold mb-2">Make</label>
+                <label htmlFor="make" className="block text-gray-700 text-sm font-bold mb-2">Marca</label>
                 <input type="text" id="make" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newVehicle.make} onChange={handleInputChange} />
               </div>
               <div className="mb-4">
-                <label htmlFor="model" className="block text-gray-700 text-sm font-bold mb-2">Model</label>
+                <label htmlFor="model" className="block text-gray-700 text-sm font-bold mb-2">Modelo</label>
                 <input type="text" id="model" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newVehicle.model} onChange={handleInputChange} />
               </div>
               <div className="mb-4">
-                <label htmlFor="year" className="block text-gray-700 text-sm font-bold mb-2">Year</label>
+                <label htmlFor="year" className="block text-gray-700 text-sm font-bold mb-2">Año</label>
                 <input type="number" id="year" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newVehicle.year} onChange={handleInputChange} />
               </div>
               <div className="mb-4">
@@ -350,23 +350,23 @@ const Vehicles = () => {
                 <input type="text" id="color" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newVehicle.color} onChange={handleInputChange} />
               </div>
               <div className="mb-4">
-                <label htmlFor="license_plate" className="block text-gray-700 text-sm font-bold mb-2">License Plate</label>
+                <label htmlFor="license_plate" className="block text-gray-700 text-sm font-bold mb-2">Matricula</label>
                 <input type="text" id="license_plate" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newVehicle.license_plate} onChange={handleInputChange} />
               </div>
               <div className="mb-4">
-                <label htmlFor="vin" className="block text-gray-700 text-sm font-bold mb-2">VIN</label>
+                <label htmlFor="vin" className="block text-gray-700 text-sm font-bold mb-2">Vin</label>
                 <input type="text" id="vin" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newVehicle.vin} onChange={handleInputChange} />
               </div>
               <div className="mb-4">
-                <label htmlFor="status" className="block text-gray-700 text-sm font-bold mb-2">Status</label>
+                <label htmlFor="status" className="block text-gray-700 text-sm font-bold mb-2">Estado</label>
                 <select id="status" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newVehicle.status} onChange={handleInputChange}>
-                  <option value="available">Available</option>
-                  <option value="rented">Rented</option>
-                  <option value="maintenance">Maintenance</option>
+                  <option value="disponible">Disponible</option>
+                  <option value="ocupado">Ocupado</option>
+                  <option value="mantenimiento">Mantenimiento</option>
                 </select>
               </div>
               <div className="mb-4">
-                <label htmlFor="observations" className="block text-gray-700 text-sm font-bold mb-2">Observations</label>
+                <label htmlFor="observations" className="block text-gray-700 text-sm font-bold mb-2">Observaciones</label>
                 <textarea id="observations" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newVehicle.observations} onChange={handleInputChange} />
               </div>
             </div>
@@ -374,27 +374,27 @@ const Vehicles = () => {
           {activeTab === 'photos' && (
             <div>
               <div className="mb-4">
-                <label htmlFor="front_image_url" className="block text-gray-700 text-sm font-bold mb-2">Front Image</label>
+                <label htmlFor="front_image_url" className="block text-gray-700 text-sm font-bold mb-2">Imagen Frontal</label>
                 <input type="file" id="front_image_url" accept="image/*" onChange={(e) => handleImageUpload(e, 'front_image_url')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                 {newVehicle.front_image_url && <img src={newVehicle.front_image_url} alt="Front" className="mt-2 h-20 w-auto" />}
               </div>
               <div className="mb-4">
-                <label htmlFor="rear_image_url" className="block text-gray-700 text-sm font-bold mb-2">Rear Image</label>
+                <label htmlFor="rear_image_url" className="block text-gray-700 text-sm font-bold mb-2">Imagen Trasera</label>
                 <input type="file" id="rear_image_url" accept="image/*" onChange={(e) => handleImageUpload(e, 'rear_image_url')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                 {newVehicle.rear_image_url && <img src={newVehicle.rear_image_url} alt="Rear" className="mt-2 h-20 w-auto" />}
               </div>
               <div className="mb-4">
-                <label htmlFor="right_image_url" className="block text-gray-700 text-sm font-bold mb-2">Right Image</label>
+                <label htmlFor="right_image_url" className="block text-gray-700 text-sm font-bold mb-2">Imagen Lateral Derecha</label>
                 <input type="file" id="right_image_url" accept="image/*" onChange={(e) => handleImageUpload(e, 'right_image_url')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                 {newVehicle.right_image_url && <img src={newVehicle.right_image_url} alt="Right" className="mt-2 h-20 w-auto" />}
               </div>
               <div className="mb-4">
-                <label htmlFor="left_image_url" className="block text-gray-700 text-sm font-bold mb-2">Left Image</label>
+                <label htmlFor="left_image_url" className="block text-gray-700 text-sm font-bold mb-2">Imagen Lateral Izquierda</label>
                 <input type="file" id="left_image_url" accept="image/*" onChange={(e) => handleImageUpload(e, 'left_image_url')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                 {newVehicle.left_image_url && <img src={newVehicle.left_image_url} alt="Left" className="mt-2 h-20 w-auto" />}
               </div>
               <div className="mb-4">
-                <label htmlFor="dashboard_image_url" className="block text-gray-700 text-sm font-bold mb-2">Dashboard Image</label>
+                <label htmlFor="dashboard_image_url" className="block text-gray-700 text-sm font-bold mb-2">Imagen de Tablero</label>
                 <input type="file" id="dashboard_image_url" accept="image/*" onChange={(e) => handleImageUpload(e, 'dashboard_image_url')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                 {newVehicle.dashboard_image_url && <img src={newVehicle.dashboard_image_url} alt="Dashboard" className="mt-2 h-20 w-auto" />}
               </div>
@@ -409,24 +409,24 @@ const Vehicles = () => {
       <Popout isOpen={showViewForm} onClose={handleCloseViewForm}>
         <h2 className="text-xl font-semibold mb-4">Vehicle Details</h2>
         <div>
-          <p><strong>Make:</strong> {selectedVehicle?.make}</p>
-          <p><strong>Model:</strong> {selectedVehicle?.model}</p>
-          <p><strong>Year:</strong> {selectedVehicle?.year}</p>
+          <p><strong>Marca:</strong> {selectedVehicle?.make}</p>
+          <p><strong>Modelo:</strong> {selectedVehicle?.model}</p>
+          <p><strong>Año:</strong> {selectedVehicle?.year}</p>
           <p><strong>Color:</strong> {selectedVehicle?.color}</p>
-          <p><strong>License Plate:</strong> {selectedVehicle?.license_plate}</p>
-          <p><strong>VIN:</strong> {selectedVehicle?.vin}</p>
-          <p><strong>Status:</strong> {selectedVehicle?.status}</p>
-          <p><strong>Front Image:</strong></p>
+          <p><strong>Matricula:</strong> {selectedVehicle?.license_plate}</p>
+          <p><strong>Vin:</strong> {selectedVehicle?.vin}</p>
+          <p><strong>Estado:</strong> {selectedVehicle?.status}</p>
+          <p><strong>Imagen Frontal:</strong></p>
           {selectedVehicle?.front_image_url && <img src={selectedVehicle.front_image_url} alt="Front" className="h-20 w-auto" />}
-          <p><strong>Rear Image:</strong></p>
+          <p><strong>Imagen Trasera:</strong></p>
           {selectedVehicle?.rear_image_url && <img src={selectedVehicle.rear_image_url} alt="Rear" className="h-20 w-auto" />}
-          <p><strong>Right Image:</strong></p>
+          <p><strong>Imagen Derecha:</strong></p>
           {selectedVehicle?.right_image_url && <img src={selectedVehicle.right_image_url} alt="Right" className="h-20 w-auto" />}
-          <p><strong>Left Image:</strong></p>
+          <p><strong>Imagen Izquierda:</strong></p>
           {selectedVehicle?.left_image_url && <img src={selectedVehicle.left_image_url} alt="Left" className="h-20 w-auto" />}
-          <p><strong>Dashboard Image:</strong></p>
+          <p><strong>Imagen de Tablero:</strong></p>
           {selectedVehicle?.dashboard_image_url && <img src={selectedVehicle.dashboard_image_url} alt="Dashboard" className="h-20 w-auto" />}
-          <p><strong>Observations:</strong> {selectedVehicle?.observations}</p>
+          <p><strong>Observaciones:</strong> {selectedVehicle?.observations}</p>
         </div>
       </Popout>
 
