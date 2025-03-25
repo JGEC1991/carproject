@@ -36,18 +36,18 @@ function VehicleRecord() {
   }, [id]);
 
   if (loading) {
-    return <div className="page">Loading vehicle details...</div>;
+    return <div className="page">Cargando detalles...</div>;
   }
 
   if (!vehicle) {
-    return <div className="page">Vehicle not found.</div>;
+    return <div className="page">No se encontraron vehiculos.</div>;
   }
 
   return (
     <div className="page">
-      <h1 className="text-3xl font-semibold mb-4">Vehicle Details</h1>
+      <h1 className="text-3xl font-semibold mb-4">Detalles de vehiculo</h1>
       <VehicleRecordCard vehicle={vehicle} isEditMode={true} />
-      <Link to="/vehicles" className="inline-block mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Back to Vehicles</Link>
+      <Link to="/vehicles" className="inline-block mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Regresar a vehiculos</Link>
     </div>
   );
 }

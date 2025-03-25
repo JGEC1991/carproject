@@ -335,7 +335,7 @@ const Activities = () => {
           className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded focus:outline-none focus:shadow-outline text-sm"
           onClick={handleAddActivityClick}
         >
-          {selectedActivity ? 'Edit Activity' : 'Add Activity'}
+          {selectedActivity ? 'Edit Activity' : 'Agregar actividad'}
         </button>
       </div>
 
@@ -384,9 +384,9 @@ const Activities = () => {
            <div className="mb-4">
             <label htmlFor="status" className="block text-gray-700 text-sm font-bold mb-2">Estado</label>
             <select id="status" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newActivity.status} onChange={handleInputChange}>
-              <option value="Pending">Pendiente</option>
-              <option value="Completed">Completado</option>
-              <option value="Past due">Vencido</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="Completado">Completado</option>
+              <option value="Vencido">Vencido</option>
             </select>
           </div>
           <div className="mb-4">
@@ -402,7 +402,7 @@ const Activities = () => {
           </div>
           <div className="flex items-center justify-end">
             <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-              {selectedActivity ? 'Update' : 'Add'}
+              {selectedActivity ? 'Actualizar' : 'Agregar'}
             </button>
           </div>
         </form>

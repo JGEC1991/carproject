@@ -281,7 +281,7 @@ const Drivers = () => {
           className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded focus:outline-none focus:shadow-outline text-sm"
           onClick={handleAddDriverClick}
         >
-          Add Driver
+          Agregar conductor
         </button>
       </div>
 
@@ -292,36 +292,36 @@ const Drivers = () => {
             onClick={() => setActiveTab('information')}
             className={`px-4 py-2 font-medium text-sm ${activeTab === 'information' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            Information
+            Informacion
           </button>
           <button
             onClick={() => setActiveTab('photos')}
             className={`px-4 py-2 font-medium text-sm ${activeTab === 'photos' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            Photos
+            Fotos
           </button>
         </div>
         <form onSubmit={handleAddDriverSubmit} className="max-w-lg">
           {activeTab === 'information' && (
             <div>
               <div className="mb-4">
-                <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">Name</label>
+                <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">Nombre</label>
                 <input type="text" id="name" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newDriver.name} onChange={handleInputChange} />
               </div>
               <div className="mb-4">
-                <label htmlFor="license_number" className="block text-gray-700 text-sm font-bold mb-2">License Number</label>
+                <label htmlFor="license_number" className="block text-gray-700 text-sm font-bold mb-2">Licencia</label>
                 <input type="text" id="license_number" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newDriver.license_number} onChange={handleInputChange} />
               </div>
               <div className="mb-4">
-                <label htmlFor="phone" className="block text-gray-700 text-sm font-bold mb-2">Phone</label>
+                <label htmlFor="phone" className="block text-gray-700 text-sm font-bold mb-2">Telefono</label>
                 <input type="tel" id="phone" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newDriver.phone} onChange={handleInputChange} />
               </div>
               <div className="mb-4">
-                <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">Correo electronico</label>
                 <input type="email" id="email" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newDriver.email} onChange={handleInputChange} />
               </div>
                <div className="mb-4">
-                <label htmlFor="home_address" className="block text-gray-700 text-sm font-bold mb-2">Home Address</label>
+                <label htmlFor="home_address" className="block text-gray-700 text-sm font-bold mb-2">Direccion</label>
                 <input type="text" id="home_address" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value={newDriver.home_address} onChange={handleInputChange} />
               </div>
             </div>
@@ -329,34 +329,34 @@ const Drivers = () => {
           {activeTab === 'photos' && (
             <div>
               <div className="mb-4">
-                <label htmlFor="photo_url" className="block text-gray-700 text-sm font-bold mb-2">Photo</label>
+                <label htmlFor="photo_url" className="block text-gray-700 text-sm font-bold mb-2">Foto de perfil</label>
                 <input type="file" id="photo_url" accept="image/*" onChange={(e) => handleImageUpload(e, 'photo_url')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                 {newDriver.photo_url && <img src={newDriver.photo_url} alt="Profile" className="mt-2 h-20 w-auto" />}
               </div>
               <div className="mb-4">
-                <label htmlFor="license_image_url" className="block text-gray-700 text-sm font-bold mb-2">License Image</label>
+                <label htmlFor="license_image_url" className="block text-gray-700 text-sm font-bold mb-2">Licencia</label>
                 <input type="file" id="license_image_url" accept="image/*" onChange={(e) => handleImageUpload(e, 'license_image_url')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                 {newDriver.license_image_url && <img src={newDriver.license_image_url} alt="License" className="mt-2 h-20 w-auto" />}
               </div>
               <div className="mb-4">
-                <label htmlFor="criminal_records_url" className="block text-gray-700 text-sm font-bold mb-2">Criminal Records</label>
+                <label htmlFor="criminal_records_url" className="block text-gray-700 text-sm font-bold mb-2">Antecedentes criminales</label>
                 <input type="file" id="criminal_records_url" accept="image/*" onChange={(e) => handleImageUpload(e, 'criminal_records_url')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                 {newDriver.criminal_records_url && <img src={newDriver.criminal_records_url} alt="Criminal Records" className="mt-2 h-20 w-auto" />}
               </div>
               <div className="mb-4">
-                <label htmlFor="police_records_url" className="block text-gray-700 text-sm font-bold mb-2">Police Records</label>
+                <label htmlFor="police_records_url" className="block text-gray-700 text-sm font-bold mb-2">Antecedentes policiales</label>
                 <input type="file" id="police_records_url" accept="image/*" onChange={(e) => handleImageUpload(e, 'police_records_url')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                 {newDriver.police_records_url && <img src={newDriver.police_records_url} alt="Police Records" className="mt-2 h-20 w-auto" />}
               </div>
               <div className="mb-4">
-                <label htmlFor="national_id_url" className="block text-gray-700 text-sm font-bold mb-2">National ID</label>
+                <label htmlFor="national_id_url" className="block text-gray-700 text-sm font-bold mb-2">Identificacion nacional</label>
                 <input type="file" id="national_id_url" accept="image/*" onChange={(e) => handleImageUpload(e, 'national_id_url')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                 {newDriver.national_id_url && <img src={newDriver.national_id_url} alt="National ID" className="mt-2 h-20 w-auto" />}
               </div>
             </div>
           )}
           <div className="flex items-center justify-end">
-            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">{selectedDriver ? 'Actualizar' : 'Add'}</button>
+            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">{selectedDriver ? 'Actualizar' : 'Agregar'}</button>
           </div>
         </form>
       </Popout>
