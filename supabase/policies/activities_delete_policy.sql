@@ -1,4 +1,5 @@
-ALTER POLICY "Activities_read_policy" ON "public"."activities"
+CREATE POLICY "Activities_delete_policy" ON "public"."activities"
+    FOR DELETE
     TO authenticated
     USING (
       EXISTS (
