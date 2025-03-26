@@ -7,6 +7,7 @@ function DriverRecord() {
   const { id } = useParams();
   const [driver, setDriver] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('details');
 
   useEffect(() => {
     const fetchDriver = async () => {
@@ -46,7 +47,7 @@ function DriverRecord() {
   return (
     <div className="page">
       <h1 className="text-3xl font-semibold mb-4">Detalles de conductor</h1>
-      <DriverRecordCard driver={driver} isEditMode={true} />
+      <DriverRecordCard driver={driver} activeTab={activeTab} setActiveTab={setActiveTab} />
       <Link to="/drivers" className="inline-block mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Regresar a conductores</Link>
     </div>
   );
