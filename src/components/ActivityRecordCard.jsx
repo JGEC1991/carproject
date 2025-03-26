@@ -1,5 +1,7 @@
 import React, { useState, useRef } from 'react';
+    import { supabase } from '../../supabaseClient';
     import { useTranslation } from 'react-i18next';
+    import { useNavigate } from 'react-router-dom';
 
     function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
       const [date, setDate] = useState(activity?.date || '');
@@ -10,10 +12,34 @@ import React, { useState, useRef } from 'react';
       const modalRef = useRef(null);
       const { t } = useTranslation('activityRecordCard');
       const [expandedImage, setExpandedImage] = useState(null);
+      const navigate = useNavigate();
 
       const handleSave = async () => {
-        // Implement save functionality here
-        alert('Save functionality not implemented yet.');
+        try {
+          const { data, error } = await supabase
+            .from('activities')
+            .update({
+              date: date,
+              description: description,
+              activity_type: activityType,
+              status: status,
+              amount: amount,
+            })
+            .eq('id', activity.id)
+            .select();
+
+          if (error) {
+            console.error('Error updating activity:', error);
+            alert(error.message);
+          } else {
+            console.log('Activity updated:', data);
+            alert('Activity updated successfully!');
+            navigate(0); // Refresh the page
+          }
+        } catch (error) {
+          console.error('Error updating activity:', error.message);
+          alert(error.message);
+        }
       };
 
       const handleImageClick = (imageUrl) => {

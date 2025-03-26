@@ -112,7 +112,7 @@ import React, { useState, useRef, useEffect } from 'react';
       return (
         <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
           <div className="border-b pb-4 mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">{t('driverDetails')}</h2>
+            <h2 className="text-2xl font-bold text-gray-800">Detalles de conductor</h2>
             <p className="text-gray-600">Driver ID: {driver?.id}</p>
           </div>
 
@@ -122,13 +122,13 @@ import React, { useState, useRef, useEffect } from 'react';
               className={`px-4 py-2 rounded-t-lg ${activeTab === 'details' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
               onClick={() => setActiveTab('details')}
             >
-              {t('details')}
+              Detalles
             </button>
             <button
               className={`px-4 py-2 rounded-t-lg ${activeTab === 'photos' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
               onClick={() => setActiveTab('photos')}
             >
-              {t('photos')}
+              Fotos
             </button>
           </div>
 
@@ -136,43 +136,43 @@ import React, { useState, useRef, useEffect } from 'react';
           {activeTab === 'details' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('fullName')}</label>
+                <label className="block text-sm font-medium text-gray-700">Nombre completo</label>
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('enterFullName')}
+                  placeholder="Ingresar nombre completo"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('homeAddress')}</label>
+                <label className="block text-sm font-medium text-gray-700">Direccion</label>
                 <input
                   type="text"
                   value={homeAddress}
                   onChange={(e) => setHomeAddress(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('enterHomeAddress')}
+                  placeholder="Ingresar direccion"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('phone')}</label>
+                <label className="block text-sm font-medium text-gray-700">Telefono</label>
                 <input
                   type="text"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('enterPhone')}
+                  placeholder="Ingresar telefono"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('email')}</label>
+                <label className="block text-sm font-medium text-gray-700">Correo electronico</label>
                 <input
                   type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('enterEmail')}
+                  placeholder="Ingresar correo electronico"
                 />
               </div>
             </div>
@@ -181,11 +181,11 @@ import React, { useState, useRef, useEffect } from 'react';
           {/* Photos Tab */}
           {activeTab === 'photos' && (
             <div className="col-span-1 md:col-span-2 space-y-6">
-              <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">{t('driverPhotos')}</h3>
+              <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Fotos del conductor</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Photo upload sections */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">{t('licenseImage')}</label>
+                  <label className="block text-sm font-medium text-gray-700">Foto de licencia</label>
                   <div className="relative">
                     <input
                       type="file"
@@ -196,7 +196,7 @@ import React, { useState, useRef, useEffect } from 'react';
                     {driver?.license_image_url && (
                       <img
                         src={driver.license_image_url}
-                        alt={t('licenseImage')}
+                        alt="Foto de licencia"
                         className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer"
                         onClick={() => handleExpandImage(driver.license_image_url)}
                       />
@@ -204,7 +204,7 @@ import React, { useState, useRef, useEffect } from 'react';
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">{t('policeRecords')}</label>
+                  <label className="block text-sm font-medium text-gray-700">Antecedentes policiales</label>
                   <div className="relative">
                     <input
                       type="file"
@@ -215,7 +215,7 @@ import React, { useState, useRef, useEffect } from 'react';
                     {driver?.police_records_url && (
                       <img
                         src={driver.police_records_url}
-                        alt={t('policeRecords')}
+                        alt="Antecedentes policiales"
                         className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer"
                         onClick={() => handleExpandImage(driver.police_records_url)}
                       />
@@ -223,7 +223,7 @@ import React, { useState, useRef, useEffect } from 'react';
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">{t('criminalRecords')}</label>
+                  <label className="block text-sm font-medium text-gray-700">Antecedentes criminales</label>
                   <div className="relative">
                     <input
                       type="file"
@@ -234,7 +234,7 @@ import React, { useState, useRef, useEffect } from 'react';
                     {driver?.criminal_records_url && (
                       <img
                         src={driver.criminal_records_url}
-                        alt={t('criminalRecords')}
+                        alt="Antecedentes criminales"
                         className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer"
                         onClick={() => handleExpandImage(driver.criminal_records_url)}
                       />
@@ -242,7 +242,7 @@ import React, { useState, useRef, useEffect } from 'react';
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">{t('nationalId')}</label>
+                  <label className="block text-sm font-medium text-gray-700">Identificacion nacional</label>
                   <div className="relative">
                     <input
                       type="file"
@@ -253,7 +253,7 @@ import React, { useState, useRef, useEffect } from 'react';
                     {driver?.national_id_url && (
                       <img
                         src={driver.national_id_url}
-                        alt={t('nationalId')}
+                        alt="Identificacion nacional"
                         className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer"
                         onClick={() => handleExpandImage(driver.national_id_url)}
                       />
@@ -261,7 +261,7 @@ import React, { useState, useRef, useEffect } from 'react';
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">{t('profilePhoto')}</label>
+                  <label className="block text-sm font-medium text-gray-700">Foto de perfil</label>
                   <div className="relative">
                     <input
                       type="file"
@@ -272,7 +272,7 @@ import React, { useState, useRef, useEffect } from 'react';
                     {driver?.photo_url && (
                       <img
                         src={driver.photo_url}
-                        alt={t('profilePhoto')}
+                        alt="Foto de perfil"
                         className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer"
                         onClick={() => handleExpandImage(driver.photo_url)}
                       />
@@ -289,7 +289,7 @@ import React, { useState, useRef, useEffect } from 'react';
               onClick={handleSave}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-all"
             >
-              {t('saveChanges')}
+              Guardar Cambios
             </button>
           </div>
 
@@ -310,4 +310,4 @@ import React, { useState, useRef, useEffect } from 'react';
       );
     }
 
-    export default DriverRecordCard
+    export default DriverRecordCard;
