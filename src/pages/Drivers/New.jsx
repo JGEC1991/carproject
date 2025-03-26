@@ -19,9 +19,12 @@ import React, { useState, useEffect } from 'react';
       const [nationalId, setNationalId] = useState(null);
       const navigate = useNavigate();
       const [organizationId, setOrganizationId] = useState(null);
+      const [userId, setUserId] = useState(null); // Add userId state
+
+      const statusOptions = ['Pendiente', 'Completado', 'Vencido', 'Cancelado'];
 
       useEffect(() => {
-        const fetchOrganizationId = async () => {
+        const fetchUserData = async () => {
           try {
             const { data: authUser, error: authError } = await supabase.auth.getUser();
             if (authError) {
@@ -33,7 +36,7 @@ import React, { useState, useEffect } from 'react';
 
             const { data: userData, error: orgError } = await supabase
               .from('users')
-              .select('organization_id')
+              .select('organization_id, id')
               .eq('id', userId)
               .single();
 
@@ -43,13 +46,14 @@ import React, { useState, useEffect } from 'react';
             }
 
             setOrganizationId(userData?.organization_id || null);
+            setUserId(userData?.id || null);
           } catch (error) {
-            console.error('Error fetching organization ID:', error.message);
+            console.error('Error fetching user data:', error.message);
             setError(error.message);
           }
         };
 
-        fetchOrganizationId();
+        fetchUserData();
       }, []);
 
       const handleInputChange = (e) => {
@@ -104,19 +108,36 @@ import React, { useState, useEffect } from 'react';
             return;
           }
 
-          // Upload files and get URLs
+          // 1. Find the user with the entered email
+          const { data: users, error: usersError } = await supabase
+            .from('users')
+            .select('id')
+            .eq('email', newDriver.email)
+            .single();
+
+          if (usersError) {
+            setError(usersError.message);
+            return;
+          }
+
+          if (!users) {
+            setError('No user found with this email. Please ensure the user exists.');
+            return;
+          }
+
           const photoUrl = await handleFileUpload(photo, setPhoto, 'photo_url');
           const licenseImageUrl = await handleFileUpload(licenseImage, setLicenseImage, 'license_image_url');
           const criminalRecordsUrl = await handleFileUpload(criminalRecords, setCriminalRecords, 'criminal_records_url');
           const policeRecordsUrl = await handleFileUpload(policeRecords, setPoliceRecords, 'police_records_url');
           const nationalIdUrl = await handleFileUpload(nationalId, setNationalId, 'national_id_url');
 
-          const { data, error } = await supabase
+          const { data, error: insertError } = await supabase
             .from('drivers')
             .insert([
               {
                 ...newDriver,
                 organization_id: organizationId,
+                user_id: users.id, // Assign the found user's ID
                 photo_url: photoUrl,
                 license_image_url: licenseImageUrl,
                 criminal_records_url: criminalRecordsUrl,
@@ -126,8 +147,8 @@ import React, { useState, useEffect } from 'react';
             ])
             .select();
 
-          if (error) {
-            setError(error.message);
+          if (insertError) {
+            setError(insertError.message);
           } else {
             console.log('Driver added:', data);
             alert('Driver added successfully!');
