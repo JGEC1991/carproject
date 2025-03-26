@@ -11,14 +11,14 @@ import React, { useState, useEffect } from 'react';
         driver_id: '',
         activity_type: '',
         description: '',
-        attachment_url: '',
         status: 'Pendiente',
         amount: 0, // Add amount field with a default value
       });
       const [vehicles, setVehicles] = useState([]);
       const [drivers, setDrivers] = useState([]);
-      const navigate = useNavigate();
       const [organizationId, setOrganizationId] = useState(null);
+      const [attachment, setAttachment] = useState(null);
+      const navigate = useNavigate();
 
       const activityTypes = [
          'Llanta averiada',
@@ -102,6 +102,42 @@ import React, { useState, useEffect } from 'react';
         setNewActivity({ ...newActivity, [e.target.id]: e.target.value });
       };
 
+      const handleFileUpload = async (file) => {
+        if (!file) return null;
+
+        try {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}-attachment.${fileExt}`;
+          const filePath = `activities/${fileName}`;
+
+          const { data, error } = await supabase.storage
+            .from('jerentcars-storage')
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: true,
+              public: true,
+              contentType: file.type,
+            });
+
+          if (error) {
+            console.error('Error uploading attachment:', error);
+            setError(error.message);
+            return null;
+          }
+
+          const imageUrl = supabase.storage
+            .from('jerentcars-storage')
+            .getPublicUrl(filePath)
+            .data.publicUrl;
+
+          return imageUrl;
+        } catch (error) {
+          console.error('Error uploading attachment:', error.message);
+          setError(error.message);
+          return null;
+        }
+      };
+
       const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -113,6 +149,8 @@ import React, { useState, useEffect } from 'react';
             return;
           }
 
+          const attachmentUrl = await handleFileUpload(attachment);
+
           const { data, error } = await supabase
             .from('activities')
             .insert([
@@ -122,10 +160,10 @@ import React, { useState, useEffect } from 'react';
                 driver_id: newActivity.driver_id,
                 activity_type: newActivity.activity_type,
                 description: newActivity.description,
-                attachment_url: newActivity.attachment_url,
                 status: newActivity.status,
                 amount: newActivity.amount,
                 organization_id: organizationId,
+                attachment_url: attachmentUrl,
               },
             ])
             .select();
@@ -196,6 +234,10 @@ import React, { useState, useEffect } from 'react';
             <div className="mb-4">
               <label htmlFor="amount" className="block text-gray-700 text-sm font-bold mb-2">Monto</label>
               <input type="number" id="amount" name="amount" value={newActivity.amount} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="attachment" className="block text-gray-700 text-sm font-bold mb-2">Adjuntar archivo</label>
+              <input type="file" id="attachment" name="attachment" accept="image/*, application/pdf" onChange={(e) => setAttachment(e.target.files[0])} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
             </div>
             <div className="flex items-center justify-end">
               <button
