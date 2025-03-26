@@ -33,7 +33,7 @@ import React, { useState, useEffect, useRef } from 'react';
         const photoDate = new Date(photo.lastModified).toISOString().split('T')[0];
 
         if (photoDate !== today) {
-          alert(`This photo appears to be from ${photoDate}, not today (${today}). Only photos from today can be uploaded.`);
+          alert(`Esta foto es de el ${photoDate}, y no de hoy (${today}). Solo fotos de la fecha corriente seran admitidas.`);
           setPhotoState(null);
           return;
         }
@@ -106,10 +106,10 @@ import React, { useState, useEffect, useRef } from 'react';
         <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
           <div className="border-b pb-4 mb-6">
             <h2 className="text-2xl font-bold text-gray-800">
-              {isEditMode ? t('editVehicle') : t('vehicleDetails')}
+              {isEditMode ? t('Editar vehiculo') : t('')}
             </h2>
             <p className="text-gray-600">
-              {licensePlate ? `${t('licensePlate')}: ${licensePlate}` : t('addNewVehicle')}
+              {licensePlate ? `${t('Matricula')}: ${licensePlate}` : t('Agregar un vehiculo')}
             </p>
           </div>
 
@@ -119,13 +119,13 @@ import React, { useState, useEffect, useRef } from 'react';
               className={`px-4 py-2 rounded-t-lg ${activeTab === 'details' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
               onClick={() => setActiveTab('details')}
             >
-              {t('details')}
+              {t('Informacion')}
             </button>
             <button
               className={`px-4 py-2 rounded-t-lg ${activeTab === 'photos' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
               onClick={() => setActiveTab('photos')}
             >
-              {t('photos')}
+              {t('Fotos')}
             </button>
           </div>
 
@@ -133,93 +133,93 @@ import React, { useState, useEffect, useRef } from 'react';
           {activeTab === 'details' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('make')}</label>
+                <label className="block text-sm font-medium text-gray-700">{t('Marca')}</label>
                 <input
                   type="text"
                   value={make}
                   onChange={(e) => setMake(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('enterMake')}
+                  placeholder={t('Introducir marca')}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('model')}</label>
+                <label className="block text-sm font-medium text-gray-700">{t('Modelo')}</label>
                 <input
                   type="text"
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('enterModel')}
+                  placeholder={t('Introducir modelo')}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('color')}</label>
+                <label className="block text-sm font-medium text-gray-700">{t('Color')}</label>
                 <input
                   type="text"
                   value={color}
                   onChange={(e) => setColor(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('enterColor')}
+                  placeholder={t('Agregar color')}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('year')}</label>
+                <label className="block text-sm font-medium text-gray-700">{t('Año')}</label>
                 <input
                   type="number"
                   value={year}
                   onChange={(e) => setYear(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('enterYear')}
+                  placeholder={t('Agregar año')}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('licensePlate')}</label>
+                <label className="block text-sm font-medium text-gray-700">{t('Matricula')}</label>
                 <input
                   type="text"
                   value={licensePlate}
                   onChange={(e) => setLicensePlate(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('enterLicensePlate')}
+                  placeholder={t('Agregar matricula')}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('vin')}</label>
+                <label className="block text-sm font-medium text-gray-700">{t('Vin')}</label>
                 <input
                   type="text"
                   value={vin}
                   onChange={(e) => setVin(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('enterVIN')}
+                  placeholder={t('Agregar vin')}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('mileage')}</label>
+                <label className="block text-sm font-medium text-gray-700">{t('Millaje')}</label>
                 <input
                   type="number"
                   value={mileage}
                   onChange={(e) => setMileage(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('enterMileage')}
+                  placeholder={t('Agregar millaje')}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('status')}</label>
+                <label className="block text-sm font-medium text-gray-700">{t('Estado')}</label>
                 <input
                   type="text"
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                  placeholder={t('selectStatus')}
+                  placeholder={t('Seleccionar estado')}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('observations')}</label>
+                <label className="block text-sm font-medium text-gray-700">{t('Observaciones')}</label>
                 <textarea
                   value={observations}
                   onChange={(e) => setObservations(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                   rows={4}
-                  placeholder={t('enterObservations')}
+                  placeholder={t('Agregar observaciones')}
                 />
               </div>
             </div>
@@ -228,11 +228,11 @@ import React, { useState, useEffect, useRef } from 'react';
           {/* Photos Tab */}
           {activeTab === 'photos' && (
             <div className="col-span-1 md:col-span-2 space-y-6">
-              <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">{t('vehiclePhotos')}</h3>
+              <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">{t('Fotos del vehiculo')}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Photo upload sections */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">{t('frontView')}</label>
+                  <label className="block text-sm font-medium text-gray-700">{t('Vista Frontal')}</label>
                   <div className="relative">
                     <input
                       type="file"
@@ -241,12 +241,12 @@ import React, { useState, useEffect, useRef } from 'react';
                       accept="image/*"
                     />
                     {vehicle?.front_image_url && (
-                      <img src={vehicle.front_image_url} alt={t('front')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.front_image_url)} style={{ width: '130%', height: '130%' }} />
+                      <img src={vehicle.front_image_url} alt={t('Frontal')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.front_image_url)} style={{ width: '130%', height: '130%' }} />
                     )}
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">{t('rearView')}</label>
+                  <label className="block text-sm font-medium text-gray-700">{t('Vista trasera')}</label>
                   <div className="relative">
                     <input
                       type="file"
@@ -255,12 +255,12 @@ import React, { useState, useEffect, useRef } from 'react';
                       accept="image/*"
                     />
                     {vehicle?.rear_image_url && (
-                      <img src={vehicle.rear_image_url} alt={t('rear')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.rear_image_url)} style={{ width: '130%', height: '130%' }} />
+                      <img src={vehicle.rear_image_url} alt={t('Trasera')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.rear_image_url)} style={{ width: '130%', height: '130%' }} />
                     )}
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">{t('rightSide')}</label>
+                  <label className="block text-sm font-medium text-gray-700">{t('Vista Lateral Derecha')}</label>
                   <div className="relative">
                     <input
                       type="file"
@@ -269,12 +269,12 @@ import React, { useState, useEffect, useRef } from 'react';
                       accept="image/*"
                     />
                     {vehicle?.right_image_url && (
-                      <img src={vehicle.right_image_url} alt={t('right')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.right_image_url)} style={{ width: '130%', height: '130%' }} />
+                      <img src={vehicle.right_image_url} alt={t('Derecha')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.right_image_url)} style={{ width: '130%', height: '130%' }} />
                     )}
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">{t('leftSide')}</label>
+                  <label className="block text-sm font-medium text-gray-700">{t('Vista Lateral Izquierda')}</label>
                   <div className="relative">
                     <input
                       type="file"
@@ -283,12 +283,12 @@ import React, { useState, useEffect, useRef } from 'react';
                       accept="image/*"
                     />
                     {vehicle?.left_image_url && (
-                      <img src={vehicle.left_image_url} alt={t('left')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.left_image_url)} style={{ width: '130%', height: '130%' }} />
+                      <img src={vehicle.left_image_url} alt={t('Izquierda')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.left_image_url)} style={{ width: '130%', height: '130%' }} />
                     )}
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">{t('dashboard')}</label>
+                  <label className="block text-sm font-medium text-gray-700">{t('Vista de Tablero')}</label>
                   <div className="relative">
                     <input
                       type="file"
@@ -297,7 +297,7 @@ import React, { useState, useEffect, useRef } from 'react';
                       accept="image/*"
                     />
                     {vehicle?.dashboard_image_url && (
-                      <img src={vehicle.dashboard_image_url} alt={t('dashboard')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.dashboard_image_url)} style={{ width: '130%', height: '130%' }} />
+                      <img src={vehicle.dashboard_image_url} alt={t('Tablero')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.dashboard_image_url)} style={{ width: '130%', height: '130%' }} />
                     )}
                   </div>
                 </div>
@@ -311,7 +311,7 @@ import React, { useState, useEffect, useRef } from 'react';
               onClick={handleSave}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-all"
             >
-              {t('saveChanges')}
+              {t('Guardar')}
             </button>
           </div>
 
