@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
-    import { supabase } from '../../supabaseClient'
-    import { useTranslation } from 'react-i18next';
+import { supabase } from '../../supabaseClient'
+import { useTranslation } from 'react-i18next';
     
     function DriverRecordCard({ driver, activeTab, setActiveTab }) {
       const [fullName, setFullName] = useState(driver?.full_name || '');
