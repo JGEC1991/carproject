@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { supabase } from '../../supabaseClient'
-import { useTranslation } from 'react-i18next';
+    import { supabase } from '../../supabaseClient'
+    import { useTranslation } from 'react-i18next';
     
     function DriverRecordCard({ driver, activeTab, setActiveTab }) {
-      const [fullName, setFullName] = useState(driver?.full_name || '');
+      const [fullName, setFullName] = useState(driver?.name || '');
       const [homeAddress, setHomeAddress] = useState(driver?.home_address || '');
       const [phone, setPhone] = useState(driver?.phone || '');
       const [email, setEmail] = useState(driver?.email || '');
@@ -34,9 +34,13 @@ import { useTranslation } from 'react-i18next';
         setImageState(file)
     
         try {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${driver.id}-${imageUrlField}.${fileExt}`;
+          const filePath = `drivers/${driver.name}/${imageUrlField}/${fileName}`;
+
           const { data, error } = await supabase.storage
-            .from('drivers-photos')
-            .upload(`${driver.id}/${folder}/${file.name}`, file, {
+            .from('jerentcars-storage')
+            .upload(filePath, file, {
               cacheControl: '3600',
               upsert: true,
               public: true,
@@ -50,8 +54,8 @@ import { useTranslation } from 'react-i18next';
           }
     
           const imageUrl = supabase.storage
-            .from('drivers-photos')
-            .getPublicUrl(`${driver.id}/${folder}/${file.name}`)
+            .from('jerentcars-storage')
+            .getPublicUrl(filePath)
             .data.publicUrl
     
           // Update the driver record in the database with the new image URL
@@ -87,7 +91,7 @@ import { useTranslation } from 'react-i18next';
           const { data, error } = await supabase
             .from('drivers')
             .update({
-              full_name: fullName,
+              name: fullName,
               home_address: homeAddress,
               phone: phone,
               email: email,
@@ -166,82 +170,66 @@ import { useTranslation } from 'react-i18next';
               <h3 className="text-xl font-semibold mt-4 mb-2 text-gray-900">Photos</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {/* Display images from URLs */}
-                {driver?.drivers_license_photo && (
+                {driver?.license_image_url && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">License Image</label>
                     <img
-                      src={driver.drivers_license_photo}
+                      src={driver.license_image_url}
                       alt="Driver's License"
                       className="object-cover w-32 h-32 rounded-md shadow-md cursor-pointer mt-2"
-                      onClick={() => handleExpandImage(driver.drivers_license_photo)}
+                      onClick={() => handleExpandImage(driver.license_image_url)}
                     />
+                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setDriversLicense, 'license_image_url', 'DriversLicense')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                   </div>
                 )}
-                {driver?.police_records_photo && (
+                {driver?.police_records_url && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Police Records</label>
                     <img
-                      src={driver.police_records_photo}
+                      src={driver.police_records_url}
                       alt="Police Record"
                       className="object-cover w-32 h-32 rounded-md shadow-md cursor-pointer mt-2"
-                      onClick={() => handleExpandImage(driver.police_records_photo)}
+                      onClick={() => handleExpandImage(driver.police_records_url)}
                     />
+                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setPoliceRecord, 'police_records_url', 'PoliceRecord')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                   </div>
                 )}
-                {driver?.criminal_records_photo && (
+                {driver?.criminal_records_url && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Criminal Records</label>
                     <img
-                      src={driver.criminal_records_photo}
+                      src={driver.criminal_records_url}
                       alt="Criminal Record"
                       className="object-cover w-32 h-32 rounded-md shadow-md cursor-pointer mt-2"
-                      onClick={() => handleExpandImage(driver.criminal_records_photo)}
+                      onClick={() => handleExpandImage(driver.criminal_records_url)}
                     />
+                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setCriminalRecord, 'criminal_records_url', 'CriminalRecord')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                   </div>
                 )}
-                {driver?.national_id_photo && (
+                {driver?.national_id_url && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">National ID</label>
                     <img
-                      src={driver.national_id_photo}
+                      src={driver.national_id_url}
                       alt="National ID"
                       className="object-cover w-32 h-32 rounded-md shadow-md cursor-pointer mt-2"
-                      onClick={() => handleExpandImage(driver.national_id_photo)}
+                      onClick={() => handleExpandImage(driver.national_id_url)}
                     />
+                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setNationalId, 'national_id_url', 'NationalId')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                   </div>
                 )}
-                {driver?.profile_photo && (
+                {driver?.photo_url && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Profile Photo</label>
                     <img
-                      src={driver.profile_photo}
+                      src={driver.photo_url}
                       alt="Profile Photo"
                       className="object-cover w-32 h-32 rounded-md shadow-md cursor-pointer mt-2"
-                      onClick={() => handleExpandImage(driver.profile_photo)}
+                      onClick={() => handleExpandImage(driver.photo_url)}
                     />
+                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setProfilePhoto, 'photo_url', 'ProfilePhoto')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                   </div>
                 )}
-                {/* Image upload sections */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Upload License Image</label>
-                  <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setDriversLicense, 'drivers_license_photo', 'DriversLicense')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Upload Criminal Records</label>
-                  <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setCriminalRecord, 'criminal_records_photo', 'CriminalRecord')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Upload Police Records</label>
-                  <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setPoliceRecord, 'police_records_photo', 'PoliceRecord')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Upload National ID</label>
-                  <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setNationalId, 'national_id_photo', 'NationalId')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Upload Profile Photo</label>
-                  <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setProfilePhoto, 'profile_photo', 'ProfilePhoto')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-                </div>
               </div>
             </div>
           )}

@@ -46,9 +46,8 @@ function DriverRecord() {
 
   return (
     <div className="page">
-      <h1 className="text-3xl font-semibold mb-4"></h1>
+      <h1 className="text-3xl font-semibold mb-4">Detalles de conductor</h1>
       <DriverRecordCard driver={driver} activeTab={activeTab} setActiveTab={setActiveTab} />
-      <Link to="/drivers" className="inline-block mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Regresar a conductores</Link>
     </div>
   );
 }
