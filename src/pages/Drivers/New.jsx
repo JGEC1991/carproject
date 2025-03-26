@@ -149,11 +149,29 @@ import React, { useState, useEffect } from 'react';
 
           if (insertError) {
             setError(insertError.message);
-          } else {
-            console.log('Driver added:', data);
-            alert('Driver added successfully!');
-            navigate('/drivers');
+            return;
           }
+
+          // 2. Update the is_driver column in the users table
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({ is_driver: true })
+            .eq('id', users.id);
+
+          if (updateError) {
+            console.error('Error updating user is_driver:', updateError);
+            setError(updateError.message);
+            // Optionally, you might want to delete the driver record if this update fails
+            await supabase
+              .from('drivers')
+              .delete()
+              .eq('id', data[0].id);
+            return;
+          }
+
+          console.log('Driver added:', data);
+          alert('Driver added successfully!');
+          navigate('/drivers');
         } catch (err) {
           setError(err.message);
         } finally {

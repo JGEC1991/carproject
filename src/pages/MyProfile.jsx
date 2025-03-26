@@ -233,6 +233,32 @@ import { useState, useEffect } from 'react';
         }
       };
 
+      const handleIsDriverChange = async (e) => {
+        const newIsDriverValue = e.target.checked;
+        setIsDriver(newIsDriverValue);
+      
+        try {
+          setLoading(true);
+          setError(null);
+      
+          const { error } = await supabase
+            .from('users')
+            .update({ is_driver: newIsDriverValue })
+            .eq('id', profile.id);
+      
+          if (error) {
+            setError(error.message);
+            return;
+          }
+      
+          alert('Driver status updated successfully!');
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
       if (loading) {
         return <div className="flex items-center justify-center h-full">Cargando...</div>;
       }
@@ -292,11 +318,15 @@ import { useState, useEffect } from 'react';
                     </div>
                     <div className="mb-4">
                       <div className="flex items-center">
-                        <Checkbox
+                        <label htmlFor="isDriver" className="block text-gray-700 text-sm font-bold mb-2">
+                          Es conductor
+                        </label>
+                        <input
+                          type="checkbox"
                           id="isDriver"
-                          label="Es conductor"
                           checked={isDriver}
-                          onChange={(e) => setIsDriver(e.target.checked)}
+                          onChange={handleIsDriverChange}
+                          className="form-checkbox h-5 w-5 text-blue-600"
                         />
                       </div>
                     </div>
