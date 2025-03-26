@@ -3,8 +3,6 @@ import { BrowserRouter, Route, Routes, Link, Navigate } from 'react-router-dom'
     import Vehicles from './pages/Vehicles'
     import Drivers from './pages/Drivers'
     import Activities from './pages/Activities'
-    import Revenue from './pages/Revenue'
-    import Expenses from './pages/Expenses'
     import Dashboard from './pages/Dashboard'
     import Admin from './pages/Admin'
     import Confirmation from './pages/Confirmation' 
@@ -235,26 +233,6 @@ import { BrowserRouter, Route, Routes, Link, Navigate } from 'react-router-dom'
                         element={
                           session ? (
                             <ActivityRecord />
-                          ) : (
-                            <Navigate to="/" replace />
-                          )
-                        }
-                      />
-                      <Route
-                        path="/revenue"
-                        element={
-                          session ? (
-                            <Revenue />
-                          ) : (
-                            <Navigate to="/" replace />
-                          )
-                        }
-                      />
-                      <Route
-                        path="/expenses"
-                        element={
-                          session ? (
-                            <Expenses />
                           ) : (
                             <Navigate to="/" replace />
                           )

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
     import { supabase } from '../../supabaseClient';
     import { useNavigate, Link } from 'react-router-dom';
 
@@ -12,13 +12,90 @@ import React, { useState } from 'react';
         color: '',
         license_plate: '',
         vin: '',
-        mileage: '',
-        status: '',
+        status: 'Disponible', // Default value
+        observations: '',
       });
+      const [frontPhoto, setFrontPhoto] = useState(null);
+      const [rearPhoto, setRearPhoto] = useState(null);
+      const [rightPhoto, setRightPhoto] = useState(null);
+      const [leftPhoto, setLeftPhoto] = useState(null);
+      const [dashboardPhoto, setDashboardPhoto] = useState(null);
       const navigate = useNavigate();
+      const [organizationId, setOrganizationId] = useState(null);
+
+      const statusOptions = ['Disponible', 'Ocupado', 'En mantenimiento'];
+
+      useEffect(() => {
+        const fetchOrganizationId = async () => {
+          try {
+            const { data: authUser, error: authError } = await supabase.auth.getUser();
+            if (authError) {
+              setError(authError.message);
+              return;
+            }
+
+            const userId = authUser.user.id;
+
+            const { data: userData, error: orgError } = await supabase
+              .from('users')
+              .select('organization_id')
+              .eq('id', userId)
+              .single();
+
+            if (orgError) {
+              setError(orgError.message);
+              return;
+            }
+
+            setOrganizationId(userData?.organization_id || null);
+          } catch (error) {
+            console.error('Error fetching organization ID:', error.message);
+            setError(error.message);
+          }
+        };
+
+        fetchOrganizationId();
+      }, []);
 
       const handleInputChange = (e) => {
         setNewVehicle({ ...newVehicle, [e.target.id]: e.target.value });
+      };
+
+      const handleFileUpload = async (file, setImageState, fieldName) => {
+        if (!file) return null;
+
+        try {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}-${fieldName}.${fileExt}`;
+          const filePath = `vehicles/${newVehicle.make}-${newVehicle.model}/${fieldName}/${fileName}`;
+
+          const { data, error } = await supabase.storage
+            .from('vehicle-photos')
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: true,
+              public: true,
+              contentType: file.type,
+            });
+
+          if (error) {
+            console.error('Error uploading image:', error);
+            setError(error.message);
+            return null;
+          }
+
+          const imageUrl = supabase.storage
+            .from('vehicle-photos')
+            .getPublicUrl(filePath)
+            .data.publicUrl;
+
+          setImageState(imageUrl);
+          return imageUrl;
+        } catch (error) {
+          console.error('Error uploading image:', error.message);
+          setError(error.message);
+          return null;
+        }
       };
 
       const handleSubmit = async (e) => {
@@ -27,9 +104,31 @@ import React, { useState } from 'react';
         setError(null);
 
         try {
+          if (!organizationId) {
+            setError('Organization ID not found. Please refresh the page.');
+            return;
+          }
+
+          // Upload files and get URLs
+          const frontImageUrl = await handleFileUpload(frontPhoto, setFrontPhoto, 'front_image_url');
+          const rearImageUrl = await handleFileUpload(rearPhoto, setRearPhoto, 'rear_image_url');
+          const rightImageUrl = await handleFileUpload(rightPhoto, setRightPhoto, 'right_image_url');
+          const leftImageUrl = await handleFileUpload(leftPhoto, setLeftPhoto, 'left_image_url');
+          const dashboardImageUrl = await handleFileUpload(dashboardPhoto, setDashboardPhoto, 'dashboard_image_url');
+
           const { data, error } = await supabase
             .from('vehicles')
-            .insert([newVehicle])
+            .insert([
+              {
+                ...newVehicle,
+                organization_id: organizationId,
+                front_image_url: frontImageUrl,
+                rear_image_url: rearImageUrl,
+                right_image_url: rightImageUrl,
+                left_image_url: leftImageUrl,
+                dashboard_image_url: dashboardImageUrl,
+              },
+            ])
             .select();
 
           if (error) {
@@ -81,8 +180,38 @@ import React, { useState } from 'react';
             </div>
             <div className="mb-4">
               <label htmlFor="status" className="block text-gray-700 text-sm font-bold mb-2">Estado</label>
-              <input type="text" id="status" name="status" value={newVehicle.status} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+              <select id="status" name="status" value={newVehicle.status} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                {statusOptions.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
             </div>
+            <div className="mb-4">
+              <label htmlFor="observations" className="block text-gray-700 text-sm font-bold mb-2">Observaciones</label>
+              <textarea id="observations" name="observations" value={newVehicle.observations} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+            </div>
+
+            <div className="mb-4">
+              <label htmlFor="frontPhoto" className="block text-gray-700 text-sm font-bold mb-2">Foto Frontal</label>
+              <input type="file" id="frontPhoto" name="frontPhoto" accept="image/*" onChange={(e) => setFrontPhoto(e.target.files[0])} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="rearPhoto" className="block text-gray-700 text-sm font-bold mb-2">Foto Trasera</label>
+              <input type="file" id="rearPhoto" name="rearPhoto" accept="image/*" onChange={(e) => setRearPhoto(e.target.files[0])} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="rightPhoto" className="block text-gray-700 text-sm font-bold mb-2">Foto Lateral Derecha</label>
+              <input type="file" id="rightPhoto" name="rightPhoto" accept="image/*" onChange={(e) => setRightPhoto(e.target.files[0])} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="leftPhoto" className="block text-gray-700 text-sm font-bold mb-2">Foto Lateral Izquierda</label>
+              <input type="file" id="leftPhoto" name="leftPhoto" accept="image/*" onChange={(e) => setLeftPhoto(e.target.files[0])} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="dashboardPhoto" className="block text-gray-700 text-sm font-bold mb-2">Foto del Tablero</label>
+              <input type="file" id="dashboardPhoto" name="dashboardPhoto" accept="image/*" onChange={(e) => setDashboardPhoto(e.target.files[0])} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+            </div>
+
             <div className="flex items-center justify-end">
               <button
                 type="submit"

@@ -13,6 +13,7 @@ import React, { useState, useEffect } from 'react';
         description: '',
         attachment_url: '',
         status: 'Pendiente',
+        amount: 0, // Add amount field with a default value
       });
       const [vehicles, setVehicles] = useState([]);
       const [drivers, setDrivers] = useState([]);
@@ -123,6 +124,7 @@ import React, { useState, useEffect } from 'react';
                 description: newActivity.description,
                 attachment_url: newActivity.attachment_url,
                 status: newActivity.status,
+                amount: newActivity.amount,
                 organization_id: organizationId,
               },
             ])
@@ -190,6 +192,10 @@ import React, { useState, useEffect } from 'react';
                 <option value="Past due">Vencido</option>
                 <option value="Canceled">Cancelado</option>
               </select>
+            </div>
+            <div className="mb-4">
+              <label htmlFor="amount" className="block text-gray-700 text-sm font-bold mb-2">Monto</label>
+              <input type="number" id="amount" name="amount" value={newActivity.amount} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
             </div>
             <div className="flex items-center justify-end">
               <button

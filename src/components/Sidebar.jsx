@@ -12,8 +12,6 @@ const Sidebar = () => {
     { path: '/vehicles', icon: 'directions_car', label: 'Vehiculos' },
     { path: '/drivers', icon: 'people', label: 'Conductores' },
     { path: '/activities', icon: 'event_note', label: 'Actividades' },
-    { path: '/revenue', icon: 'payments', label: 'Ingresos' },
-    { path: '/expenses', icon: 'money_off', label: 'Gastos' },
     { path: '/admin', icon: 'admin_panel_settings', label: 'Administrador' },
     { path: '/my-profile', icon: 'person', label: 'Perfil' },
   ];

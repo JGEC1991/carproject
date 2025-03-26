@@ -17,6 +17,7 @@ import { useState, useEffect } from 'react'
         { key: 'vehicle_name', title: 'Vehiculo' },
         { key: 'driver_name', title: 'Conductor' },
         { key: 'status', title: 'Estado' },
+        { key: 'amount', title: 'Monto' }, // Add amount column
       ]
 
       useEffect(() => {
