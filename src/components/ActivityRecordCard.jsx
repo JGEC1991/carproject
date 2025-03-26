@@ -23,6 +23,20 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
     setExpandedImage(null);
   };
 
+  const activityTypeOptions = [
+    "Llanta averiada",
+    "Mantenimiento",
+    "Pago de tarifa",
+    "Otro",
+    "Lavado",
+    "Vehiculo remolcado",
+    "Actualizacion de millaje",
+    "Inspeccion fisica",
+    "Reparacion"
+  ];
+
+  const statusOptions = ["Completado", "Pendiente", "Vencido"];
+
   return (
     <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
       <div className="border-b pb-4 mb-6">
@@ -56,23 +70,33 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Tipo de Actividad</label>
-            <input
-              type="text"
+            <select
               value={activityType}
               onChange={(e) => setActivityType(e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-              placeholder="Ingresar tipo de actividad"
-            />
+            >
+              <option value="">Seleccionar tipo de actividad</option>
+              {activityTypeOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Estado</label>
-            <input
-              type="text"
+            <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-              placeholder="Ingresar estado"
-            />
+            >
+              <option value="">Seleccionar estado</option>
+              {statusOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       )}

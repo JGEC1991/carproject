@@ -1,0 +1,165 @@
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../supabaseClient';
+import { useNavigate, Link } from 'react-router-dom';
+
+const NewActivity = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [newActivity, setNewActivity] = useState({
+    date: '',
+    vehicle_id: '',
+    driver_id: '',
+    activity_type: '',
+    description: '',
+    attachment_url: '',
+    status: 'Pendiente',
+  });
+  const [vehicles, setVehicles] = useState([]);
+  const [drivers, setDrivers] = useState([]);
+  const navigate = useNavigate();
+
+  const activityTypes = [
+     'Llanta averiada',
+    'Mantenimiento',
+    'Pago de tarifa',
+    'Otro',
+    'Lavado',
+    'Vehiculo remolcado',
+  'Actualizacion de millaje',
+    'Inspeccion fisica',
+    'Reparacion'
+  ].sort();
+
+  const statusOptions = ['Pendiente', 'Completado', 'Vencido', 'Cancelado'];
+
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        const { data, error } = await supabase.from('vehicles').select('id, make, model');
+        if (error) {
+          console.error('Error fetching vehicles:', error);
+          setError(error.message);
+        } else {
+          setVehicles(data);
+        }
+      } catch (err) {
+        console.error('Error fetching vehicles:', err.message);
+        setError(err.message);
+      }
+    };
+
+    const fetchDrivers = async () => {
+      try {
+        const { data, error } = await supabase.from('drivers').select('id, name');
+        if (error) {
+          console.error('Error fetching drivers:', error);
+          setError(error.message);
+        } else {
+          setDrivers(data);
+        }
+      } catch (err) {
+        console.error('Error fetching drivers:', err.message);
+        setError(err.message);
+      }
+    };
+
+    fetchVehicles();
+    fetchDrivers();
+  }, []);
+
+  const handleInputChange = (e) => {
+    setNewActivity({ ...newActivity, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, error } = await supabase
+        .from('activities')
+        .insert([newActivity])
+        .select();
+
+      if (error) {
+        setError(error.message);
+      } else {
+        console.log('Activity added:', data);
+        alert('Activity added successfully!');
+        navigate('/activities');
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl font-semibold mb-4">Agregar una actividad</h1>
+      {error && <p className="text-red-500 mb-4">Error: {error}</p>}
+      <form onSubmit={handleSubmit} className="max-w-lg">
+        <div className="mb-4">
+          <label htmlFor="date" className="block text-gray-700 text-sm font-bold mb-2">Fecha</label>
+          <input type="date" id="date" name="date" value={newActivity.date} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">Descripcion</label>
+          <textarea id="description" name="description" value={newActivity.description} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="activity_type" className="block text-gray-700 text-sm font-bold mb-2">Tipo de actividad</label>
+          <select id="activity_type" name="activity_type" value={newActivity.activity_type} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            <option value="">Selecciona un tipo de actividad</option>
+            {activityTypes.map((type) => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </select>
+        </div>
+        <div className="mb-4">
+          <label htmlFor="vehicle_id" className="block text-gray-700 text-sm font-bold mb-2">Vehiculo</label>
+          <select id="vehicle_id" name="vehicle_id" value={newActivity.vehicle_id} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            <option value="">Selecciona un vehiculo</option>
+            {vehicles.map((vehicle) => (
+              <option key={vehicle.id} value={vehicle.id}>{vehicle.make} {vehicle.model}</option>
+            ))}
+          </select>
+        </div>
+        <div className="mb-4">
+          <label htmlFor="driver_id" className="block text-gray-700 text-sm font-bold mb-2">Conductor</label>
+          <select id="driver_id" name="driver_id" value={newActivity.driver_id} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            <option value="">Selecciona un conductor</option>
+            {drivers.map((driver) => (
+              <option key={driver.id} value={driver.id}>{driver.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className="mb-4">
+          <label htmlFor="status" className="block text-gray-700 text-sm font-bold mb-2">Estado</label>
+          <select id="status" name="status" value={newActivity.status} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            <option value="Pending">Pendiente</option>
+            <option value="Completed">Completado</option>
+            <option value="Past due">Vencido</option>
+            <option value="Canceled">Cancelado</option>
+          </select>
+        </div>
+        <div className="flex items-center justify-end">
+          <button
+            type="submit"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            disabled={loading}
+          >
+            {loading ? 'Agregando...' : 'Agregar actividad'}
+          </button>
+          <Link to="/activities" className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800 ml-4">
+            Cancelar
+          </Link>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default NewActivity;

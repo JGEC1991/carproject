@@ -15,6 +15,7 @@ import MyProfile from './pages/MyProfile';
 import VehicleRecord from './pages/Vehicles/[id]';
 import DriverRecord from './pages/Drivers/[id]';
 import ActivityRecord from './pages/Activities/[id]';
+import NewActivity from './pages/Activities/New';
 
 function App() {
   const [session, setSession] = useState(null)
@@ -192,6 +193,16 @@ function App() {
                     element={
                       session ? (
                         <Activities />
+                      ) : (
+                        <Navigate to="/" replace />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/activities/new"
+                    element={
+                      session ? (
+                        <NewActivity />
                       ) : (
                         <Navigate to="/" replace />
                       )
