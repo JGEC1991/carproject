@@ -96,7 +96,6 @@ import { useState, useEffect } from 'react';
             let query = supabase
               .from('activities')
               .select('date, amount, activity_type')
-              .eq('activity_type', 'Pago de tarifa') // Filter for revenue activities
               .order('date', { ascending: true });
 
             if (startDate) {
@@ -112,7 +111,7 @@ import { useState, useEffect } from 'react';
 
             const revenueChartData = timeData.map(item => ({
               date: item.date,
-              amount: item.amount,
+              amount: item.activity_type === "Pago de tarifa" ? (item.amount || 0) : -(item.amount || 0), // Expenses as negative values
             }));
             setRevenueData(revenueChartData);
 

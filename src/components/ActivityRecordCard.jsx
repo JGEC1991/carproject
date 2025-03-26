@@ -70,7 +70,7 @@ import React, { useState, useRef } from 'react';
             <h2 className="text-2xl font-bold text-gray-800">
               {isEditMode ? "Editar Actividad" : "Detalles de Actividad"}
             </h2>
-            <p className="text-gray-600">Activity ID: {activity?.id}</p>
+            <p className="text-gray-600">ID: {activity?.id}</p>
           </div>
 
           {activeTab === 'information' && (
