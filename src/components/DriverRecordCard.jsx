@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react'
-    import { supabase } from '../../supabaseClient'
+import React, { useState, useRef, useEffect } from 'react';
+    import { supabase } from '../../supabaseClient';
     import { useTranslation } from 'react-i18next';
-    
+
     function DriverRecordCard({ driver, activeTab, setActiveTab }) {
       const [fullName, setFullName] = useState(driver?.name || '');
       const [homeAddress, setHomeAddress] = useState(driver?.home_address || '');
@@ -19,20 +19,20 @@ import React, { useState, useRef, useEffect } from 'react'
       useEffect(() => {
         const handleClickOutside = (event) => {
           if (modalRef.current && !modalRef.current.contains(event.target)) {
-            setExpandedImage(null)
+            setExpandedImage(null);
           }
-        }
-    
-        document.addEventListener('mousedown', handleClickOutside)
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
         return () => {
-          document.removeEventListener('mousedown', handleClickOutside)
-        }
-      }, [modalRef])
-    
+          document.removeEventListener('mousedown', handleClickOutside);
+        };
+      }, [modalRef]);
+
       const handleImageUpload = async (e, setImageState, imageUrlField, folder) => {
-        const file = e.target.files[0]
-        setImageState(file)
-    
+        const file = e.target.files[0];
+        setImageState(file);
+
         try {
           const fileExt = file.name.split('.').pop();
           const fileName = `${driver.id}-${imageUrlField}.${fileExt}`;
@@ -45,47 +45,45 @@ import React, { useState, useRef, useEffect } from 'react'
               upsert: true,
               public: true,
               contentType: file.type,
-            })
-    
+            });
+
           if (error) {
-            console.error('Error uploading image:', error)
-            alert(error.message)
-            return
+            console.error('Error uploading image:', error);
+            alert(error.message);
+            return;
           }
-    
+
           const imageUrl = supabase.storage
             .from('jerentcars-storage')
             .getPublicUrl(filePath)
-            .data.publicUrl
-    
-          // Update the driver record in the database with the new image URL
+            .data.publicUrl;
+
           const { error: updateError } = await supabase
             .from('drivers')
             .update({ [imageUrlField]: imageUrl })
-            .eq('id', driver.id)
-    
+            .eq('id', driver.id);
+
           if (updateError) {
-            console.error('Error updating driver record:', updateError)
-            alert(updateError.message)
+            console.error('Error updating driver record:', updateError);
+            alert(updateError.message);
           } else {
-            alert('Image uploaded and driver record updated successfully!')
-            // Refresh the driver data to display the new image
-            window.location.reload()
+            alert('Image uploaded and driver record updated successfully!');
+            window.location.reload();
           }
         } catch (error) {
-          console.error('Error uploading image:', error.message)
-          alert(error.message)
+          console.error('Error uploading image:', error.message);
+          alert(error.message);
         }
-      }
-    
+      };
+
       const handleExpandImage = (imageUrl) => {
-        setExpandedImage(imageUrl)
-      }
-    
+        setExpandedImage(imageUrl);
+      };
+
       const handleCloseExpandedImage = () => {
-        setExpandedImage(null)
-      }
-    
+        setExpandedImage(null);
+      };
+
       const handleSave = async () => {
         try {
           const { data, error } = await supabase
@@ -96,144 +94,206 @@ import React, { useState, useRef, useEffect } from 'react'
               phone: phone,
               email: email,
             })
-            .eq('id', driver.id)
-    
+            .eq('id', driver.id);
+
           if (error) {
-            console.error('Error updating driver:', error)
-            alert(error.message)
+            console.error('Error updating driver:', error);
+            alert(error.message);
           } else {
-            console.log('Driver updated:', data)
-            alert('Driver updated successfully!')
+            console.log('Driver updated:', data);
+            alert('Driver updated successfully!');
           }
         } catch (error) {
-          console.error('Error updating driver:', error.message)
-          alert(error.message)
+          console.error('Error updating driver:', error.message);
+          alert(error.message);
         }
-      }
-    
+      };
+
       return (
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800">Detalles de Conductor</h2>
-    
-          <div className="flex border-b border-gray-200">
+        <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
+          <div className="border-b pb-4 mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">{t('driverDetails')}</h2>
+            <p className="text-gray-600">Driver ID: {driver?.id}</p>
+          </div>
+
+          {/* Tabs */}
+          <div className="mb-4">
             <button
+              className={`px-4 py-2 rounded-t-lg ${activeTab === 'details' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
               onClick={() => setActiveTab('details')}
-              className={`px-4 py-2 font-medium text-sm ${activeTab === 'details' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
             >
-              Informacion
+              {t('details')}
             </button>
             <button
+              className={`px-4 py-2 rounded-t-lg ${activeTab === 'photos' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
               onClick={() => setActiveTab('photos')}
-              className={`px-4 py-2 font-medium text-sm ${activeTab === 'photos' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
             >
-              Fotos
+              {t('photos')}
             </button>
           </div>
-    
+
+          {/* Details Tab */}
           {activeTab === 'details' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Nombre</label>
+                <label className="block text-sm font-medium text-gray-700">{t('fullName')}</label>
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  placeholder={t('enterFullName')}
                 />
-                <label className="block text-sm font-medium text-gray-700">Address</label>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">{t('homeAddress')}</label>
                 <input
                   type="text"
                   value={homeAddress}
                   onChange={(e) => setHomeAddress(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  placeholder={t('enterHomeAddress')}
                 />
-                <label className="block text-sm font-medium text-gray-700">Phone</label>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">{t('phone')}</label>
                 <input
                   type="text"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  placeholder={t('enterPhone')}
                 />
-                <label className="block text-sm font-medium text-gray-700">Email</label>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">{t('email')}</label>
                 <input
                   type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  placeholder={t('enterEmail')}
                 />
               </div>
             </div>
           )}
 
+          {/* Photos Tab */}
           {activeTab === 'photos' && (
-            <div>
-              <h3 className="text-xl font-semibold mt-4 mb-2 text-gray-900">Photos</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {/* Display images from URLs */}
-                {driver?.license_image_url && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">License Image</label>
-                    <img
-                      src={driver.license_image_url}
-                      alt="Driver's License"
-                      className="object-cover w-32 h-32 rounded-md shadow-md cursor-pointer mt-2"
-                      onClick={() => handleExpandImage(driver.license_image_url)}
+            <div className="col-span-1 md:col-span-2 space-y-6">
+              <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">{t('driverPhotos')}</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Photo upload sections */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">{t('licenseImage')}</label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, setDriversLicense, 'license_image_url', 'DriversLicense')}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     />
-                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setDriversLicense, 'license_image_url', 'DriversLicense')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+                    {driver?.license_image_url && (
+                      <img
+                        src={driver.license_image_url}
+                        alt={t('licenseImage')}
+                        className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer"
+                        onClick={() => handleExpandImage(driver.license_image_url)}
+                      />
+                    )}
                   </div>
-                )}
-                {driver?.police_records_url && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Police Records</label>
-                    <img
-                      src={driver.police_records_url}
-                      alt="Police Record"
-                      className="object-cover w-32 h-32 rounded-md shadow-md cursor-pointer mt-2"
-                      onClick={() => handleExpandImage(driver.police_records_url)}
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">{t('policeRecords')}</label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, setPoliceRecord, 'police_records_url', 'PoliceRecord')}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     />
-                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setPoliceRecord, 'police_records_url', 'PoliceRecord')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+                    {driver?.police_records_url && (
+                      <img
+                        src={driver.police_records_url}
+                        alt={t('policeRecords')}
+                        className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer"
+                        onClick={() => handleExpandImage(driver.police_records_url)}
+                      />
+                    )}
                   </div>
-                )}
-                {driver?.criminal_records_url && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Criminal Records</label>
-                    <img
-                      src={driver.criminal_records_url}
-                      alt="Criminal Record"
-                      className="object-cover w-32 h-32 rounded-md shadow-md cursor-pointer mt-2"
-                      onClick={() => handleExpandImage(driver.criminal_records_url)}
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">{t('criminalRecords')}</label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, setCriminalRecord, 'criminal_records_url', 'CriminalRecord')}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     />
-                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setCriminalRecord, 'criminal_records_url', 'CriminalRecord')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+                    {driver?.criminal_records_url && (
+                      <img
+                        src={driver.criminal_records_url}
+                        alt={t('criminalRecords')}
+                        className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer"
+                        onClick={() => handleExpandImage(driver.criminal_records_url)}
+                      />
+                    )}
                   </div>
-                )}
-                {driver?.national_id_url && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">National ID</label>
-                    <img
-                      src={driver.national_id_url}
-                      alt="National ID"
-                      className="object-cover w-32 h-32 rounded-md shadow-md cursor-pointer mt-2"
-                      onClick={() => handleExpandImage(driver.national_id_url)}
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">{t('nationalId')}</label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, setNationalId, 'national_id_url', 'NationalId')}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     />
-                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setNationalId, 'national_id_url', 'NationalId')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+                    {driver?.national_id_url && (
+                      <img
+                        src={driver.national_id_url}
+                        alt={t('nationalId')}
+                        className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer"
+                        onClick={() => handleExpandImage(driver.national_id_url)}
+                      />
+                    )}
                   </div>
-                )}
-                {driver?.photo_url && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Profile Photo</label>
-                    <img
-                      src={driver.photo_url}
-                      alt="Profile Photo"
-                      className="object-cover w-32 h-32 rounded-md shadow-md cursor-pointer mt-2"
-                      onClick={() => handleExpandImage(driver.photo_url)}
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">{t('profilePhoto')}</label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, setProfilePhoto, 'photo_url', 'ProfilePhoto')}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     />
-                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, setProfilePhoto, 'photo_url', 'ProfilePhoto')} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+                    {driver?.photo_url && (
+                      <img
+                        src={driver.photo_url}
+                        alt={t('profilePhoto')}
+                        className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer"
+                        onClick={() => handleExpandImage(driver.photo_url)}
+                      />
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </div>
           )}
-    
+
+          {/* Save Button */}
+          <div className="mt-8 flex justify-end">
+            <button
+              onClick={handleSave}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-all"
+            >
+              {t('saveChanges')}
+            </button>
+          </div>
+
+          {/* Image Zoom Modal */}
           {expandedImage && (
             <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-800 bg-opacity-75 z-50" onClick={handleCloseExpandedImage}>
               <div className="relative" ref={modalRef} onClick={(e) => e.stopPropagation()}>
@@ -246,16 +306,8 @@ import React, { useState, useRef, useEffect } from 'react'
               </div>
             </div>
           )}
-           <div className="mt-8 flex justify-end">
-            <button
-              onClick={handleSave}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-all"
-            >
-              Save Changes
-            </button>
-          </div>
         </div>
-      )
+      );
     }
-    
+
     export default DriverRecordCard
