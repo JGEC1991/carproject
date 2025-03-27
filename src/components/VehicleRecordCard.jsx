@@ -19,12 +19,11 @@ import React, { useState, useEffect, useRef } from 'react';
       const [rightPhoto, setRightPhoto] = useState(null);
       const [leftPhoto, setLeftPhoto] = useState(null);
       const [dashboardPhoto, setDashboardPhoto] = useState(null);
-      const [activityHistory, setActivityHistory] = useState({}); // State for activity history
-
-      // Modal state for image zoom
-      const [zoomedImage, setZoomedImage] = useState(null);
+      const [activityHistory, setActivityHistory] = useState([]); // State for activity history
+      const [reparaciones, setReparaciones] = useState([]);
       const modalRef = useRef(null);
       const { t } = useTranslation('vehicleRecordCard');
+      const [zoomedImage, setZoomedImage] = useState(null);
 
       useEffect(() => {
         // Fetch activity history for the vehicle
@@ -34,28 +33,41 @@ import React, { useState, useEffect, useRef } from 'react';
               .from('activities')
               .select('date, activity_type')
               .eq('vehicle_id', vehicle.id)
-              .in('activity_type', ['Afinamiento', 'Cambio de aceite', 'Calibracion de llantas', 'Cambio o relleno de coolant', 'Lavado de vehiculo', 'Inspeccion fisica'])
+              .in('activity_type', ['Afinamiento', 'Cambio de aceite', 'Calibracion de llantas', 'Cambio o relleno de coolant', 'Lavado de vehiculo', 'Inspeccion fisica', 'Reparacion'])
               .order('date', { ascending: false });
 
             if (error) {
               console.error('Error fetching activity history:', error);
             } else {
-              // Process the data to get the last activity for each type
-              const lastActivities = data.reduce((acc, activity) => {
-                if (!acc[activity.activity_type]) {
-                  acc[activity.activity_type] = activity;
-                }
-                return acc;
-              }, {});
-              setActivityHistory(lastActivities);
+              setActivityHistory(data);
             }
           } catch (error) {
             console.error('Error fetching activity history:', error);
           }
         };
 
+         const fetchReparaciones = async () => {
+          try {
+            const { data, error } = await supabase
+              .from('activities')
+              .select('date, activity_type, description')
+              .eq('vehicle_id', vehicle.id)
+              .eq('activity_type', 'Reparacion')
+              .order('date', { ascending: false });
+
+            if (error) {
+              console.error('Error fetching reparaciones:', error);
+            } else {
+              setReparaciones(data);
+            }
+          } catch (error) {
+            console.error('Error fetching reparaciones:', error);
+          }
+        };
+
         if (vehicle?.id) {
           fetchActivityHistory();
+          fetchReparaciones();
         }
       }, [vehicle?.id]);
 
@@ -135,6 +147,19 @@ import React, { useState, useEffect, useRef } from 'react';
         setZoomedImage(null);
       };
 
+      const timeAgo = (date) => {
+        const now = new Date();
+        const diff = now.getTime() - new Date(date).getTime();
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+        if (days === 0) {
+          return 'Hoy';
+        } else if (days === 1) {
+          return 'Ayer';
+        } else {
+          return `Hace ${days} días`;
+        }
+      };
 
       return (
         <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
@@ -166,6 +191,12 @@ import React, { useState, useEffect, useRef } from 'react';
               onClick={() => setActiveTab('historial')}
             >
               Historial
+            </button>
+            <button
+              className={`px-4 py-2 rounded-t-lg ${activeTab === 'reparaciones' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
+              onClick={() => setActiveTab('reparaciones')}
+            >
+              Reparaciones
             </button>
           </div>
 
@@ -349,16 +380,35 @@ import React, { useState, useEffect, useRef } from 'react';
           {activeTab === 'historial' && (
             <div>
               <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Historial de Actividades</h3>
-              {Object.keys(activityHistory).length > 0 ? (
+              {activityHistory.length > 0 ? (
                 <ul className="list-disc pl-5">
-                  {Object.entries(activityHistory).map(([activityType, activity]) => (
-                    <li key={activityType} className="py-2">
-                      <span className="font-semibold">{activityType}</span> - {activity.date}
+                  {activityHistory.map((activity) => (
+                    <li key={activity.date} className="py-2">
+                      <span className="font-semibold">{activity.activity_type}</span> - {timeAgo(activity.date)}
                     </li>
                   ))}
                 </ul>
               ) : (
                 <p>No hay historial de actividades para este vehículo.</p>
+              )}
+            </div>
+          )}
+
+          {/* Reparaciones Tab */}
+          {activeTab === 'reparaciones' && (
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Reparaciones</h3>
+              {reparaciones.length > 0 ? (
+                <ul className="list-disc pl-5">
+                  {reparaciones.map((reparacion) => (
+                    <li key={reparacion.date} className="py-2">
+                      <span className="font-semibold">{reparacion.activity_type}</span> - {timeAgo(reparacion.date)}
+                      {reparacion.description && <p className="ml-5">{reparacion.description}</p>}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No hay reparaciones para este vehículo.</p>
               )}
             </div>
           )}
@@ -375,7 +425,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
           {/* Image Zoom Modal */}
           {zoomedImage && (
-            <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-75 z-50" onClick={closeModal}>
+            <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-800 bg-opacity-75 z-50" onClick={closeModal}>
               <div className="relative" ref={modalRef} onClick={(e) => e.stopPropagation()}>
                 <img src={zoomedImage} alt="Zoomed" className="max-w-4xl max-h-4xl rounded-lg" style={{ maxWidth: '80vw', maxHeight: '80vh' }} />
                 <button onClick={closeModal} className="absolute top-4 right-4 bg-gray-700 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-600">
