@@ -83,7 +83,7 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
       const imageUrl = supabase.storage
         .from('jerentcars-storage')
         .getPublicUrl(filePath)
-        data.publicUrl;
+        .data.publicUrl;
 
       return imageUrl;
     } catch (error) {
@@ -101,21 +101,6 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
   
 
   const statusOptions = ["Completado", "Pendiente", "Vencido"];
-  const defaultActivityTypes = [
-    "Llanta averiada",
-    "Afinamiento",
-    "Pago de tarifa",
-    "Otro",
-    "Lavado de vehiculo",
-    "Vehiculo remolcado",
-    "Actualizacion de millaje",
-    "Inspeccion fisica",
-    "Reparacion",
-				"Cambio de aceite",
-				"Calibracion de llantas",
-				"Cambio o relleno de coolant",
-				"Cambio de frenos"
-      ].sort();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -177,15 +162,26 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
           return;
         }
 
+        const { data: defaultTypes, error: defaultTypesError } = await supabase
+          .from('activity_types')
+          .select('name')
+          .is('is_default', true);
+
+        if (defaultTypesError) {
+          console.error('Error fetching default activity types:', defaultTypesError);
+          return;
+        }
+
         // Extract names from custom types and merge with default types
         const customTypeNames = customTypes ? customTypes.map(type => type.name) : [];
-        const allTypes = [...new Set([...defaultActivityTypes, ...customTypeNames])].sort(); // Remove duplicates and sort
+        const defaultTypeNames = defaultTypes ? defaultTypes.map(type => type.name) : [];
+        const allTypes = [...new Set([...defaultTypeNames, ...customTypeNames])].sort(); // Remove duplicates and sort
 
         setActivityTypeOptions(allTypes);
       } catch (error) {
         console.error('Error fetching activity types:', error);
         // If there's an error fetching custom types, still use the default types
-        setActivityTypeOptions(defaultActivityTypes);
+        setActivityTypeOptions([]);
       }
     };
 
@@ -266,24 +262,35 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
         <div>
           <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">{t('Adjuntos', { ns: 'activityRecordCard' })}</h3>
           {activity?.attachment_url ? (
-            <a href={activity.attachment_url} target="_blank" rel="noopener noreferrer">
-              <img
-                src={activity.attachment_url}
-                alt="Attachment"
-                className="rounded-lg w-40 h-40 object-cover cursor-pointer"
-                onClick={() => handleImageClick(activity.attachment_url)}
+            <>
+              <a href={activity.attachment_url} target="_blank" rel="noopener noreferrer">
+                <img
+                  src={activity.attachment_url}
+                  alt="Attachment"
+                  className="rounded-lg w-40 h-40 object-cover cursor-pointer"
+                  onClick={() => handleImageClick(activity.attachment_url)}
+                />
+              </a>
+              <label className="block text-sm font-medium text-gray-700 mt-4">Reemplazar archivo</label>
+              <input
+                type="file"
+                accept="image/*, application/pdf"
+                onChange={handleAttachmentChange}
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
               />
-            </a>
+            </>
           ) : (
-            <p>{t('No se econtraron adjuntos.', { ns: 'activityRecordCard' })}</p>
+            <>
+              <p>{t('No se econtraron adjuntos.', { ns: 'activityRecordCard' })}</p>
+              <label className="block text-sm font-medium text-gray-700 mt-4">Subir archivo</label>
+              <input
+                type="file"
+                accept="image/*, application/pdf"
+                onChange={handleAttachmentChange}
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+            </>
           )}
-          <label className="block text-sm font-medium text-gray-700 mt-4">Subir archivo</label>
-          <input
-            type="file"
-            accept="image/*, application/pdf"
-            onChange={handleAttachmentChange}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-          />
         </div>
       )}
 

@@ -3,7 +3,7 @@ import { supabase } from '../../supabaseClient';
 import { useNavigate, Link } from 'react-router-dom';
 
 const NewActivity = () => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [newActivity, setNewActivity] = useState({
     date: '',
@@ -16,31 +16,10 @@ const NewActivity = () => {
   });
   const [vehicles, setVehicles] = useState([]);
   const [drivers, setDrivers] = useState([]);
-  const [organizationId, setOrganizationId] = useState(null);
+  const [activityTypeOptions, setActivityTypeOptions] = useState([]);
   const [attachment, setAttachment] = useState(null);
   const navigate = useNavigate();
-  const [activityTypeOptions, setActivityTypeOptions] = useState([]);
-  const [userId, setUserId] = useState(null);
-  const [userRole, setUserRole] = useState(null);
-  const [isDriver, setIsDriver] = useState(false);
-  const [preselectedVehicle, setPreselectedVehicle] = useState(null);
-  const [preselectedDriver, setPreselectedDriver] = useState(null);
-
-  const defaultActivityTypes = [
-  			"Llanta averiada",
-        "Afinamiento",
-        "Pago de tarifa",
-        "Otro",
-        "Lavado de vehiculo",
-        "Vehiculo remolcado",
-        "Actualizacion de millaje",
-        "Inspeccion fisica",
-        "Reparacion",
-				"Cambio de aceite",
-				"Calibracion de llantas",
-				"Cambio o relleno de coolant",
-				"Cambio de frenos"
-      ].sort();
+  const [organizationId, setOrganizationId] = useState(null);
 
   const statusOptions = ['Pendiente', 'Completado', 'Vencido', 'Cancelado'];
 
@@ -55,76 +34,21 @@ const NewActivity = () => {
 
         const userId = authUser.user.id;
 
-        const { data: userData, error: userError } = await supabase
+        const { data: userData, error: orgError } = await supabase
           .from('users')
-          .select('organization_id, id, role, is_driver')
+          .select('organization_id')
           .eq('id', userId)
           .single();
 
-        if (userError) {
-          setError(userError.message);
+        if (orgError) {
+          setError(orgError.message);
           return;
         }
 
         setOrganizationId(userData?.organization_id || null);
-        setUserId(userData?.id || null);
-        setUserRole(userData?.role || 'user');
-        setIsDriver(userData?.is_driver || false);
-
-        if (userData?.is_driver) {
-          const { data: driverData, error: driverError } = await supabase
-            .from('drivers')
-            .select('id, vehicle_id')
-            .eq('user_id', userId)
-            .single();
-
-          if (driverError) {
-            console.error('Error fetching driver details:', driverError);
-            setError(driverError.message);
-            return;
-          }
-
-          setPreselectedDriver(driverData?.id || null);
-          setNewActivity(prevState => ({ ...prevState, driver_id: driverData?.id || '' }));
-
-          if (driverData?.vehicle_id) {
-            setPreselectedVehicle(driverData.vehicle_id);
-            setNewActivity(prevState => ({ ...prevState, vehicle_id: driverData?.vehicle_id || '' }));
-          }
-        }
       } catch (error) {
         console.error('Error fetching user data:', error.message);
         setError(error.message);
-      }
-    };
-
-    const fetchVehicles = async () => {
-      try {
-        const { data, error } = await supabase.from('vehicles').select('id, make, model');
-        if (error) {
-          console.error('Error fetching vehicles:', error);
-          setError(error.message);
-        } else {
-          setVehicles(data);
-        }
-      } catch (err) {
-        console.error('Error fetching vehicles:', err.message);
-        setError(err.message);
-      }
-    };
-
-    const fetchDrivers = async () => {
-      try {
-        const { data, error } = await supabase.from('drivers').select('id, name');
-        if (error) {
-          console.error('Error fetching drivers:', error);
-          setError(error.message);
-        } else {
-          setDrivers(data);
-        }
-      } catch (err) {
-        console.error('Error fetching drivers:', err.message);
-        setError(err.message);
       }
     };
 
@@ -160,14 +84,43 @@ const NewActivity = () => {
           return;
         }
 
-        // Extract names from custom types and merge with default types
         const customTypeNames = customTypes.map(type => type.name);
-        const allTypes = [...new Set([...defaultActivityTypes, ...customTypeNames])].sort(); // Remove duplicates and sort
+        const allTypes = [...customTypeNames].sort();
 
         setActivityTypeOptions(allTypes);
       } catch (error) {
         console.error('Error fetching activity types:', error);
-        setActivityTypeOptions(defaultActivityTypes);
+        setError(error.message);
+      }
+    };
+
+    const fetchVehicles = async () => {
+      try {
+        const { data, error } = await supabase.from('vehicles').select('id, make, model');
+        if (error) {
+          console.error('Error fetching vehicles:', error);
+          setError(error.message);
+        } else {
+          setVehicles(data);
+        }
+      } catch (err) {
+        console.error('Error fetching vehicles:', err.message);
+        setError(err.message);
+      }
+    };
+
+    const fetchDrivers = async () => {
+      try {
+        const { data, error } = await supabase.from('drivers').select('id, name');
+        if (error) {
+          console.error('Error fetching drivers:', error);
+          setError(error.message);
+        } else {
+          setDrivers(data);
+        }
+      } catch (err) {
+        console.error('Error fetching drivers:', err.message);
+        setError(err.message);
       }
     };
 
@@ -207,7 +160,7 @@ const NewActivity = () => {
       const imageUrl = supabase.storage
         .from('jerentcars-storage')
         .getPublicUrl(filePath)
-        .data.publicUrl;
+        data.publicUrl;
 
       return imageUrl;
     } catch (error) {
@@ -217,93 +170,93 @@ const NewActivity = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      setLoading(true);
+      setError(null);
 
-    try {
-      if (!organizationId) {
-        setError('Organization ID not found. Please refresh the page.');
-        return;
+      try {
+        if (!organizationId) {
+          setError('Organization ID not found. Please refresh the page.');
+          return;
+        }
+
+        const attachmentUrl = await handleFileUpload(attachment);
+
+        const { data, error } = await supabase
+          .from('activities')
+          .insert([
+            {
+              date: newActivity.date,
+              vehicle_id: newActivity.vehicle_id,
+              driver_id: newActivity.driver_id,
+              activity_type: newActivity.activity_type,
+              description: newActivity.description,
+              status: newActivity.status,
+              amount: newActivity.amount,
+              organization_id: organizationId,
+              attachment_url: attachmentUrl,
+            },
+          ])
+          .select();
+
+        if (error) {
+          setError(error.message);
+        } else {
+          console.log('Activity added:', data);
+          alert('Activity added successfully!');
+          navigate('/activities');
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const attachmentUrl = await handleFileUpload(attachment);
-
-      const { data, error } = await supabase
-        .from('activities')
-        .insert([
-          {
-            date: newActivity.date,
-            vehicle_id: newActivity.vehicle_id,
-            driver_id: newActivity.driver_id,
-            activity_type: newActivity.activity_type,
-            description: newActivity.description,
-            status: newActivity.status,
-            amount: newActivity.amount,
-            organization_id: organizationId,
-            attachment_url: attachmentUrl,
-          },
-        ])
-        .select();
-
-      if (error) {
-        setError(error.message);
-      } else {
-        console.log('Activity added:', data);
-        alert('Activity added successfully!');
-        navigate('/activities');
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-semibold mb-4">Agregar una actividad</h1>
-      {error && <p className="text-red-500 mb-4">Error: {error}</p>}
-      <form onSubmit={handleSubmit} className="max-w-lg">
-        <div className="mb-4">
-          <label htmlFor="date" className="block text-gray-700 text-sm font-bold mb-2">Fecha</label>
-          <input type="date" id="date" name="date" value={newActivity.date} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">Descripcion</label>
-          <textarea id="description" name="description" value={newActivity.description} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="activity_type" className="block text-gray-700 text-sm font-bold mb-2">Tipo de actividad</label>
-          <select id="activity_type" name="activity_type" value={newActivity.activity_type} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-            <option value="">Selecciona un tipo de actividad</option>
-            {activityTypeOptions.map((type) => (
-              <option key={type} value={type}>{type}</option>
-            ))}
-          </select>
-        </div>
-        <div className="mb-4">
-          <label htmlFor="vehicle_id" className="block text-gray-700 text-sm font-bold mb-2">Vehiculo</label>
-          <select id="vehicle_id" name="vehicle_id" value={newActivity.vehicle_id} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-            <option value="">Selecciona un vehiculo</option>
-            {vehicles.map((vehicle) => (
-              <option key={vehicle.id} value={vehicle.id}>{vehicle.make} {vehicle.model}</option>
-            ))}
-          </select>
-        </div>
-        <div className="mb-4">
-          <label htmlFor="driver_id" className="block text-gray-700 text-sm font-bold mb-2">Conductor</label>
-          <select id="driver_id" name="driver_id" value={newActivity.driver_id} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-            <option value="">Selecciona un conductor</option>
-            {drivers.map((driver) => (
-              <option key={driver.id} value={driver.id}>{driver.name}</option>
-            ))}
-          </select>
-        </div>
-        <div className="mb-4">
-          <label htmlFor="status" className="block text-gray-700 text-sm font-bold mb-2">Estado</label>
-          <select id="status" name="status" value={newActivity.status} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+    return (
+      <div className="container mx-auto p-6">
+        <h1 className="text-3xl font-semibold mb-4">Agregar una actividad</h1>
+        {error && <p className="text-red-500 mb-4">Error: {error}</p>}
+        <form onSubmit={handleSubmit} className="max-w-lg">
+          <div className="mb-4">
+            <label htmlFor="date" className="block text-gray-700 text-sm font-bold mb-2">Fecha</label>
+            <input type="date" id="date" name="date" value={newActivity.date} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">Descripcion</label>
+            <textarea id="description" name="description" value={newActivity.description} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="activity_type" className="block text-gray-700 text-sm font-bold mb-2">Tipo de actividad</label>
+            <select id="activity_type" name="activity_type" value={newActivity.activity_type} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+              <option value="">Selecciona un tipo de actividad</option>
+              {activityTypeOptions.map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-4">
+            <label htmlFor="vehicle_id" className="block text-gray-700 text-sm font-bold mb-2">Vehiculo</label>
+            <select id="vehicle_id" name="vehicle_id" value={newActivity.vehicle_id} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+              <option value="">Selecciona un vehiculo</option>
+              {vehicles.map((vehicle) => (
+                <option key={vehicle.id} value={vehicle.id}>{vehicle.make} {vehicle.model}</option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-4">
+            <label htmlFor="driver_id" className="block text-gray-700 text-sm font-bold mb-2">Conductor</label>
+            <select id="driver_id" name="driver_id" value={newActivity.driver_id} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+              <option value="">Selecciona un conductor</option>
+              {drivers.map((driver) => (
+                <option key={driver.id} value={driver.id}>{driver.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-4">
+            <label htmlFor="status" className="block text-gray-700 text-sm font-bold mb-2">Estado</label>
+            <select id="status" name="status" value={newActivity.status} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
             <option value="Pendiente">Pendiente</option>
             <option value="Completado">Completado</option>
             <option value="Vencido">Vencido</option>
@@ -334,5 +287,32 @@ const NewActivity = () => {
     </div>
   );
 };
+
+const fetchUserData = async () => {
+      try {
+        const { data: authUser, error: authError } = await supabase.auth.getUser();
+        if (authError) {
+          setError(authError.message);
+          return;
+        }
+
+        const userId = authUser.user.id;
+
+        const { data: userData, error: orgError } = await supabase
+          .from('users')
+          .select('organization_id, id, role, is_driver')
+          .eq('id', userId)
+          .single();
+
+        if (userError) {
+          setError(userError.message);
+          return;
+        }
+
+        setOrganizationId(userData?.organization_id || null);
+      } catch (error) {
+        console.error('Error fetching user data:', error.message);
+      }
+    };
 
 export default NewActivity;
