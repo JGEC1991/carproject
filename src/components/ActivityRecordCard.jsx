@@ -3,6 +3,22 @@ import { supabase } from '../../supabaseClient';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
+const activityTypes = [
+  "Llanta averiada",
+  "Afinamiento",
+  "Pago de tarifa",
+  "Otro",
+  "Lavado de vehiculo",
+  "Vehiculo remolcado",
+  "Actualizacion de millaje",
+  "Inspeccion fisica",
+  "Reparacion",
+  "Cambio de aceite",
+  "Calibracion de llantas",
+  "Cambio o relleno de coolant",
+  "Cambio de frenos"
+].sort();
+
 function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
   const [date, setDate] = useState(activity?.date || '');
   const [description, setDescription] = useState(activity?.description || '');
@@ -12,16 +28,11 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
   const modalRef = useRef(null);
   const { t } = useTranslation('activityRecordCard');
   const [expandedImage, setExpandedImage] = useState(null);
-  const [attachment, setAttachment] = useState(null); // State for new attachment
+  const [attachment, setAttachment] = useState(null);
   const navigate = useNavigate();
-  const [activityTypeOptions, setActivityTypeOptions] = useState([]);
-  const [organizationId, setOrganizationId] = useState(null);
-  const [userId, setUserId] = useState(null);
 
   const handleSave = async () => {
     try {
-      const attachmentUrl = await handleAttachmentUpload(attachment);
-
       const { data, error } = await supabase
         .from('activities')
         .update({
@@ -30,7 +41,6 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
           activity_type: activityType,
           status: status,
           amount: amount,
-          attachment_url: attachmentUrl,
         })
         .eq('id', activity.id)
         .select();
@@ -57,137 +67,12 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
     setExpandedImage(null);
   };
 
-  const handleAttachmentUpload = async (file) => {
-    if (!file) return null;
-
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `activity-${activity.id}-${Date.now()}.${fileExt}`;
-      const filePath = `activities/${fileName}`;
-
-      const { data, error } = await supabase.storage
-        .from('jerentcars-storage')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false,
-          public: true,
-          contentType: file.type,
-        });
-
-      if (error) {
-        console.error('Error uploading attachment:', error);
-        alert(t('errorUploadingAttachment', { ns: 'activityRecordCard' }) + error.message);
-        return null;
-      }
-
-      const imageUrl = supabase.storage
-        .from('jerentcars-storage')
-        .getPublicUrl(filePath)
-        .data.publicUrl;
-
-      return imageUrl;
-    } catch (error) {
-      console.error('Error uploading attachment:', error.message);
-      alert(error.message);
-      return null;
-    }
-  };
-
   const handleAttachmentChange = (e) => {
     const file = e.target.files[0];
     setAttachment(file);
   };
 
-  
-
   const statusOptions = ["Completado", "Pendiente", "Vencido"];
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const { data: authUser, error: authError } = await supabase.auth.getUser();
-        if (authError) {
-          console.error('Error fetching user:', authError);
-          return;
-        }
-        const userId = authUser.user.id;
-
-        const { data: userData, error: orgError } = await supabase
-          .from('users')
-          .select('organization_id')
-          .eq('id', userId)
-          .single();
-
-        if (orgError) {
-          console.error('Error fetching organization:', orgError);
-          return;
-        }
-
-        setOrganizationId(userData?.organization_id);
-        setUserId(userData?.id || null);
-      } catch (error) {
-        console.error('Error fetching user data:', error.message);
-      }
-    };
-
-    const fetchActivityTypes = async () => {
-      try {
-        const { data: authUser, error: userError } = await supabase.auth.getUser();
-        if (userError) {
-          console.error('Error fetching user:', authError);
-          return;
-        }
-        const userId = authUser.user.id;
-
-        const { data: userData, error: orgError } = await supabase
-          .from('users')
-          .select('organization_id')
-          .eq('id', userId)
-          .single();
-
-        if (orgError) {
-          console.error('Error fetching organization:', orgError);
-          return;
-        }
-
-        const organizationId = userData?.organization_id;
-
-        const { data: customTypes, error: customTypesError } = await supabase
-          .from('activity_types')
-          .select('name')
-          .eq('organization_id', organizationId);
-
-        if (customTypesError) {
-          console.error('Error fetching custom activity types:', customTypesError);
-          return;
-        }
-
-        const { data: defaultTypes, error: defaultTypesError } = await supabase
-          .from('activity_types')
-          .select('name')
-          .is('is_default', true);
-
-        if (defaultTypesError) {
-          console.error('Error fetching default activity types:', defaultTypesError);
-          return;
-        }
-
-        // Extract names from custom types and merge with default types
-        const customTypeNames = customTypes ? customTypes.map(type => type.name) : [];
-        const defaultTypeNames = defaultTypes ? defaultTypes.map(type => type.name) : [];
-        const allTypes = [...new Set([...defaultTypeNames, ...customTypeNames])].sort(); // Remove duplicates and sort
-
-        setActivityTypeOptions(allTypes);
-      } catch (error) {
-        console.error('Error fetching activity types:', error);
-        // If there's an error fetching custom types, still use the default types
-        setActivityTypeOptions([]);
-      }
-    };
-
-    fetchUserData();
-    fetchActivityTypes();
-  }, []);
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
@@ -227,8 +112,8 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
               className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             >
               <option value="">Seleccionar tipo de actividad</option>
-              {activityTypeOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
+              {activityTypes.map((type) => (
+                <option key={type} value={type}>{type}</option>
               ))}
             </select>
           </div>
@@ -262,35 +147,22 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
         <div>
           <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">{t('Adjuntos', { ns: 'activityRecordCard' })}</h3>
           {activity?.attachment_url ? (
-            <>
-              <a href={activity.attachment_url} target="_blank" rel="noopener noreferrer">
-                <img
-                  src={activity.attachment_url}
-                  alt="Attachment"
-                  className="rounded-lg w-40 h-40 object-cover cursor-pointer"
-                  onClick={() => handleImageClick(activity.attachment_url)}
-                />
-              </a>
-              <label className="block text-sm font-medium text-gray-700 mt-4">Reemplazar archivo</label>
-              <input
-                type="file"
-                accept="image/*, application/pdf"
-                onChange={handleAttachmentChange}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              />
-            </>
+            <img
+              src={activity.attachment_url}
+              alt="Attachment"
+              className="rounded-lg w-40 h-40 object-cover cursor-pointer"
+              onClick={() => handleImageClick(activity.attachment_url)}
+            />
           ) : (
-            <>
-              <p>{t('No se econtraron adjuntos.', { ns: 'activityRecordCard' })}</p>
-              <label className="block text-sm font-medium text-gray-700 mt-4">Subir archivo</label>
-              <input
-                type="file"
-                accept="image/*, application/pdf"
-                onChange={handleAttachmentChange}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              />
-            </>
+            <p>{t('No se econtraron adjuntos.', { ns: 'activityRecordCard' })}</p>
           )}
+          <label className="block text-sm font-medium text-gray-700 mt-4">Subir archivo</label>
+          <input
+            type="file"
+            accept="image/*, application/pdf"
+            onChange={handleAttachmentChange}
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          />
         </div>
       )}
 

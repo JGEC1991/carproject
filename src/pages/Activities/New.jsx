@@ -2,8 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useNavigate, Link } from 'react-router-dom';
 
+const activityTypes = [
+  "Llanta averiada",
+  "Afinamiento",
+  "Pago de tarifa",
+  "Otro",
+  "Lavado de vehiculo",
+  "Vehiculo remolcado",
+  "Actualizacion de millaje",
+  "Inspeccion fisica",
+  "Reparacion",
+  "Cambio de aceite",
+  "Calibracion de llantas",
+  "Cambio o relleno de coolant",
+  "Cambio de frenos"
+].sort();
+
 const NewActivity = () => {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [newActivity, setNewActivity] = useState({
     date: '',
@@ -16,7 +32,6 @@ const NewActivity = () => {
   });
   const [vehicles, setVehicles] = useState([]);
   const [drivers, setDrivers] = useState([]);
-  const [activityTypeOptions, setActivityTypeOptions] = useState([]);
   const [attachment, setAttachment] = useState(null);
   const navigate = useNavigate();
   const [organizationId, setOrganizationId] = useState(null);
@@ -48,48 +63,6 @@ const NewActivity = () => {
         setOrganizationId(userData?.organization_id || null);
       } catch (error) {
         console.error('Error fetching user data:', error.message);
-        setError(error.message);
-      }
-    };
-
-    const fetchActivityTypes = async () => {
-      try {
-        const { data: authUser, error: userError } = await supabase.auth.getUser();
-        if (userError) {
-          setError(userError.message);
-          return;
-        }
-        const userId = authUser.user.id;
-
-        const { data: userData, error: orgError } = await supabase
-          .from('users')
-          .select('organization_id')
-          .eq('id', userId)
-          .single();
-
-        if (orgError) {
-          setError(orgError.message);
-          return;
-        }
-
-        const organizationId = userData?.organization_id;
-
-        const { data: customTypes, error: customTypesError } = await supabase
-          .from('activity_types')
-          .select('name')
-          .eq('organization_id', organizationId);
-
-        if (customTypesError) {
-          console.error('Error fetching custom activity types:', customTypesError);
-          return;
-        }
-
-        const customTypeNames = customTypes.map(type => type.name);
-        const allTypes = [...customTypeNames].sort();
-
-        setActivityTypeOptions(allTypes);
-      } catch (error) {
-        console.error('Error fetching activity types:', error);
         setError(error.message);
       }
     };
@@ -127,7 +100,6 @@ const NewActivity = () => {
     fetchUserData();
     fetchVehicles();
     fetchDrivers();
-    fetchActivityTypes();
   }, []);
 
   const handleInputChange = (e) => {
@@ -160,7 +132,7 @@ const NewActivity = () => {
       const imageUrl = supabase.storage
         .from('jerentcars-storage')
         .getPublicUrl(filePath)
-        data.publicUrl;
+        .data.publicUrl;
 
       return imageUrl;
     } catch (error) {
@@ -231,7 +203,7 @@ const NewActivity = () => {
             <label htmlFor="activity_type" className="block text-gray-700 text-sm font-bold mb-2">Tipo de actividad</label>
             <select id="activity_type" name="activity_type" value={newActivity.activity_type} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
               <option value="">Selecciona un tipo de actividad</option>
-              {activityTypeOptions.map((type) => (
+              {activityTypes.map((type) => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
@@ -287,32 +259,5 @@ const NewActivity = () => {
     </div>
   );
 };
-
-const fetchUserData = async () => {
-      try {
-        const { data: authUser, error: authError } = await supabase.auth.getUser();
-        if (authError) {
-          setError(authError.message);
-          return;
-        }
-
-        const userId = authUser.user.id;
-
-        const { data: userData, error: orgError } = await supabase
-          .from('users')
-          .select('organization_id, id, role, is_driver')
-          .eq('id', userId)
-          .single();
-
-        if (userError) {
-          setError(userError.message);
-          return;
-        }
-
-        setOrganizationId(userData?.organization_id || null);
-      } catch (error) {
-        console.error('Error fetching user data:', error.message);
-      }
-    };
 
 export default NewActivity;
