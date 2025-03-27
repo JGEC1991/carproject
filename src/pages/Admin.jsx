@@ -1,18 +1,22 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../supabaseClient'
 import { Navigate } from 'react-router-dom'
+import { Button, Input, Typography } from "@material-tailwind/react";
 
 const Admin = () => {
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [users, setUsers] = useState([])
-  const [isOwner, setIsOwner] = useState(false)
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [isOwner, setIsOwner] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [newRole, setNewRole] = useState('user');
+  const [activityTypes, setActivityTypes] = useState([]);
+  const [newActivityType, setNewActivityType] = useState('');
+  const [organizationId, setOrganizationId] = useState(null);
 
   const fetchUsers = useCallback(async () => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     try {
       const { data: authUser, error: authError } = await supabase.auth.getUser();
@@ -35,6 +39,7 @@ const Admin = () => {
         return;
       }
 
+      setOrganizationId(userData?.organization_id);
       setIsOwner(userData?.is_owner || false);
 
       if (!userData?.is_owner) {
@@ -60,9 +65,54 @@ const Admin = () => {
     }
   }, []);
 
+  const fetchActivityTypes = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data: authUser, error: authError } = await supabase.auth.getUser();
+      if (authError) {
+        setError(authError.message);
+        return;
+      }
+
+      const userId = authUser.user.id;
+
+      const { data: userData, error: orgError } = await supabase
+        .from('users')
+        .select('organization_id')
+        .eq('id', userId)
+        .single();
+
+      if (orgError) {
+        setError(orgError.message);
+        return;
+      }
+
+      const organizationId = userData?.organization_id;
+
+      const { data, error } = await supabase
+        .from('activity_types')
+        .select('*')
+        .eq('organization_id', organizationId);
+
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
+      setActivityTypes(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    fetchUsers()
-  }, [fetchUsers])
+    fetchUsers();
+    fetchActivityTypes();
+  }, [fetchUsers, fetchActivityTypes]);
 
   const handleAddUser = async () => {
     try {
@@ -145,8 +195,12 @@ const Admin = () => {
 
       if (insertError) {
         setError(insertError.message);
-        // Optionally delete the auth user if the insert fails
+        // Optionally delete the auth user and user record if the insert fails
         await supabase.auth.admin.deleteUser(authResponse.user.id);
+        await supabase
+          .from('users')
+          .delete()
+          .eq('id', authResponse.user.id);
         return;
       }
 
@@ -238,6 +292,82 @@ const Admin = () => {
         }
       };
 
+  const handleAddActivityType = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data: authUser, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        setError(userError.message);
+        return;
+      }
+      const userId = authUser.user.id;
+
+      const { data: userData, error: orgError } = await supabase
+        .from('users')
+        .select('organization_id')
+        .eq('id', userId)
+        .single();
+
+      if (orgError) {
+        setError(orgError.message);
+        return;
+      }
+
+      const organizationId = userData?.organization_id;
+
+      if (!organizationId) {
+        setError('Unable to determine organization ID.');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('activity_types')
+        .insert([{ name: newActivityType, organization_id: organizationId }])
+        .select();
+
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
+      await fetchActivityTypes();
+      setNewActivityType('');
+      alert('Activity type added successfully!');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteActivityType = async (activityTypeId) => {
+    if (window.confirm('Are you sure you want to delete this activity type?')) {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const { error } = await supabase
+          .from('activity_types')
+          .delete()
+          .eq('id', activityTypeId);
+
+        if (error) {
+          setError(error.message);
+          return;
+        }
+
+        await fetchActivityTypes();
+        alert('Activity type deleted successfully!');
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
       if (loading) {
         return <div className="flex items-center justify-center h-full">Cargando...</div>
       }
@@ -258,7 +388,7 @@ const Admin = () => {
           <div className="mb-6">
             <h2 className="text-xl font-semibold mb-2">Generar un token de invitacion</h2>
             <div className="flex space-x-4">
-              <input
+              <Input
                 type="email"
                 placeholder="Enter email"
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -273,12 +403,12 @@ const Admin = () => {
                 <option value="user">Usuario</option>
                 <option value="admin">Administrador</option>
               </select>
-              <button
+              <Button
                 onClick={handleAddUser}
                 className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               >
                 Generar Invitacion
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -331,6 +461,44 @@ const Admin = () => {
               ))}
             </tbody>
           </table>
+
+          {/* Activity Types Management */}
+          <div className="mt-12">
+            <h2 className="text-xl font-semibold mb-2">Administrar tipos de actividad</h2>
+            <div className="flex space-x-4 mb-4">
+              <Input
+                type="text"
+                placeholder="Nuevo tipo de actividad"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                value={newActivityType}
+                onChange={(e) => setNewActivityType(e.target.value)}
+              />
+              <Button
+                onClick={handleAddActivityType}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              >
+                Agregar tipo de actividad
+              </Button>
+            </div>
+
+            {activityTypes.length > 0 ? (
+              <ul className="list-disc pl-5">
+                {activityTypes.map((type) => (
+                  <li key={type.id} className="flex items-center justify-between py-2">
+                    {type.name}
+                    <button
+                      onClick={() => handleDeleteActivityType(type.id)}
+                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    >
+                      Borrar
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No hay tipos de actividad.</p>
+            )}
+          </div>
         </div>
       )
     }

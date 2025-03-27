@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -14,9 +14,14 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
   const [expandedImage, setExpandedImage] = useState(null);
   const [attachment, setAttachment] = useState(null); // State for new attachment
   const navigate = useNavigate();
+  const [activityTypeOptions, setActivityTypeOptions] = useState([]);
+  const [organizationId, setOrganizationId] = useState(null);
+  const [userId, setUserId] = useState(null);
 
   const handleSave = async () => {
     try {
+      const attachmentUrl = await handleAttachmentUpload(attachment);
+
       const { data, error } = await supabase
         .from('activities')
         .update({
@@ -25,6 +30,7 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
           activity_type: activityType,
           status: status,
           amount: amount,
+          attachment_url: attachmentUrl,
         })
         .eq('id', activity.id)
         .select();
@@ -70,28 +76,14 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
 
       if (error) {
         console.error('Error uploading attachment:', error);
-        alert('Error uploading attachment: ' + error.message);
+        alert(t('errorUploadingAttachment', { ns: 'activityRecordCard' }) + error.message);
         return null;
       }
 
       const imageUrl = supabase.storage
         .from('jerentcars-storage')
         .getPublicUrl(filePath)
-        .data.publicUrl;
-
-      // Update the activity record with the new attachment URL
-      const { error: updateError } = await supabase
-        .from('activities')
-        .update({ attachment_url: imageUrl })
-        .eq('id', activity.id);
-
-      if (updateError) {
-        console.error('Error updating activity record:', updateError);
-        alert('Error updating activity record: ' + updateError.message);
-      } else {
-        alert('Attachment uploaded successfully!');
-        window.location.reload(); // Refresh the page
-      }
+        data.publicUrl;
 
       return imageUrl;
     } catch (error) {
@@ -101,37 +93,111 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
     }
   };
 
-  const handleAttachmentChange = async (e) => {
+  const handleAttachmentChange = (e) => {
     const file = e.target.files[0];
     setAttachment(file);
-
-    // Upload the attachment immediately
-    await handleAttachmentUpload(file);
   };
 
-  const activityTypeOptions = [
-  			"Llanta averiada",
-        "Afinamiento",
-        "Pago de tarifa",
-        "Otro",
-        "Lavado de vehiculo",
-        "Vehiculo remolcado",
-        "Actualizacion de millaje",
-        "Inspeccion fisica",
-        "Reparacion",
+  
+
+  const statusOptions = ["Completado", "Pendiente", "Vencido"];
+  const defaultActivityTypes = [
+    "Llanta averiada",
+    "Afinamiento",
+    "Pago de tarifa",
+    "Otro",
+    "Lavado de vehiculo",
+    "Vehiculo remolcado",
+    "Actualizacion de millaje",
+    "Inspeccion fisica",
+    "Reparacion",
 				"Cambio de aceite",
 				"Calibracion de llantas",
 				"Cambio o relleno de coolant",
 				"Cambio de frenos"
       ].sort();
 
-  const statusOptions = ["Completado", "Pendiente", "Vencido"];
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const { data: authUser, error: authError } = await supabase.auth.getUser();
+        if (authError) {
+          console.error('Error fetching user:', authError);
+          return;
+        }
+        const userId = authUser.user.id;
+
+        const { data: userData, error: orgError } = await supabase
+          .from('users')
+          .select('organization_id')
+          .eq('id', userId)
+          .single();
+
+        if (orgError) {
+          console.error('Error fetching organization:', orgError);
+          return;
+        }
+
+        setOrganizationId(userData?.organization_id);
+        setUserId(userData?.id || null);
+      } catch (error) {
+        console.error('Error fetching user data:', error.message);
+      }
+    };
+
+    const fetchActivityTypes = async () => {
+      try {
+        const { data: authUser, error: userError } = await supabase.auth.getUser();
+        if (userError) {
+          console.error('Error fetching user:', authError);
+          return;
+        }
+        const userId = authUser.user.id;
+
+        const { data: userData, error: orgError } = await supabase
+          .from('users')
+          .select('organization_id')
+          .eq('id', userId)
+          .single();
+
+        if (orgError) {
+          console.error('Error fetching organization:', orgError);
+          return;
+        }
+
+        const organizationId = userData?.organization_id;
+
+        const { data: customTypes, error: customTypesError } = await supabase
+          .from('activity_types')
+          .select('name')
+          .eq('organization_id', organizationId);
+
+        if (customTypesError) {
+          console.error('Error fetching custom activity types:', customTypesError);
+          return;
+        }
+
+        // Extract names from custom types and merge with default types
+        const customTypeNames = customTypes ? customTypes.map(type => type.name) : [];
+        const allTypes = [...new Set([...defaultActivityTypes, ...customTypeNames])].sort(); // Remove duplicates and sort
+
+        setActivityTypeOptions(allTypes);
+      } catch (error) {
+        console.error('Error fetching activity types:', error);
+        // If there's an error fetching custom types, still use the default types
+        setActivityTypeOptions(defaultActivityTypes);
+      }
+    };
+
+    fetchUserData();
+    fetchActivityTypes();
+  }, []);
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
       <div className="border-b pb-4 mb-6">
         <h2 className="text-2xl font-bold text-gray-800">
-          {isEditMode ? "Editar Actividad" : "Detalles de Actividad"}
+          {isEditMode ? t('Editar Actividad', { ns: 'activityRecordCard' }) : t('Detalles de Actividad', { ns: 'activityRecordCard' })}
         </h2>
         <p className="text-gray-600">ID: {activity?.id}</p>
       </div>
@@ -139,13 +205,13 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
       {activeTab === 'information' && (
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('Fecha', { ns: 'activityRecordCard' })}</label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="Ingresar fecha"
+              placeholder={t('Ingresar fecha', { ns: 'activityRecordCard' })}
             />
           </div>
           <div>
@@ -154,7 +220,7 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all h-32"
-              placeholder="Ingresar descripción"
+              placeholder={t('Ingresar descripción', { ns: 'activityRecordCard' })}
             />
           </div>
           <div>
@@ -198,7 +264,7 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
 
       {activeTab === 'files' && (
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Adjuntos</h3>
+          <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">{t('Adjuntos', { ns: 'activityRecordCard' })}</h3>
           {activity?.attachment_url ? (
             <a href={activity.attachment_url} target="_blank" rel="noopener noreferrer">
               <img
@@ -209,17 +275,15 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
               />
             </a>
           ) : (
-            <>
-              <p>No attachments available.</p>
-              <label className="block text-sm font-medium text-gray-700 mt-4">Subir archivo</label>
-              <input
-                type="file"
-                accept="image/*, application/pdf"
-                onChange={handleAttachmentChange}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              />
-            </>
+            <p>{t('No se econtraron adjuntos.', { ns: 'activityRecordCard' })}</p>
           )}
+          <label className="block text-sm font-medium text-gray-700 mt-4">Subir archivo</label>
+          <input
+            type="file"
+            accept="image/*, application/pdf"
+            onChange={handleAttachmentChange}
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          />
         </div>
       )}
 
@@ -228,7 +292,7 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
           onClick={handleSave}
           className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-all"
         >
-          Guardar Cambios
+          {t('Guardar', { ns: 'activityRecordCard' })}
         </button>
       </div>
 

@@ -15,7 +15,7 @@ const NewActivity = () => {
     amount: 0, // Add amount field with a default value
   });
   const [vehicles, setVehicles] = useState([]);
-  const [drivers, setDrivers] = useState([]);
+  const [drivers, setDrivers] useState([]);
   const [organizationId, setOrganizationId] = useState(null);
   const [attachment, setAttachment] = useState(null);
   const navigate = useNavigate();
@@ -167,7 +167,6 @@ const NewActivity = () => {
         setActivityTypeOptions(allTypes);
       } catch (error) {
         console.error('Error fetching activity types:', error);
-        setActivityTypeOptions(defaultActivityTypes);
       }
     };
 
