@@ -62,7 +62,8 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
         "Reparacion",
 				"Cambio de aceite",
 				"Calibracion de llantas",
-				"Cambio o relleno de coolant"
+				"Cambio o relleno de coolant",
+				"Cambio de frenos"
   ].sort();
 
   const statusOptions = ["Completado", "Pendiente", "Vencido"];

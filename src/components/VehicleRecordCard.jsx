@@ -19,7 +19,7 @@ import React, { useState, useEffect, useRef } from 'react';
       const [rightPhoto, setRightPhoto] = useState(null);
       const [leftPhoto, setLeftPhoto] = useState(null);
       const [dashboardPhoto, setDashboardPhoto] = useState(null);
-      const [activityHistory, setActivityHistory] = useState([]); // State for activity history
+      const [activityHistory, setActivityHistory] = useState({});
       const [reparaciones, setReparaciones] = useState([]);
       const [finanzas, setFinanzas] = useState({
         totalRevenue: 0,
@@ -30,25 +30,39 @@ import React, { useState, useEffect, useRef } from 'react';
       const { t } = useTranslation('vehicleRecordCard');
       const [zoomedImage, setZoomedImage] = useState(null);
 
-      useEffect(() => {
-        // Fetch activity history for the vehicle
-        const fetchActivityHistory = async () => {
-          try {
-            const { data, error } = await supabase
-              .from('activities')
-              .select('date, activity_type')
-              .eq('vehicle_id', vehicle.id)
-              .in('activity_type', ['Afinamiento', 'Cambio de aceite', 'Calibracion de llantas', 'Cambio o relleno de coolant', 'Lavado de vehiculo', 'Inspeccion fisica', 'Reparacion'])
-              .order('date', { ascending: false });
+      const activityTypes = [
+        "Afinamiento",
+        "Lavado de vehiculo",
+        "Inspeccion fisica",
+        "Cambio de aceite",
+        "Calibracion de llantas",
+        "Cambio o relleno de coolant",
+        "Cambio de frenos"
+      ];
 
-            if (error) {
-              console.error('Error fetching activity history:', error);
-            } else {
-              setActivityHistory(data);
+      useEffect(() => {
+        const fetchActivityHistory = async () => {
+          const history = {};
+          for (const activityType of activityTypes) {
+            try {
+              const { data, error } = await supabase
+                .from('activities')
+                .select('date')
+                .eq('vehicle_id', vehicle.id)
+                .eq('activity_type', activityType)
+                .order('date', { ascending: false })
+                .limit(1);
+
+              if (error) {
+                console.error(`Error fetching ${activityType} history:`, error);
+              } else {
+                history[activityType] = data?.[0]?.date || null;
+              }
+            } catch (error) {
+              console.error(`Error fetching ${activityType} history:`, error);
             }
-          } catch (error) {
-            console.error('Error fetching activity history:', error);
           }
+          setActivityHistory(history);
         };
 
          const fetchReparaciones = async () => {
@@ -426,13 +440,24 @@ import React, { useState, useEffect, useRef } from 'react';
           {activeTab === 'historial' && userRole === 'admin' && (
             <div>
               <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Historial de Actividades</h3>
-              {activityHistory.length > 0 ? (
+              {Object.entries(activityHistory).length > 0 ? (
                 <ul className="list-disc pl-5">
-                  {activityHistory.map((activity) => (
-                    <li key={activity.date} className="py-2">
-                      <span className="font-semibold">{activity.activity_type}</span> - {timeAgo(activity.date)}
-                    </li>
-                  ))}
+                  {Object.entries(activityHistory).map(([activityType, date]) => {
+                    if (date) {
+                      const daysAgo = Math.floor((new Date() - new Date(date)) / (1000 * 60 * 60 * 24));
+                      return (
+                        <li key={activityType} className="py-2">
+                          <span className="font-semibold">{activityType}</span> - Hace {daysAgo} días
+                        </li>
+                      );
+                    } else {
+                      return (
+                        <li key={activityType} className="py-2">
+                          <span className="font-semibold">{activityType}</span> - No hay registro
+                        </li>
+                      );
+                    }
+                  })}
                 </ul>
               ) : (
                 <p>No hay historial de actividades para este vehículo.</p>

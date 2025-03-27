@@ -32,7 +32,8 @@ import React, { useState, useEffect } from 'react';
         "Reparacion",
 				"Cambio de aceite",
 				"Calibracion de llantas",
-				"Cambio o relleno de coolant"
+				"Cambio o relleno de coolant",
+				"Cambio de frenos"
       ].sort();
 
       const statusOptions = ['Pendiente', 'Completado', 'Vencido', 'Cancelado'];
