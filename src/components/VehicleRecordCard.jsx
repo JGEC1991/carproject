@@ -19,11 +19,45 @@ import React, { useState, useEffect, useRef } from 'react';
       const [rightPhoto, setRightPhoto] = useState(null);
       const [leftPhoto, setLeftPhoto] = useState(null);
       const [dashboardPhoto, setDashboardPhoto] = useState(null);
+      const [activityHistory, setActivityHistory] = useState({}); // State for activity history
 
       // Modal state for image zoom
       const [zoomedImage, setZoomedImage] = useState(null);
       const modalRef = useRef(null);
       const { t } = useTranslation('vehicleRecordCard');
+
+      useEffect(() => {
+        // Fetch activity history for the vehicle
+        const fetchActivityHistory = async () => {
+          try {
+            const { data, error } = await supabase
+              .from('activities')
+              .select('date, activity_type')
+              .eq('vehicle_id', vehicle.id)
+              .in('activity_type', ['Afinamiento', 'Cambio de aceite', 'Calibracion de llantas', 'Cambio o relleno de coolant', 'Lavado de vehiculo', 'Inspeccion fisica'])
+              .order('date', { ascending: false });
+
+            if (error) {
+              console.error('Error fetching activity history:', error);
+            } else {
+              // Process the data to get the last activity for each type
+              const lastActivities = data.reduce((acc, activity) => {
+                if (!acc[activity.activity_type]) {
+                  acc[activity.activity_type] = activity;
+                }
+                return acc;
+              }, {});
+              setActivityHistory(lastActivities);
+            }
+          } catch (error) {
+            console.error('Error fetching activity history:', error);
+          }
+        };
+
+        if (vehicle?.id) {
+          fetchActivityHistory();
+        }
+      }, [vehicle?.id]);
 
       const handleUpload = async (photo, folder, setPhotoState, fieldName) => {
         if (!photo) return;
@@ -126,6 +160,12 @@ import React, { useState, useEffect, useRef } from 'react';
               onClick={() => setActiveTab('photos')}
             >
               {t('Fotos')}
+            </button>
+            <button
+              className={`px-4 py-2 rounded-t-lg ${activeTab === 'historial' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
+              onClick={() => setActiveTab('historial')}
+            >
+              Historial
             </button>
           </div>
 
@@ -305,6 +345,24 @@ import React, { useState, useEffect, useRef } from 'react';
             </div>
           )}
 
+          {/* Historial Tab */}
+          {activeTab === 'historial' && (
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Historial de Actividades</h3>
+              {Object.keys(activityHistory).length > 0 ? (
+                <ul className="list-disc pl-5">
+                  {Object.entries(activityHistory).map(([activityType, activity]) => (
+                    <li key={activityType} className="py-2">
+                      <span className="font-semibold">{activityType}</span> - {activity.date}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No hay historial de actividades para este vehículo.</p>
+              )}
+            </div>
+          )}
+
           {/* Save Button */}
           <div className="mt-8 flex justify-end">
             <button
@@ -332,4 +390,4 @@ import React, { useState, useEffect, useRef } from 'react';
       );
     }
 
-    export default VehicleRecordCard
+    export default VehicleRecordCard;

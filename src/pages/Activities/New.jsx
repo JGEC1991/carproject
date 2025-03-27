@@ -21,15 +21,18 @@ import React, { useState, useEffect } from 'react';
       const navigate = useNavigate();
 
       const activityTypes = [
-         'Llanta averiada',
-        'Mantenimiento',
-        'Pago de tarifa',
-        'Otro',
-        'Lavado',
-        'Vehiculo remolcado',
-      'Actualizacion de millaje',
-        'Inspeccion fisica',
-        'Reparacion'
+          "Llanta averiada",
+        "Afinamiento",
+        "Pago de tarifa",
+        "Otro",
+        "Lavado de vehiculo",
+        "Vehiculo remolcado",
+        "Actualizacion de millaje",
+        "Inspeccion fisica",
+        "Reparacion",
+				"Cambio de aceite",
+				"Calibracion de llantas",
+				"Cambio o relleno de coolant"
       ].sort();
 
       const statusOptions = ['Pendiente', 'Completado', 'Vencido', 'Cancelado'];
