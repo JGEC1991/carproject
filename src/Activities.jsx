@@ -2,104 +2,64 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import Table from '../components/Table';
 import { Link, useNavigate } from 'react-router-dom';
+import Popout from '../components/Popout';
 
 const Activities = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activities, setActivities] = useState([]);
+  const [vehicles, setVehicles] = useState([]);
+  const [drivers, setDrivers] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newActivity, setNewActivity] = useState({
-    date: '',
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
     vehicle_id: '',
     driver_id: '',
     activity_type: '',
-    description: '',
-    attachment_url: '',
     status: '',
   });
-  const [editingActivityId, setEditingActivityId] = useState(null);
-  const [editedActivity, setEditedActivity] = useState({
-    vehicle_id: '',
-    driver_id: '',
-    activity_type: '',
-    description: '',
-    attachment_url: '',
-    status: '',
-  });
-  const [selectedActivity, setSelectedActivity] = useState(null);
-  const [showActivityDetails, setShowActivityDetails] = useState(false);
-  const [organizationId, setOrganizationId] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchVehicles();
-    fetchDrivers();
-    fetchActivities();
-    fetchOrganizationId();
-  }, []);
+    fetchData();
+  }, [filters]);
 
-  const fetchOrganizationId = async () => {
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+
     try {
-      const { data: authUser, error: authError } = await supabase.auth.getUser();
-      if (authError) {
-        setError(authError.message);
-        return;
-      }
-
-      const userId = authUser.user.id;
-
-      const { data: userData, error: orgError } = await supabase
-        .from('users')
-        .select('organization_id')
-        .eq('id', userId)
-        .single();
-
-      if (orgError) {
-        setError(orgError.message);
-        return;
-      }
-
-      setOrganizationId(userData?.organization_id || null);
-    } catch (error) {
-      console.error('Error fetching organization ID:', error.message);
-      setError(error.message);
+      await Promise.all([fetchVehicles(), fetchDrivers(), fetchActivities()]);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchVehicles = async () => {
     try {
-      const { data, error } = await supabase.from('vehicles').select('*');
-      if (error) {
-        console.error('Error fetching vehicles:', error);
-        alert(error.message);
-      } else {
-        console.log('Vehicles:', data);
-        setVehicles(data);
-      }
-    } catch (error) {
-      console.error('Error fetching vehicles:', error.message);
-      alert(error.message);
+      const { data, error } = await supabase.from('vehicles').select('id, make, model');
+      if (error) setError(error.message);
+      else setVehicles(data);
+    } catch (err) {
+      setError(err.message);
     }
   };
 
   const fetchDrivers = async () => {
     try {
-      const { data, error } = await supabase.from('drivers').select('*');
-      if (error) {
-        console.error('Error fetching drivers:', error);
-        alert(error.message);
-      } else {
-        console.log('Drivers:', data);
-        setDrivers(data);
-      }
-    } catch (error) {
-      console.error('Error fetching drivers:', error.message);
-      alert(error.message);
+      const { data, error } = await supabase.from('drivers').select('id, name');
+      if (error) setError(error.message);
+      else setDrivers(data);
+    } catch (err) {
+      setError(err.message);
     }
   };
 
   const fetchActivities = async () => {
     try {
-      const { data, error } = await supabase.from('activities').select(`
+      let query = supabase.from('activities').select(`
         id,
         activity_type,
         description,
@@ -110,287 +70,118 @@ const Activities = () => {
         vehicles (make, model, license_plate),
         drivers (name)
       `);
+
+      // Apply filters
+      if (filters.vehicle_id) query = query.eq('vehicle_id', filters.vehicle_id);
+      if (filters.driver_id) query = query.eq('driver_id', filters.driver_id);
+      if (filters.activity_type) query = query.eq('activity_type', filters.activity_type);
+      if (filters.status) query = query.eq('status', filters.status);
+
+      const { data, error } = await query;
+
       if (error) {
-        console.error('Error fetching activities:', error);
-        alert(error.message);
+        setError(error.message);
       } else {
-        console.log('Activities:', data);
         setActivities(data);
       }
-    } catch (error) {
-      console.error('Error fetching activities:', error.message);
-      alert(error.message);
+    } catch (err) {
+      setError(err.message);
     }
   };
 
-  const handleInputChange = (e) => {
-    setNewActivity({ ...newActivity, [e.target.name]: e.target.value });
+  const handleFilterChange = (e) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
-  const handleAddActivity = async () => {
-    try {
-      if (!organizationId) {
-        setError('Organization ID not found. Please refresh the page.');
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('activities')
-        .insert([
-          {
-            date: newActivity.date,
-            vehicle_id: newActivity.vehicle_id,
-            driver_id: newActivity.driver_id,
-            activity_type: newActivity.activity_type,
-            description: newActivity.description,
-            attachment_url: newActivity.attachment_url,
-            status: newActivity.status,
-            organization_id: organizationId,
-          },
-        ]);
-      if (error) {
-        console.error('Error adding activity:', error);
-        alert(error.message);
-      } else {
-        console.log('Activity added:', data);
-        alert('Activity added successfully!');
-        fetchActivities();
-        setNewActivity({
-          date: '',
-          vehicle_id: '',
-          driver_id: '',
-          activity_type: '',
-          description: '',
-          attachment_url: '',
-          status: '',
-        });
-        setShowAddForm(false);
-      }
-    } catch (error) {
-      console.error('Error adding activity:', error.message);
-      alert(error.message);
-    }
-  };
-
-  const handleAddClick = () => {
-    setShowAddForm(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowAddForm(false);
-    setEditingActivityId(null);
-    setShowActivityDetails(false);
-  };
-
-  const handleEdit = (activity) => {
-    setEditingActivityId(activity.id);
-    setEditedActivity({
-      vehicle_id: activity.vehicle_id || '',
-      driver_id: activity.driver_id || '',
-      activity_type: activity.activity_type || '',
-      description: activity.description || '',
-      attachment_url: activity.attachment_url || '',
-      status: activity.status || '',
+  const clearFilters = () => {
+    setFilters({
+      vehicle_id: '',
+      driver_id: '',
+      activity_type: '',
+      status: '',
     });
   };
 
-  const handleEditedInputChange = (e) => {
-    setEditedActivity({ ...editedActivity, [e.target.name]: e.target.value });
-  };
-
-  const handleSave = async (id) => {
-    try {
-      const { data, error } = await supabase
-        .from('activities')
-        .update(editedActivity)
-        .eq('id', id);
-
-      if (error) {
-        console.error('Error updating activity:', error);
-        alert(error.message);
-      } else {
-        console.log('Activity updated:', data);
-        alert('Activity updated successfully!');
-        fetchActivities();
-        setEditingActivityId(null);
-      }
-    } catch (error) {
-      console.error('Error updating activity:', error.message);
-      alert(error.message);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this activity?')) {
-      try {
-        const { data, error } = await supabase.from('activities').delete().eq('id', id);
-        if (error) {
-          console.error('Error deleting activity:', error);
-          alert(error.message);
-        } else {
-          console.log('Activity deleted:', data);
-          alert('Activity deleted successfully!');
-          fetchActivities();
-        }
-      } catch (error) {
-        console.error('Error deleting activity:', error.message);
-        alert(error.message);
-      }
-    }
-  };
-
-  const handleViewDetails = (activity) => {
-    setSelectedActivity(activity);
-    setShowActivityDetails(true);
-  };
-
-  const activityTypes = [
-    'Carwash',
-    'Check engine',
-    'Flat tire',
-    'Maintenance',
-    'Other',
-    'Physical inspection',
-    'Suspension',
-    'Tow'
-  ].sort(); // Sorts alphabetically
+  const columns = [
+    { key: 'date', title: 'Date', sortable: true },
+    { key: 'vehicle_name', title: 'Vehicle', sortable: true, render: (activity) => `${activity.vehicles?.make || ''} ${activity.vehicles?.model || ''}` },
+    { key: 'driver_name', title: 'Driver', sortable: true, render: (activity) => activity.drivers?.name },
+    { key: 'activity_type', title: 'Activity Type', sortable: true },
+    { key: 'description', title: 'Description', sortable: true },
+    { key: 'status', title: 'Status', sortable: true },
+  ];
 
   return (
     <>
       <div className="page">
         <div className="max-w-5xl mx-auto mt-8">
-          <div className="flex justify-end items-center mb-4">
+          <div className="flex justify-between items-center mb-4">
             <button
-              onClick={handleAddClick}
-              className="text-white font-bold py-2 px-4 rounded"
+              onClick={() => setShowFilters(!showFilters)}
+              className="text-gray-700 font-bold py-2 px-4 rounded"
+            >
+              <img src="https://ticghrxzdsdoaiwvahht.supabase.co/storage/v1/object/public/assets/Navigation/filter.png" alt="Filter" style={{ width: '20px', height: '20px' }} />
+            </button>
+            <button
+              onClick={() => navigate('/activities/new')}
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
             >
               <img src="https://ticghrxzdsdoaiwvahht.supabase.co/storage/v1/object/public/assets/Navigation/plus.png" alt="Add Activity" style={{ width: '20px', height: '20px' }} />
             </button>
           </div>
-          <div className="bg-white shadow-md rounded-lg p-4 overflow-x-auto">
-            <table className="min-w-full leading-normal shadow-md rounded-lg overflow-hidden">
-              <thead>
-                <tr>
-                  <TableHeader>Vehicle</TableHeader>
-                  <TableHeader>Driver</TableHeader>
-                  <TableHeader>Activity Type</TableHeader>
-                  <TableHeader>Description</TableHeader>
-                  <TableHeader>Attachments</TableHeader>
-                  <TableHeader>Actions</TableHeader>
-                </tr>
-              </thead>
-              <tbody>
-                {activities.map((activity) => (
-                  <tr key={activity.id} className="hover:bg-gray-100">
-                    <TableData>
-                      {editingActivityId === activity.id ? (
-                        <select name="vehicle_id" value={editedActivity.vehicle_id} onChange={handleEditedInputChange}>
-                          <option value="">Select Vehicle</option>
-                          {vehicles.map((vehicle) => (
-                            <option key={vehicle.id} value={vehicle.id}>{vehicle.make} {vehicle.model}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        `${activity.vehicles?.make} ${activity.vehicles?.model} (${activity.vehicles?.license_plate})`
-                      )}
-                    </TableData>
-                    <TableData>
-                      {editingActivityId === activity.id ? (
-                        <select name="driver_id" value={editedActivity.driver_id} onChange={handleEditedInputChange}>
-                          <option value="">Select Driver</option>
-                          {drivers.map((driver) => (
-                            <option key={driver.id} value={driver.id}>{driver.name}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        activity.drivers?.name
-                      )}
-                    </TableData>
-                    <TableData>
-                      {editingActivityId === activity.id ? (
-                        <select name="activity_type" value={editedActivity.activity_type} onChange={handleEditedInputChange}>
-                          <option value="">Select Activity Type</option>
-                          {activityTypes.map((type) => (
-                            <option key={type} value={type}>{type}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        activity.activity_type
-                      )}
-                    </TableData>
-                    <TableData>
-                      {editingActivityId === activity.id ? (
-                        <textarea name="description" value={editedActivity.description} onChange={handleEditedInputChange} />
-                      ) : (
-                        activity.description
-                      )}
-                    </TableData>
-                    <TableData>
-                      {activity.attachment_url && (
-                        <img src={activity.attachment_url} alt="Attachment" style={{ width: '100px', margin: '5px' }} />
-                      )}
-                    </TableData>
-                    <TableData>
-                      {editingActivityId === activity.id ? (
-                        <>
-                          <button onClick={() => handleSave(activity.id)} className="text-green-500 hover:text-green-700 mr-2">Save</button>
-                          <button onClick={() => setEditingActivityId(null)} className="text-gray-500 hover:text-gray-700">Cancel</button>
-                        </>
-                      ) : (
-                        <>
-                          <button onClick={() => handleEdit(activity)} className="text-blue-500 hover:text-blue-700 mr-2">Edit</button>
-                          <button onClick={() => handleDelete(activity.id)} className="text-red-500 hover:text-red-700">Delete</button>
-                          <button onClick={() => handleViewDetails(activity)} className="text-blue-500 hover:text-blue-700">View Details</button>
-                        </>
-                      )}
-                    </TableData>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <Modal isOpen={showAddForm} onClose={handleCloseModal}>
-            <h2 className="text-2xl font-semibold mb-4">Add New Activity</h2>
-            <label htmlFor="date" className="block text-gray-700 text-sm font-bold mb-2">Date</label>
-            <input type="date" id="date" name="date" value={newActivity.date} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-4" />
-            <label htmlFor="vehicle_id" className="block text-gray-700 text-sm font-bold mb-2">Vehicle</label>
-            <select id="vehicle_id" name="vehicle_id" value={newActivity.vehicle_id} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-4">
+
+          <Popout isOpen={showFilters} onClose={() => setShowFilters(false)}>
+            <h2 className="text-2xl font-semibold mb-4">Filters</h2>
+            <label className="block text-gray-700 text-sm font-bold mb-2">Vehicle</label>
+            <select name="vehicle_id" value={filters.vehicle_id} onChange={handleFilterChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-4">
               <option value="">Select Vehicle</option>
               {vehicles.map((vehicle) => (
                 <option key={vehicle.id} value={vehicle.id}>{vehicle.make} {vehicle.model}</option>
               ))}
             </select>
-            <label htmlFor="driver_id" className="block text-gray-700 text-sm font-bold mb-2">Driver</label>
-            <select id="driver_id" name="driver_id" value={newActivity.driver_id} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">Driver</label>
+            <select name="driver_id" value={filters.driver_id} onChange={handleFilterChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-4">
               <option value="">Select Driver</option>
               {drivers.map((driver) => (
                 <option key={driver.id} value={driver.id}>{driver.name}</option>
               ))}
             </select>
-            <label htmlFor="activity_type" className="block text-gray-700 text-sm font-bold mb-2">Activity Type</label>
-            <select id="activity_type" name="activity_type" value={newActivity.activity_type} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-4">
-              <option value="" disabled>Select Activity Type</option>
+            <label className="block text-gray-700 text-sm font-bold mb-2">Activity Type</label>
+            <select name="activity_type" value={filters.activity_type} onChange={handleFilterChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-4">
+              <option value="">Select Activity Type</option>
               {activityTypes.map((type) => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
-            <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">Description</label>
-            <textarea id="description" name="description" value={newActivity.description} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-4" />
-            <button
-              onClick={handleAddActivity}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            >
-              Add Activity
+            <label className="block text-gray-700 text-sm font-bold mb-2">Status</label>
+            <select name="status" value={filters.status} onChange={handleFilterChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-4">
+              <option value="">Select Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Completed">Completed</option>
+              <option value="Past due">Past due</option>
+              <option value="Canceled">Canceled</option>
+            </select>
+            <button onClick={clearFilters} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+              Clear Filters
             </button>
-          </Modal>
-          <Modal isOpen={showActivityDetails} onClose={handleCloseModal}>
-            {selectedActivity && <ActivityRecordCard activity={selectedActivity} />}
-          </Modal>
+          </Popout>
+
+          {loading ? (
+            <div className="flex items-center justify-center h-full">Loading...</div>
+          ) : error ? (
+            <div className="flex items-center justify-center h-full text-red-500">Error: {error}</div>
+          ) : (
+            <Table
+              columns={columns}
+              data={activities}
+              onRowClick={(activity) => navigate(`/activities/${activity.id}`)}
+            />
+          )}
         </div>
       </div>
     </>
   );
-}
+};
 
 // Reusable Table Header Component
 function TableHeader({ children }) {
