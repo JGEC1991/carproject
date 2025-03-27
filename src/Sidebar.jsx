@@ -1,36 +1,39 @@
 import React, { useState } from 'react';
-    import { Link, useLocation, useNavigate } from '../react-router-dom';
-    import { supabase } from '../supabaseClient';
+import { Link, useLocation, useNavigate } from '../react-router-dom';
+import { supabase } from '../supabaseClient';
 
-    const Sidebar = () => {
-      const location = useLocation();
-      const [collapsed, setCollapsed] = useState(false);
-      const navigate = useNavigate();
+const Sidebar = ({ isSuperAdmin, isSidebarOpen, setIsSidebarOpen }) => {
+  const location = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
+  const navigate = useNavigate();
 
-      const menuItems = [
-        { path: '/dashboard', icon: 'dashboard', label: 'Panel de control' },
-        { path: '/vehicles', icon: 'directions_car', label: 'Vehículos' },
-        { path: '/drivers', icon: 'people', label: 'Conductores' },
-        { path: '/activities', icon: 'event_note', label: 'Actividades' },
-        { path: '/revenue', icon: 'payments', label: 'Ingresos' },
-        { path: '/expenses', icon: 'money_off', label: 'Gastos' },
-        { path: '/admin', icon: 'admin_panel_settings', label: 'Administración' },
-        { path: '/my-profile', icon: 'person', label: 'Perfil' },
-      ];
+  const menuItems = [
+    { path: '/activities', icon: 'event_note', label: 'Actividades' },
+    { path: '/my-profile', icon: 'person', label: 'Perfil' },
+    ...(isSuperAdmin
+      ? [
+          { path: '/dashboard', icon: 'dashboard', label: 'Panel' },
+          { path: '/vehicles', icon: 'directions_car', label: 'Vehiculos' },
+          { path: '/drivers', icon: 'people', label: 'Conductores' },
+          { path: '/admin', icon: 'admin_panel_settings', label: 'Administrador' },
+          { path: '/super-admin', icon: 'supervisor_account', label: 'Super Admin' },
+        ]
+      : [])
+  ];
 
-      const handleLogout = async () => {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) {
-            console.error('Logout error:', error.message);
-            alert(error.message);
-          } else {
-            console.log('Logged out');
-            navigate('/');
-          }
-        } catch (error) {
-          console.error('Logout error:', error.message);
-          alert(error.message);
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Logout error:', error.message);
+        alert(error.message);
+      } else {
+        console.log('Logged out');
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Logout error:', error.message);
+      alert(error.message);
         }
       };
 
@@ -38,7 +41,7 @@ import React, { useState } from 'react';
         <div className={`sidebar ${collapsed ? 'w-16' : 'w-64'} fixed inset-y-0 left-0 z-30 bg-gray-800 text-white transition-all duration-300 ease-in-out`}>
           <div className="flex items-center justify-between px-4 py-5 border-b border-gray-700">
             {!collapsed && (
-              <div className="text-xl font-bold text-white">J&E CarFleet PRO</div>
+              <div className="text-xl font-bold text-white">CarFleet</div>
             )}
             <button 
               onClick={() => setCollapsed(!collapsed)} 
@@ -75,7 +78,7 @@ import React, { useState } from 'react';
                 ${collapsed ? 'justify-center' : 'justify-start'}`}
             >
               <span className="material-icons">logout</span>
-              {!collapsed && <span className="ml-3">Cerrar sesión</span>}
+              {!collapsed && <span className="ml-3">Cerrar Sesion</span>}
             </button>
           </div>
         </div>
