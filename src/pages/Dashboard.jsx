@@ -159,7 +159,7 @@ const Dashboard = () => {
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie
-                dataKey="Cantidad"
+                dataKey="value"
                 isAnimationActive={false}
                 data={pieChartData}
                 cx="50%"
