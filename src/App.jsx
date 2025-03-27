@@ -176,10 +176,14 @@ import { BrowserRouter, Route, Routes, Link, Navigate } from 'react-router-dom';
                             path="/vehicles/new"
                             element={<NewVehicle />}
                           />
-                          <Route
-                            path="/vehicles/:id"
-                            element={<VehicleRecord />}
-                          />
+                        </>
+                      )}
+                      <Route
+                        path="/vehicles/:id"
+                        element={<VehicleRecord />}
+                      />
+                      {isAdmin && (
+                        <>
                           <Route
                             path="/drivers"
                             element={<Drivers />}

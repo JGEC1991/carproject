@@ -9,6 +9,7 @@ import React, { useState, useEffect } from 'react';
       const [loading, setLoading] = useState(true);
       const [drivers, setDrivers] = useState([]);
       const [selectedDriver, setSelectedDriver] = useState(null);
+      const [userRole, setUserRole] = useState(null); // Add userRole state
 
       useEffect(() => {
         const fetchVehicle = async () => {
@@ -54,8 +55,36 @@ import React, { useState, useEffect } from 'react';
           }
         };
 
+        const fetchUserRole = async () => {
+          try {
+            const { data: authUser, error: authError } = await supabase.auth.getUser();
+            if (authError) {
+              console.error('Error fetching user:', authError);
+              return;
+            }
+
+            const userId = authUser.user.id;
+
+            const { data: userData, error: userError } = await supabase
+              .from('users')
+              .select('role')
+              .eq('id', userId)
+              .single();
+
+            if (userError) {
+              console.error('Error fetching user role:', userError);
+              return;
+            }
+
+            setUserRole(userData?.role || 'user');
+          } catch (error) {
+            console.error('Error fetching user role:', error.message);
+          }
+        };
+
         fetchVehicle();
         fetchDrivers();
+        fetchUserRole();
       }, [id]);
 
       const handleAssignDriver = async () => {
@@ -127,35 +156,39 @@ import React, { useState, useEffect } from 'react';
       return (
         <div className="container mx-auto p-6">
           <h1 className="text-3xl font-semibold mb-4">Detalles de vehiculo</h1>
-          <VehicleRecordCard vehicle={vehicle} isEditMode={true} />
+          <VehicleRecordCard vehicle={vehicle} isEditMode={true} userRole={userRole} />
 
-          <div className="mt-4">
-            <label htmlFor="driver" className="block text-gray-700 text-sm font-bold mb-2">
-              Asignar Conductor:
-            </label>
-            <select
-              id="driver"
-              value={selectedDriver || ''}
-              onChange={(e) => setSelectedDriver(e.target.value === '' ? null : e.target.value)}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          {userRole === 'admin' && (
+            <div className="mt-4">
+              <label htmlFor="driver" className="block text-gray-700 text-sm font-bold mb-2">
+                Asignar Conductor:
+              </label>
+              <select
+                id="driver"
+                value={selectedDriver || ''}
+                onChange={(e) => setSelectedDriver(e.target.value === '' ? null : e.target.value)}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              >
+                <option value="">Seleccionar conductor</option>
+                {drivers.map((driver) => (
+                  <option key={driver.id} value={driver.id}>
+                    {driver.name}
+                  </option>
+                ))}
+                <option value="">Ninguno</option>
+              </select>
+            </div>
+          )}
+
+          {userRole === 'admin' && (
+            <button
+              onClick={handleAssignDriver}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4"
+              disabled={loading}
             >
-              <option value="">Seleccionar conductor</option>
-              {drivers.map((driver) => (
-                <option key={driver.id} value={driver.id}>
-                  {driver.name}
-                </option>
-              ))}
-              <option value="">Ninguno</option>
-            </select>
-          </div>
-
-          <button
-            onClick={handleAssignDriver}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4"
-            disabled={loading}
-          >
-            {loading ? 'Asignando...' : 'Asignar Conductor'}
-          </button>
+              {loading ? 'Asignando...' : 'Asignar Conductor'}
+            </button>
+          )}
         </div>
       );
     }

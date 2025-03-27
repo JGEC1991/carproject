@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
     import { supabase } from '../supabaseClient';
-    import { useNavigate } from 'react-router-dom';
+    import { useNavigate, Link } from 'react-router-dom';
     import {
       Card,
       CardHeader,
@@ -61,14 +61,14 @@ import { useState, useEffect } from 'react';
 
           try {
             if (session?.user?.id) {
-              const { data: user, error: userError } = await supabase
+              const { data: user, error } = await supabase
                 .from('users')
                 .select('name, phone, email, is_driver, id, role')
                 .eq('id', session.user.id)
                 .single();
 
-              if (userError) {
-                setError(userError.message);
+              if (error) {
+                console.error('Error fetching user:', error);
                 return;
               }
 
@@ -87,8 +87,8 @@ import { useState, useEffect } from 'react';
                 }
               }
             }
-          } catch (err) {
-            setError(err.message);
+          } catch (error) {
+            setError(error.message);
           } finally {
             setLoading(false);
           }
@@ -176,7 +176,7 @@ import { useState, useEffect } from 'react';
           }
           const { error } = await supabase
             .from('users')
-            .update({ name, phone, is_driver: isDriver })
+            .update({ name, phone })
             .eq('id', profile.id);
 
           if (error) {
@@ -218,68 +218,6 @@ import { useState, useEffect } from 'react';
           }
         } catch (err) {
           setError(`Unexpected error: ${err.message}`);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      const handleAssignVehicle = async () => {
-        try {
-          setLoading(true);
-          setError(null);
-
-          // Update the vehicles table with the driver_id
-          const { error: vehicleError } = await supabase
-            .from('vehicles')
-            .update({ driver_id: profile.id })
-            .eq('id', selectedVehicle);
-
-          if (vehicleError) {
-            setError(vehicleError.message);
-            return;
-          }
-
-          // Update the drivers table with the vehicle_id
-          const { error: driverError } = await supabase
-            .from('drivers')
-            .update({ vehicle_id: selectedVehicle })
-            .eq('id', profile.id);
-
-          if (driverError) {
-            setError(driverError.message);
-            return;
-          }
-
-          alert('Vehicle assigned successfully!');
-          navigate(0); // Refresh the page
-        } catch (error) {
-          setError(error.message);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      const handleIsDriverChange = async (e) => {
-        const newIsDriverValue = e.target.checked;
-        setIsDriver(newIsDriverValue);
-      
-        try {
-          setLoading(true);
-          setError(null);
-      
-          const { error } = await supabase
-            .from('users')
-            .update({ is_driver: newIsDriverValue })
-            .eq('id', profile.id);
-      
-          if (error) {
-            setError(error.message);
-            return;
-          }
-      
-          alert('Driver status updated successfully!');
-        } catch (err) {
-          setError(err.message);
         } finally {
           setLoading(false);
         }
@@ -333,20 +271,6 @@ import { useState, useEffect } from 'react';
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                       />
-                    </div>
-                    <div className="mb-4">
-                      <div className="flex items-center">
-                        <label htmlFor="isDriver" className="block text-gray-700 text-sm font-bold mb-2">
-                          Es conductor
-                        </label>
-                        <input
-                          type="checkbox"
-                          id="isDriver"
-                          checked={isDriver}
-                          onChange={handleIsDriverChange}
-                          className="form-checkbox h-5 w-5 text-blue-600"
-                        />
-                      </div>
                     </div>
                     <div className="mb-4">
                       <Typography variant="small" color="gray">
@@ -452,39 +376,14 @@ import { useState, useEffect } from 'react';
                         Vehiculo Asignado
                       </Typography>
                       {assignedVehicle ? (
-                        <Typography color="gray" className="mb-2">
+                        <Link to={`/vehicles/${driverDetails.vehicle_id}`} className="text-blue-500 hover:text-blue-700">
                           {assignedVehicle.make} {assignedVehicle.model} ({assignedVehicle.license_plate})
-                        </Typography>
+                        </Link>
                       ) : (
                         <Typography color="gray" className="mb-2">
                           No asignado
                         </Typography>
                       )}
-                      <div className="mb-4">
-                        <label htmlFor="vehicle" className="block text-gray-700 text-sm font-bold mb-2">
-                          Asignar Vehiculo:
-                        </label>
-                        <Select
-                          id="vehicle"
-                          value={selectedVehicle}
-                          onChange={(value) => setSelectedVehicle(value)}
-                          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        >
-                          <Option value="">Seleccionar vehiculo</Option>
-                          {availableVehicles.map((vehicle) => (
-                            <Option key={vehicle.id} value={vehicle.id}>
-                              {vehicle.make} {vehicle.model} ({vehicle.license_plate})
-                            </Option>
-                          ))}
-                        </Select>
-                      </div>
-                      <Button
-                        color="blue"
-                        onClick={handleAssignVehicle}
-                        disabled={!selectedVehicle}
-                      >
-                        Asignar Vehiculo
-                      </Button>
                     </>
                   ) : (
                     <Typography color="gray">No es conductor</Typography>

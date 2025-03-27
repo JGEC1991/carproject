@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
     import { supabase } from '../../supabaseClient';
     import { useTranslation } from 'react-i18next';
 
-    function VehicleRecordCard({ vehicle, isEditMode = false }) {
+    function VehicleRecordCard({ vehicle, isEditMode = false, userRole }) {
       const [activeTab, setActiveTab] = useState('details');
       const [make, setMake] = useState(vehicle?.make || '');
       const [model, setModel] = useState(vehicle?.model || '');
@@ -205,6 +205,31 @@ import React, { useState, useEffect, useRef } from 'react';
         }
       };
 
+      const renderTabButtons = () => {
+        const tabButtons = [
+          { key: 'details', label: t('Informacion') },
+          { key: 'photos', label: t('Fotos') },
+        ];
+      
+        if (userRole === 'admin') {
+          tabButtons.push(
+            { key: 'historial', label: 'Historial' },
+            { key: 'reparaciones', label: 'Reparaciones' },
+            { key: 'finanzas', label: 'Finanzas' }
+          );
+        }
+      
+        return tabButtons.map((tab) => (
+          <button
+            key={tab.key}
+            className={`px-4 py-2 rounded-t-lg ${activeTab === tab.key ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
+            onClick={() => setActiveTab(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ));
+      };
+
       return (
         <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
           <div className="border-b pb-4 mb-6">
@@ -218,36 +243,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
           {/* Tabs */}
           <div className="mb-4">
-            <button
-              className={`px-4 py-2 rounded-t-lg ${activeTab === 'details' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
-              onClick={() => setActiveTab('details')}
-            >
-              {t('Informacion')}
-            </button>
-            <button
-              className={`px-4 py-2 rounded-t-lg ${activeTab === 'photos' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
-              onClick={() => setActiveTab('photos')}
-            >
-              {t('Fotos')}
-            </button>
-            <button
-              className={`px-4 py-2 rounded-t-lg ${activeTab === 'historial' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
-              onClick={() => setActiveTab('historial')}
-            >
-              Historial
-            </button>
-            <button
-              className={`px-4 py-2 rounded-t-lg ${activeTab === 'reparaciones' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
-              onClick={() => setActiveTab('reparaciones')}
-            >
-              Reparaciones
-            </button>
-            <button
-              className={`px-4 py-2 rounded-t-lg ${activeTab === 'finanzas' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
-              onClick={() => setActiveTab('finanzas')}
-            >
-              Finanzas
-            </button>
+            {renderTabButtons()}
           </div>
 
           {/* Details Tab */}
@@ -427,7 +423,7 @@ import React, { useState, useEffect, useRef } from 'react';
           )}
 
           {/* Historial Tab */}
-          {activeTab === 'historial' && (
+          {activeTab === 'historial' && userRole === 'admin' && (
             <div>
               <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Historial de Actividades</h3>
               {activityHistory.length > 0 ? (
@@ -445,7 +441,7 @@ import React, { useState, useEffect, useRef } from 'react';
           )}
 
           {/* Reparaciones Tab */}
-          {activeTab === 'reparaciones' && (
+          {activeTab === 'reparaciones' && userRole === 'admin' && (
             <div>
               <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Reparaciones</h3>
               {reparaciones.length > 0 ? (
@@ -464,7 +460,7 @@ import React, { useState, useEffect, useRef } from 'react';
           )}
 
           {/* Finanzas Tab */}
-          {activeTab === 'finanzas' && (
+          {activeTab === 'finanzas' && userRole === 'admin' && (
             <div>
               <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Finanzas</h3>
               <p>Ingresos Totales: ${finanzas.totalRevenue}</p>
