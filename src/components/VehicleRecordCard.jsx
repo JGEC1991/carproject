@@ -240,7 +240,7 @@ import React, { useState, useEffect, useRef } from 'react';
       
         if (userRole === 'admin') {
           tabButtons.push(
-            { key: 'historial', label: 'Historial' },
+            { key: 'historial', label: 'Mantenimientos' },
             { key: 'reparaciones', label: 'Reparaciones' },
             { key: 'finanzas', label: 'Finanzas' }
           );
