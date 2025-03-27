@@ -142,29 +142,42 @@ import React, { useState, useEffect, useRef } from 'react';
           return;
         }
 
-        const { data, error } = await supabase.storage
-          .from('vehicle-photos')
-          .upload(`${vehicle.id}/${folder}/${photo.name}`, photo, {
-            cacheControl: '3600',
-            upsert: true,
-            public: true,
-            contentType: photo.type,
-          });
-        setPhotoState(null);
-        if (error) alert(t('errorUploadingPhoto') + error.message);
+        try {
+          const fileExt = photo.name.split('.').pop();
+          const fileName = `${vehicle.id}-${fieldName}.${fileExt}`;
+          const filePath = `vehicles/${vehicle.make}-${vehicle.model}/${folder}/${fileName}`;
 
-        if(data){
-            // Construct the full public URL for the uploaded image
-            const fullUrl = `https://ticghrxzdsdoaiwvahht.supabase.co/storage/v1/object/public/vehicle-photos/${data.path}`;
+          const { data, error } = await supabase.storage
+            .from('jerentcars-storage')
+            .upload(filePath, photo, {
+              cacheControl: '3600',
+              upsert: true,
+              public: true,
+              contentType: photo.type,
+            });
+          setPhotoState(null);
+          if (error) {
+            alert(t('errorUploadingPhoto') + error.message);
+            return;
+          }
 
-            const {data: updateData, error: updateError} = await supabase
-                .from('vehicles')
-                .update({[fieldName]: fullUrl})
-                .eq('id', vehicle.id)
+          // Construct the full public URL for the uploaded image
+          const fullUrl = supabase.storage
+            .from('jerentcars-storage')
+            .getPublicUrl(filePath)
+            .data.publicUrl;
 
-            if(updateError){
-                alert('Error updating vehicle photo URL: ' + updateError.message)
-            }
+          const { data: updateData, error: updateError } = await supabase
+            .from('vehicles')
+            .update({ [fieldName]: fullUrl })
+            .eq('id', vehicle.id);
+
+          if (updateError) {
+            alert('Error updating vehicle photo URL: ' + updateError.message);
+          }
+        } catch (error) {
+          console.error('Error uploading image:', error.message);
+          alert(error.message);
         }
       };
 

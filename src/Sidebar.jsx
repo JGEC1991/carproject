@@ -38,7 +38,7 @@ import React, { useState } from 'react';
         <div className={`sidebar ${collapsed ? 'w-16' : 'w-64'} fixed inset-y-0 left-0 z-30 bg-gray-800 text-white transition-all duration-300 ease-in-out`}>
           <div className="flex items-center justify-between px-4 py-5 border-b border-gray-700">
             {!collapsed && (
-              <div className="text-xl font-bold text-white">CarFleet</div>
+              <div className="text-xl font-bold text-white">J&E CarFleet PRO</div>
             )}
             <button 
               onClick={() => setCollapsed(!collapsed)} 
