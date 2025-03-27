@@ -30,6 +30,29 @@ import { useState, useEffect } from 'react';
       const [userRole, setUserRole] = useState('');
       const [availableVehicles, setAvailableVehicles] = useState([]);
       const [selectedVehicle, setSelectedVehicle] = useState('');
+      const [session, setSession] = useState(null); // Add session state
+
+      useEffect(() => {
+        const getSession = async () => {
+          try {
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError) {
+              setError(sessionError.message);
+              return;
+            }
+            setSession(session);
+          } catch (err) {
+            setError(err.message);
+          } finally {
+            setLoading(false);
+          }
+        }
+        getSession();
+
+        supabase.auth.onAuthStateChange((_event, session) => {
+          setSession(session);
+        });
+      }, []);
 
       useEffect(() => {
         const fetchProfile = async () => {
@@ -37,35 +60,32 @@ import { useState, useEffect } from 'react';
           setError(null);
 
           try {
-            const { data: authUser, error: authError } = await supabase.auth.getUser();
+            if (session?.user?.id) {
+              const { data: user, error: userError } = await supabase
+                .from('users')
+                .select('name, phone, email, is_driver, id, role')
+                .eq('id', session.user.id)
+                .single();
 
-            if (authError) {
-              setError(authError.message);
-              return;
-            }
+              if (userError) {
+                setError(userError.message);
+                return;
+              }
 
-            const userId = authUser.user.id;
+              if (user) {
+                setProfile(user);
+                setName(user.name || '');
+                setEmail(session.user.email || ''); // Set email from session
+                setPhone(user.phone || '');
+                setIsDriver(user.is_driver || false);
+                setUserRole(user.role || '');
 
-            const { data: user, error: userError } = await supabase
-              .from('users')
-              .select('name, phone, email, is_driver, id, role')
-              .eq('id', userId)
-              .single();
-
-            if (userError) {
-              setError(userError.message);
-              return;
-            }
-
-            setProfile(user);
-            setName(user.name || '');
-            setEmail(authUser.user.email || ''); // Set email from authUser
-            setPhone(user.phone || '');
-            setIsDriver(user.is_driver || false);
-            setUserRole(user.role || '');
-
-            if (user.is_driver) {
-              fetchDriverDetails(userId);
+                if (user.is_driver) {
+                  fetchDriverDetails(session.user.id);
+                } else {
+                  setDriverDetails(null); // Clear driver details if not a driver
+                }
+              }
             }
           } catch (err) {
             setError(err.message);
@@ -79,11 +99,12 @@ import { useState, useEffect } from 'react';
             const { data: driverData, error: driverError } = await supabase
               .from('drivers')
               .select('*')
-              .eq('id', userId)
+              .eq('user_id', userId) // Use user_id instead of id
               .single();
 
             if (driverError) {
               console.error('Error fetching driver details:', driverError);
+              setDriverDetails(null); // Ensure driverDetails is null if there's an error
               return;
             }
 
@@ -93,6 +114,7 @@ import { useState, useEffect } from 'react';
             }
           } catch (err) {
             console.error('Error fetching driver details:', err);
+            setDriverDetails(null); // Ensure driverDetails is null in case of an exception
           }
         };
 
@@ -134,9 +156,13 @@ import { useState, useEffect } from 'react';
           }
         };
 
-        fetchProfile();
-        fetchAvailableVehicles();
-      }, []);
+        if (session) {
+          fetchProfile();
+          fetchAvailableVehicles();
+        } else {
+          setLoading(false);
+        }
+      }, [session?.user?.id]);
 
       const handleSubmit = async (e) => {
         e.preventDefault();
@@ -226,8 +252,8 @@ import { useState, useEffect } from 'react';
 
           alert('Vehicle assigned successfully!');
           navigate(0); // Refresh the page
-        } catch (err) {
-          setError(err.message);
+        } catch (error) {
+          setError(error.message);
         } finally {
           setLoading(false);
         }
@@ -258,14 +284,6 @@ import { useState, useEffect } from 'react';
           setLoading(false);
         }
       };
-
-      if (loading) {
-        return <div className="flex items-center justify-center h-full">Cargando...</div>;
-      }
-
-      if (error) {
-        return <div className="flex items-center justify-center h-full text-red-500">Error: {error}</div>;
-      }
 
       return (
         <div className="container mx-auto p-6">
@@ -398,7 +416,7 @@ import { useState, useEffect } from 'react';
                   </Typography>
                 </CardHeader>
                 <CardBody>
-                  {driverDetails ? (
+                  {session?.user && isDriver && driverDetails ? (
                     <>
                       <Typography variant="h6" color="gray">
                         Informacion de Licencia
@@ -419,13 +437,13 @@ import { useState, useEffect } from 'react';
                         Documentos
                       </Typography>
                       <Typography color="gray" className="mb-2">
-                        Foto de Licencia: {driverDetails.drivers_license_photo ? <a href={driverDetails.drivers_license_photo} target="_blank" rel="noopener noreferrer">Ver</a> : 'N/A'}
+                        Foto de Licencia: {driverDetails.license_image_url ? <a href={driverDetails.license_image_url} target="_blank" rel="noopener noreferrer">Ver</a> : 'N/A'}
                       </Typography>
                       <Typography color="gray" className="mb-2">
-                        Antecedentes Policiales: {driverDetails.police_records_photo ? <a href={driverDetails.police_records_photo} target="_blank" rel="noopener noreferrer">Ver</a> : 'N/A'}
+                        Antecedentes Policiales: {driverDetails.police_records_url ? <a href={driverDetails.police_records_url} target="_blank" rel="noopener noreferrer">Ver</a> : 'N/A'}
                       </Typography>
                       <Typography color="gray" className="mb-2">
-                        Antecedentes Criminales: {driverDetails.criminal_records_photo ? <a href={driverDetails.criminal_records_photo} target="_blank" rel="noopener noreferrer">Ver</a> : 'N/A'}
+                        Antecedentes Criminales: {driverDetails.criminal_records_url ? <a href={driverDetails.criminal_records_url} target="_blank" rel="noopener noreferrer">Ver</a> : 'N/A'}
                       </Typography>
                       <Typography color="gray" className="mb-2">
                         Foto de perfil: {driverDetails.photo_url ? <a href={driverDetails.photo_url} target="_blank" rel="noopener noreferrer">Ver</a> : 'N/A'}
