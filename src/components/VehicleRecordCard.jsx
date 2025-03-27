@@ -147,6 +147,27 @@ import React, { useState, useEffect, useRef } from 'react';
           const fileName = `${vehicle.id}-${fieldName}.${fileExt}`;
           const filePath = `vehicles/${vehicle.make}-${vehicle.model}/${folder}/${fileName}`;
 
+          const { data: existingData, error: existingError } = await supabase.storage
+            .from('jerentcars-storage')
+            .list(`${vehicle.id}/${folder}/`, { search: fileName });
+
+          if (existingError) {
+            console.error('Error listing existing files:', existingError);
+          }
+
+          if (existingData && existingData.length > 0) {
+            // Delete existing file
+            const { error: deleteError } = await supabase.storage
+              .from('jerentcars-storage')
+              .remove([`${vehicle.id}/${folder}/${fileName}`]);
+
+            if (deleteError) {
+              console.error('Error deleting existing file:', deleteError);
+              alert('Failed to replace existing photo: ' + deleteError.message);
+              return;
+            }
+          }
+
           const { data, error } = await supabase.storage
             .from('jerentcars-storage')
             .upload(filePath, photo, {
