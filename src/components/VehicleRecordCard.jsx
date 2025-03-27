@@ -21,6 +21,11 @@ import React, { useState, useEffect, useRef } from 'react';
       const [dashboardPhoto, setDashboardPhoto] = useState(null);
       const [activityHistory, setActivityHistory] = useState([]); // State for activity history
       const [reparaciones, setReparaciones] = useState([]);
+      const [finanzas, setFinanzas] = useState({
+        totalRevenue: 0,
+        totalOverdueRevenue: 0,
+        totalExpenses: 0,
+      });
       const modalRef = useRef(null);
       const { t } = useTranslation('vehicleRecordCard');
       const [zoomedImage, setZoomedImage] = useState(null);
@@ -65,9 +70,48 @@ import React, { useState, useEffect, useRef } from 'react';
           }
         };
 
+        const fetchFinancialData = async () => {
+          try {
+            const { data, error } = await supabase
+              .from('activities')
+              .select('activity_type, amount, status')
+              .eq('vehicle_id', vehicle.id);
+
+            if (error) {
+              console.error('Error fetching activities:', error);
+              return;
+            }
+
+            let totalRevenue = 0;
+            let totalOverdueRevenue = 0;
+            let totalExpenses = 0;
+
+            data.forEach(activity => {
+              if (activity.activity_type === 'Pago de tarifa') {
+                if (activity.status === 'Completado') {
+                  totalRevenue += activity.amount || 0;
+                } else if (activity.status === 'Vencido') {
+                  totalOverdueRevenue += activity.amount || 0;
+                }
+              } else if (activity.status === 'Completado') {
+                totalExpenses += activity.amount || 0;
+              }
+            });
+
+            setFinanzas({
+              totalRevenue,
+              totalOverdueRevenue,
+              totalExpenses,
+            });
+          } catch (error) {
+            console.error('Error fetching financial data:', error);
+          }
+        };
+
         if (vehicle?.id) {
           fetchActivityHistory();
           fetchReparaciones();
+          fetchFinancialData();
         }
       }, [vehicle?.id]);
 
@@ -197,6 +241,12 @@ import React, { useState, useEffect, useRef } from 'react';
               onClick={() => setActiveTab('reparaciones')}
             >
               Reparaciones
+            </button>
+            <button
+              className={`px-4 py-2 rounded-t-lg ${activeTab === 'finanzas' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
+              onClick={() => setActiveTab('finanzas')}
+            >
+              Finanzas
             </button>
           </div>
 
@@ -410,6 +460,16 @@ import React, { useState, useEffect, useRef } from 'react';
               ) : (
                 <p>No hay reparaciones para este vehículo.</p>
               )}
+            </div>
+          )}
+
+          {/* Finanzas Tab */}
+          {activeTab === 'finanzas' && (
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Finanzas</h3>
+              <p>Ingresos Totales: ${finanzas.totalRevenue}</p>
+              <p>Ingresos Vencidos: ${finanzas.totalOverdueRevenue}</p>
+              <p>Gastos Totales: ${finanzas.totalExpenses}</p>
             </div>
           )}
 
