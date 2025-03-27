@@ -144,6 +144,11 @@ import { useState, useEffect } from 'react';
         value,
       }));
 
+      const revenueByStatusData = Object.entries(revenueByStatus).map(([name, value]) => ({
+        name,
+        value,
+      }));
+
       return (
         <div className="container mx-auto p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -179,16 +184,20 @@ import { useState, useEffect } from 'react';
               <p>Gastos: ${revenueExpenses.expenses}</p>
               <p>Balance: ${balance}</p>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-6">
             {/* Revenue by Status */}
             <div className="bg-white shadow rounded-lg p-4">
               <h2 className="text-lg font-semibold mb-2">Ingresos por estado</h2>
-              <p>Completado: ${revenueByStatus.complete || 0}</p>
-              <p>Incompleto: ${revenueByStatus.incomplete || 0}</p>
-              <p>Vencido: ${revenueByStatus.pastdue || 0}</p>
-              <p>Cancelado: ${revenueByStatus.canceled || 0}</p>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={revenueByStatusData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="value" fill="#82ca9d" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
 
             {/* Activities by Type */}

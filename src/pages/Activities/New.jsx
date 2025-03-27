@@ -228,10 +228,10 @@ import React, { useState, useEffect } from 'react';
             <div className="mb-4">
               <label htmlFor="status" className="block text-gray-700 text-sm font-bold mb-2">Estado</label>
               <select id="status" name="status" value={newActivity.status} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                <option value="Pending">Pendiente</option>
-                <option value="Completed">Completado</option>
-                <option value="Past due">Vencido</option>
-                <option value="Canceled">Cancelado</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="Completado">Completado</option>
+                <option value="Vencido">Vencido</option>
+                <option value="Cancelado">Cancelado</option>
               </select>
             </div>
             <div className="mb-4">
