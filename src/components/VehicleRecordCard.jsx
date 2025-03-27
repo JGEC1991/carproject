@@ -144,47 +144,14 @@ import React, { useState, useEffect, useRef } from 'react';
 
         try {
           const fileExt = photo.name.split('.').pop();
-          const fileName = `${vehicle.id}-${fieldName}.${fileExt}`;
+          const fileName = `${vehicle.id}-${fieldName}-${Date.now()}.${fileExt}`; // Ensure unique file name
           const filePath = `vehicles/${vehicle.make}-${vehicle.model}/${folder}/${fileName}`;
-
-          // First, set the field to null to clear the existing URL
-          const { error: clearError } = await supabase
-            .from('vehicles')
-            .update({ [fieldName]: null })
-            .eq('id', vehicle.id);
-
-          if (clearError) {
-            console.error('Error clearing existing photo URL:', clearError);
-            alert('Failed to clear existing photo URL: ' + clearError.message);
-            return;
-          }
-
-          const { data: existingData, error: existingError } = await supabase.storage
-            .from('jerentcars-storage')
-            .list(`${vehicle.id}/${folder}/`, { search: fileName });
-
-          if (existingError) {
-            console.error('Error listing existing files:', existingError);
-          }
-
-          if (existingData && existingData.length > 0) {
-            // Delete existing file
-            const { error: deleteError } = await supabase.storage
-              .from('jerentcars-storage')
-              .remove([`${vehicle.id}/${folder}/${fileName}`]);
-
-            if (deleteError) {
-              console.error('Error deleting existing file:', deleteError);
-              alert('Failed to replace existing photo: ' + deleteError.message);
-              return;
-            }
-          }
 
           const { data, error } = await supabase.storage
             .from('jerentcars-storage')
             .upload(filePath, photo, {
               cacheControl: '3600',
-              upsert: true,
+              upsert: false, // Do not overwrite existing files
               public: true,
               contentType: photo.type,
             });
