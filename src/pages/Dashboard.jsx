@@ -96,6 +96,7 @@ const Dashboard = () => {
         let query = supabase
           .from('activities')
           .select('date, amount, activity_type')
+          .eq('activity_type', 'Pago de tarifa') // Filter for "Pago de tarifa"
           .order('date', { ascending: true });
 
         if (startDate) {
@@ -158,7 +159,7 @@ const Dashboard = () => {
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie
-                dataKey="value"
+                dataKey="Cantidad"
                 isAnimationActive={false}
                 data={pieChartData}
                 cx="50%"

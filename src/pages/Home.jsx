@@ -81,7 +81,22 @@ const Home = () => {
         return
       }
 
-      // 3. Redirect to confirmation page
+      // 3. Update the user record in public.users and set is_owner to true
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({
+          is_owner: true, // Set is_owner to true
+        })
+        .eq('id', authResponse.user.id);
+
+      if (updateError) {
+        setError(updateError.message);
+        // Optionally delete the auth user if the update fails
+        await supabase.auth.admin.deleteUser(authResponse.user.id);
+        return;
+      }
+
+      // 4. Redirect to confirmation page
       navigate('/confirmation');
 
     } catch (err) {
