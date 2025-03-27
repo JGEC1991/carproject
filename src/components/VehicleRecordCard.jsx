@@ -147,6 +147,18 @@ import React, { useState, useEffect, useRef } from 'react';
           const fileName = `${vehicle.id}-${fieldName}.${fileExt}`;
           const filePath = `vehicles/${vehicle.make}-${vehicle.model}/${folder}/${fileName}`;
 
+          // First, set the field to null to clear the existing URL
+          const { error: clearError } = await supabase
+            .from('vehicles')
+            .update({ [fieldName]: null })
+            .eq('id', vehicle.id);
+
+          if (clearError) {
+            console.error('Error clearing existing photo URL:', clearError);
+            alert('Failed to clear existing photo URL: ' + clearError.message);
+            return;
+          }
+
           const { data: existingData, error: existingError } = await supabase.storage
             .from('jerentcars-storage')
             .list(`${vehicle.id}/${folder}/`, { search: fileName });
