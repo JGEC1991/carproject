@@ -51,15 +51,18 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
   };
 
   const activityTypeOptions = [
-    "Llanta averiada",
-    "Mantenimiento",
-    "Pago de tarifa",
-    "Otro",
-    "Lavado",
-    "Vehiculo remolcado",
-    "Actualizacion de millaje",
-    "Inspeccion fisica",
-    "Reparacion"
+  			"Llanta averiada",
+        "Afinamiento",
+        "Pago de tarifa",
+        "Otro",
+        "Lavado de vehiculo",
+        "Vehiculo remolcado",
+        "Actualizacion de millaje",
+        "Inspeccion fisica",
+        "Reparacion",
+				"Cambio de aceite",
+				"Calibracion de llantas",
+				"Cambio o relleno de coolant"
   ].sort();
 
   const statusOptions = ["Completado", "Pendiente", "Vencido"];
