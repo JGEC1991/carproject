@@ -19,7 +19,7 @@ const activityTypes = [
   "Cambio de frenos"
 ].sort();
 
-function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
+function ActivityRecordCard({ activity, isEditMode = false, activeTab, customActivityTypes = [] }) {
   const [date, setDate] = useState(activity?.date || '');
   const [description, setDescription] = useState(activity?.description || '');
   const [activityType, setActivityType] = useState(activity?.activity_type || '');
@@ -74,6 +74,9 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
 
   const statusOptions = ["Completado", "Pendiente", "Vencido"];
 
+  // Merge and sort activity types
+  const allActivityTypes = [...new Set([...activityTypes, ...customActivityTypes])].sort();
+
   return (
     <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
       <div className="border-b pb-4 mb-6">
@@ -112,7 +115,7 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab }) {
               className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             >
               <option value="">Seleccionar tipo de actividad</option>
-              {activityTypes.map((type) => (
+              {allActivityTypes.map((type) => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>

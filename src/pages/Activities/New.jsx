@@ -35,6 +35,7 @@ const NewActivity = () => {
   const [attachment, setAttachment] = useState(null);
   const navigate = useNavigate();
   const [organizationId, setOrganizationId] = useState(null);
+  const [customActivityTypes, setCustomActivityTypes] = useState([]);
 
   const statusOptions = ['Pendiente', 'Completado', 'Vencido', 'Cancelado'];
 
@@ -97,9 +98,49 @@ const NewActivity = () => {
       }
     };
 
+    const fetchCustomActivityTypes = async () => {
+      try {
+        const { data: authUser, error: userError } = await supabase.auth.getUser();
+        if (userError) {
+          setError(userError.message);
+          return;
+        }
+        const userId = authUser.user.id;
+
+        const { data: userData, error: orgError } = await supabase
+          .from('users')
+          .select('organization_id')
+          .eq('id', userId)
+          .single();
+
+        if (orgError) {
+          setError(orgError.message);
+          return;
+        }
+
+        const organizationId = userData?.organization_id;
+
+        const { data: customTypes, error: customTypesError } = await supabase
+          .from('activity_types')
+          .select('name')
+          .eq('organization_id', organizationId);
+
+        if (customTypesError) {
+          console.error('Error fetching custom activity types:', customTypesError);
+          return;
+        }
+
+        const customTypeNames = customTypes ? customTypes.map(type => type.name) : [];
+        setCustomActivityTypes(customTypeNames);
+      } catch (error) {
+        console.error('Error fetching activity types:', error);
+      }
+    };
+
     fetchUserData();
     fetchVehicles();
     fetchDrivers();
+    fetchCustomActivityTypes();
   }, []);
 
   const handleInputChange = (e) => {
@@ -186,6 +227,8 @@ const NewActivity = () => {
       }
     };
 
+    const allActivityTypes = [...new Set([...activityTypes, ...customActivityTypes])].sort();
+
     return (
       <div className="container mx-auto p-6">
         <h1 className="text-3xl font-semibold mb-4">Agregar una actividad</h1>
@@ -203,7 +246,7 @@ const NewActivity = () => {
             <label htmlFor="activity_type" className="block text-gray-700 text-sm font-bold mb-2">Tipo de actividad</label>
             <select id="activity_type" name="activity_type" value={newActivity.activity_type} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
               <option value="">Selecciona un tipo de actividad</option>
-              {activityTypes.map((type) => (
+              {allActivityTypes.map((type) => (
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>

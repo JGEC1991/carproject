@@ -5,12 +5,29 @@ import ActivityRecordCard from '../../../src/components/ActivityRecordCard';
 import RecordLayout from '../../../src/components/RecordLayout';
 import ActivityRelationships from '../../../src/components/ActivityRelationships';
 
+const activityTypes = [
+  "Llanta averiada",
+  "Afinamiento",
+  "Pago de tarifa",
+  "Otro",
+  "Lavado de vehiculo",
+  "Vehiculo remolcado",
+  "Actualizacion de millaje",
+  "Inspeccion fisica",
+  "Reparacion",
+  "Cambio de aceite",
+  "Calibracion de llantas",
+  "Cambio o relleno de coolant",
+  "Cambio de frenos"
+].sort();
+
 function ActivityRecord() {
   const { id } = useParams();
   const [activity, setActivity] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('information');
   const navigate = useNavigate();
+  const [customActivityTypes, setCustomActivityTypes] = useState([]);
 
   useEffect(() => {
     const fetchActivity = async () => {
@@ -36,7 +53,47 @@ function ActivityRecord() {
       }
     };
 
+    const fetchCustomActivityTypes = async () => {
+      try {
+        const { data: authUser, error: userError } = await supabase.auth.getUser();
+        if (userError) {
+          console.error('Error fetching user:', authError);
+          return;
+        }
+        const userId = authUser.user.id;
+
+        const { data: userData, error: orgError } = await supabase
+          .from('users')
+          .select('organization_id')
+          .eq('id', userId)
+          .single();
+
+        if (orgError) {
+          console.error('Error fetching organization:', orgError);
+          return;
+        }
+
+        const organizationId = userData?.organization_id;
+
+        const { data: customTypes, error: customTypesError } = await supabase
+          .from('activity_types')
+          .select('name')
+          .eq('organization_id', organizationId);
+
+        if (customTypesError) {
+          console.error('Error fetching custom activity types:', customTypesError);
+          return;
+        }
+
+        const customTypeNames = customTypes ? customTypes.map(type => type.name) : [];
+        setCustomActivityTypes(customTypeNames);
+      } catch (error) {
+        console.error('Error fetching activity types:', error);
+      }
+    };
+
     fetchActivity();
+    fetchCustomActivityTypes();
   }, [id]);
 
   const handleVehicleChange = async (newVehicleId) => {
@@ -52,7 +109,7 @@ function ActivityRecord() {
       } else {
         setActivity({ ...activity, vehicle_id: newVehicleId });
         alert('Vehicle updated successfully!');
-        navigate(0); // Refresh the page
+        window.location.reload(); // Refresh the page
       }
     } catch (error) {
       console.error('Error updating vehicle:', error.message);
@@ -73,7 +130,7 @@ function ActivityRecord() {
       } else {
         setActivity({ ...activity, driver_id: newDriverId });
         alert('Driver updated successfully!');
-        navigate(0); // Refresh the page
+        window.location.reload(); // Refresh the page
       }
     } catch (error) {
       console.error('Error updating driver:', error.message);
@@ -102,7 +159,7 @@ function ActivityRecord() {
         {(activeTab) => {
           switch (activeTab) {
             case 'information':
-              return <ActivityRecordCard activity={activity} activeTab={activeTab} />;
+              return <ActivityRecordCard activity={activity} activeTab={activeTab} customActivityTypes={customActivityTypes} />;
             case 'relationships':
               return (
                 <ActivityRelationships
@@ -127,7 +184,7 @@ function ActivityRecord() {
                 </div>
               );
             default:
-              return <ActivityRecordCard activity={activity} activeTab={activeTab} />;
+              return <ActivityRecordCard activity={activity} activeTab={activeTab} customActivityTypes={customActivityTypes} />;
           }
         }}
       </RecordLayout>
