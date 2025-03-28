@@ -28,6 +28,8 @@ function ActivityRecord() {
   const [activeTab, setActiveTab] = useState('information');
   const navigate = useNavigate();
   const [customActivityTypes, setCustomActivityTypes] = useState([]);
+  const [attachment, setAttachment] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const fetchActivity = async () => {
@@ -108,7 +110,7 @@ function ActivityRecord() {
         alert(error.message);
       } else {
         setActivity({ ...activity, vehicle_id: newVehicleId });
-        alert('Vehicle updated successfully!');
+        alert('Vehiculo actualizado exitosamente!');
         window.location.reload(); // Refresh the page
       }
     } catch (error) {
@@ -129,12 +131,67 @@ function ActivityRecord() {
         alert(error.message);
       } else {
         setActivity({ ...activity, driver_id: newDriverId });
-        alert('Driver updated successfully!');
+        alert('Conductor actualizado exitosamente!');
         window.location.reload(); // Refresh the page
       }
     } catch (error) {
       console.error('Error updating driver:', error.message);
       alert(error.message);
+    }
+  };
+
+  const handleAttachmentChange = (e) => {
+    const file = e.target.files[0];
+    setAttachment(file);
+  };
+
+  const handleFileUpload = async () => {
+    if (!attachment) return;
+
+    setUploading(true);
+    try {
+      const fileExt = attachment.name.split('.').pop();
+      const fileName = `${Date.now()}-attachment.${fileExt}`;
+      const filePath = `activities/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from('jerentcars-storage')
+        .upload(filePath, attachment, {
+          cacheControl: '3600',
+          upsert: true,
+          public: true,
+          contentType: attachment.type,
+        });
+
+      if (error) {
+        console.error('Error uploading attachment:', error);
+        alert(error.message);
+        return;
+      }
+
+      const imageUrl = supabase.storage
+        .from('jerentcars-storage')
+        .getPublicUrl(filePath)
+        .data.publicUrl;
+
+      // Update the activity with the new attachment URL
+      const { error: updateError } = await supabase
+        .from('activities')
+        .update({ attachment_url: imageUrl })
+        .eq('id', id);
+
+      if (updateError) {
+        console.error('Error updating activity record:', updateError);
+        alert(updateError.message);
+      } else {
+        alert('Adjunto subido y registro de actividad actualizado exitosamente!');
+        window.location.reload(); // Refresh the page
+      }
+    } catch (error) {
+      console.error('Error uploading attachment:', error.message);
+      alert(error.message);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -171,7 +228,7 @@ function ActivityRecord() {
             case 'files':
               return (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Attachments</h3>
+                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Adjuntos</h3>
                   {activity?.attachment_url ? (
                     <img
                       src={activity.attachment_url}
@@ -179,8 +236,22 @@ function ActivityRecord() {
                       className="rounded-lg w-40 h-40 object-cover cursor-pointer"
                     />
                   ) : (
-                    <p>No attachments available.</p>
+                    <p>No se encontraron adjuntos.</p>
                   )}
+                  <label className="block text-sm font-medium text-gray-700 mt-4">Subir archivo</label>
+                  <input
+                    type="file"
+                    accept="image/*, application/pdf"
+                    onChange={handleAttachmentChange}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                  <button
+                    onClick={handleFileUpload}
+                    disabled={uploading || !attachment}
+                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-all"
+                  >
+                    {uploading ? 'Subiendo...' : 'Subir adjunto'}
+                  </button>
                 </div>
               );
             default:

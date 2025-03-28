@@ -33,6 +33,16 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab, customAct
 
   const handleSave = async () => {
     try {
+      let attachmentUrl = activity?.attachment_url;
+
+      if (attachment) {
+        attachmentUrl = await handleFileUpload(attachment);
+        if (!attachmentUrl) {
+          alert('Failed to upload attachment. Please try again.');
+          return;
+        }
+      }
+
       const { data, error } = await supabase
         .from('activities')
         .update({
@@ -41,6 +51,7 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab, customAct
           activity_type: activityType,
           status: status,
           amount: amount,
+          attachment_url: attachmentUrl,
         })
         .eq('id', activity.id)
         .select();
@@ -56,6 +67,42 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab, customAct
     } catch (error) {
       console.error('Error updating activity:', error.message);
       alert(error.message);
+    }
+  };
+
+  const handleFileUpload = async (file) => {
+    if (!file) return null;
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-attachment.${fileExt}`;
+      const filePath = `activities/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from('jerentcars-storage')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true,
+          public: true,
+          contentType: file.type,
+        });
+
+      if (error) {
+        console.error('Error uploading attachment:', error);
+        alert(error.message);
+        return null;
+      }
+
+      const imageUrl = supabase.storage
+        .from('jerentcars-storage')
+        .getPublicUrl(filePath)
+        .data.publicUrl;
+
+      return imageUrl;
+    } catch (error) {
+      console.error('Error uploading attachment:', error.message);
+      alert(error.message);
+      return null;
     }
   };
 
@@ -149,6 +196,7 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab, customAct
       {activeTab === 'files' && (
         <div>
           <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">{t('Adjuntos', { ns: 'activityRecordCard' })}</h3>
+
           {activity?.attachment_url ? (
             <img
               src={activity.attachment_url}
@@ -159,6 +207,7 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab, customAct
           ) : (
             <p>{t('No se econtraron adjuntos.', { ns: 'activityRecordCard' })}</p>
           )}
+
           <label className="block text-sm font-medium text-gray-700 mt-4">Subir archivo</label>
           <input
             type="file"
