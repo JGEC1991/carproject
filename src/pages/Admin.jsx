@@ -1,7 +1,17 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../supabaseClient'
 import { Navigate } from 'react-router-dom'
-import { Button, Input, Typography } from "@material-tailwind/react";
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  Typography,
+  Input,
+  Button,
+  Select,
+  Option,
+  Tooltip,
+} from "@material-tailwind/react";
 
 const Admin = () => {
   const [loading, setLoading] = useState(true);
@@ -13,6 +23,7 @@ const Admin = () => {
   const [activityTypes, setActivityTypes] = useState([]);
   const [newActivityType, setNewActivityType] = useState('');
   const [organizationId, setOrganizationId] = useState(null);
+  const [permissions, setPermissions] = useState({}); // Store permissions as an object
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -70,9 +81,9 @@ const Admin = () => {
     setError(null);
 
     try {
-      const { data: authUser, error: authError } = await supabase.auth.getUser();
-      if (authError) {
-        setError(authError.message);
+      const { data: authUser, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        setError(userError.message);
         return;
       }
 
@@ -109,10 +120,65 @@ const Admin = () => {
     }
   }, []);
 
+  const fetchPermissions = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data: authUser, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        setError(userError.message);
+        return;
+      }
+      const userId = authUser.user.id;
+
+      const { data: userData, error: orgError } = await supabase
+        .from('users')
+        .select('organization_id')
+        .eq('id', userId)
+        .single();
+
+      if (orgError) {
+        setError(orgError.message);
+        return;
+      }
+
+      const organizationId = userData?.organization_id;
+
+      if (!organizationId) {
+        setError('Unable to determine organization ID.');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('permissions')
+        .select('*')
+        .eq('organization_id', organizationId);
+
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
+      // Convert the array of permissions to an object for easier access
+      const permissionsObject = data.reduce((acc, permission) => {
+        acc[permission.action] = permission.role;
+        return acc;
+      }, {});
+
+      setPermissions(permissionsObject);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchUsers();
     fetchActivityTypes();
-  }, [fetchUsers, fetchActivityTypes]);
+    fetchPermissions();
+  }, [fetchUsers, fetchActivityTypes, fetchPermissions]);
 
   const handleAddUser = async () => {
     try {
@@ -368,6 +434,82 @@ const Admin = () => {
     }
   };
 
+  const handlePermissionChange = async (action, role) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data: authUser, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        setError(userError.message);
+        return;
+      }
+      const userId = authUser.user.id;
+
+      const { data: userData, error: orgError } = await supabase
+        .from('users')
+        .select('organization_id')
+        .eq('id', userId)
+        .single();
+
+      if (orgError) {
+        setError(orgError.message);
+        return;
+      }
+
+      const organizationId = userData?.organization_id;
+
+      if (!organizationId) {
+        setError('Unable to determine organization ID.');
+        return;
+      }
+
+      // Check if the permission already exists
+      const { data: existingPermission, error: selectError } = await supabase
+        .from('permissions')
+        .select('*')
+        .eq('organization_id', organizationId)
+        .eq('action', action)
+        .single();
+
+      if (selectError && selectError.code !== 'PGRST116') { // Ignore "no data found" error
+        setError(selectError.message);
+        return;
+      }
+
+      if (existingPermission) {
+        // Update the existing permission
+        const { error: updateError } = await supabase
+          .from('permissions')
+          .update({ role })
+          .eq('id', existingPermission.id);
+
+        if (updateError) {
+          setError(updateError.message);
+          return;
+        }
+      } else {
+        // Insert a new permission
+        const { error: insertError } = await supabase
+          .from('permissions')
+          .insert([{ organization_id: organizationId, action, role }]);
+
+        if (insertError) {
+          setError(insertError.message);
+          return;
+        }
+      }
+
+      // Refresh the permissions list
+      await fetchPermissions();
+      alert(`Permission for ${action} updated successfully!`);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
       if (loading) {
         return <div className="flex items-center justify-center h-full">Cargando...</div>
       }
@@ -384,120 +526,188 @@ const Admin = () => {
         <div className="container mx-auto p-6">
           <h1 className="text-3xl font-semibold mb-4">Panel de administracion</h1>
 
-          {/* Add User Form */}
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-2">Generar un token de invitacion</h2>
-            <div className="flex space-x-4">
-              <Input
-                type="email"
-                placeholder="Enter email"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
-              />
-              <select
-                value={newRole}
-                onChange={(e) => setNewRole(e.target.value)}
-                className="shadow appearance-none border rounded w-32 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              >
-                <option value="user">Usuario</option>
-                <option value="admin">Administrador</option>
-              </select>
-              <Button
-                onClick={handleAddUser}
-                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                Generar Invitacion
-              </Button>
-            </div>
-          </div>
-
-          {/* User List */}
-          <table className="min-w-full leading-normal">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Nombre
-                </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Correo Electronico
-                </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Rol
-                </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {users.map((user) => (
-                <tr key={user.id}>
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                    {user.name}
-                  </td>
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                    {user.email}
-                  </td>
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                    <select
-                      value={user.role}
-                      onChange={(e) => handleRoleChange(user.id, e.target.value)}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* User Management Section */}
+            <Card>
+              <CardHeader floated={false} shadow={false} className="rounded-none flex items-center justify-center">
+                <Typography variant="h6" color="blue-gray">
+                  Administrar usuarios
+                </Typography>
+              </CardHeader>
+              <CardBody>
+                <div className="mb-4">
+                  <Typography variant="small" color="gray" className="font-bold">
+                    Generar un token de invitacion
+                  </Typography>
+                  <div className="flex space-x-4">
+                    <Input
+                      type="email"
+                      placeholder="Ingresar correo electronico"
                       className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
+                    />
+                    <Select
+                      value={newRole}
+                      onChange={(e) => setNewRole(e.target.value)}
+                      className="shadow appearance-none border rounded w-32 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     >
-                      <option value="user">Usuario</option>
-                      <option value="admin">Administrador</option>
-                    </select>
-                  </td>
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                    <button
-                      onClick={() => handleDeleteUser(user.id)}
-                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                      <Option value="user">Usuario</Option>
+                      <Option value="admin">Administrador</Option>
+                    </Select>
+                    <Button
+                      onClick={handleAddUser}
+                      className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                     >
-                      Borrar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      Generar Invitacion
+                    </Button>
+                  </div>
+                </div>
 
-          {/* Activity Types Management */}
-          <div className="mt-12">
-            <h2 className="text-xl font-semibold mb-2">Administrar tipos de actividad</h2>
-            <div className="flex space-x-4 mb-4">
-              <Input
-                type="text"
-                placeholder="Nuevo tipo de actividad"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                value={newActivityType}
-                onChange={(e) => setNewActivityType(e.target.value)}
-              />
-              <Button
-                onClick={handleAddActivityType}
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                Agregar tipo de actividad
-              </Button>
-            </div>
+                <table className="min-w-full leading-normal">
+                  <thead>
+                    <tr className="bg-gray-200">
+                      <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Nombre
+                      </th>
+                      <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Correo Electronico
+                      </th>
+                      <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Rol
+                      </th>
+                      <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Acciones
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {users.map((user) => (
+                      <tr key={user.id}>
+                        <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                          {user.name}
+                        </td>
+                        <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                          {user.email}
+                        </td>
+                        <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                          <select
+                            value={user.role}
+                            onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                          >
+                            <option value="user">Usuario</option>
+                            <option value="admin">Administrador</option>
+                          </select>
+                        </td>
+                        <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                          <Button
+                            color="red"
+                            onClick={() => handleDeleteUser(user.id)}
+                          >
+                            Borrar
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </CardBody>
+            </Card>
 
-            {activityTypes.length > 0 ? (
-              <ul className="list-disc pl-5">
-                {activityTypes.map((type) => (
-                  <li key={type.id} className="flex items-center justify-between py-2">
-                    {type.name}
-                    <button
-                      onClick={() => handleDeleteActivityType(type.id)}
-                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    >
-                      Borrar
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No hay tipos de actividad.</p>
-            )}
+            {/* Activity Types Management Section */}
+            <Card>
+              <CardHeader floated={false} shadow={false} className="rounded-none flex items-center justify-center">
+                <Typography variant="h6" color="blue-gray">
+                  Administrar tipos de actividad
+                </Typography>
+              </CardHeader>
+              <CardBody>
+                <div className="flex space-x-4 mb-4">
+                  <Input
+                    type="text"
+                    placeholder="Nuevo tipo de actividad"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    value={newActivityType}
+                    onChange={(e) => setNewActivityType(e.target.value)}
+                  />
+                  <Button
+                    onClick={handleAddActivityType}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  >
+                    Agregar tipo de actividad
+                  </Button>
+                </div>
+
+                {activityTypes.length > 0 ? (
+                  <ul className="list-disc pl-5">
+                    {activityTypes.map((type) => (
+                      <li key={type.id} className="flex items-center justify-between py-2">
+                        {type.name}
+                        <Button
+                          color="red"
+                          onClick={() => handleDeleteActivityType(type.id)}
+                        >
+                          Borrar
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <Typography color="gray">No hay tipos de actividad.</Typography>
+                )}
+              </CardBody>
+            </Card>
+
+            {/* Permission Control Section */}
+            <Card>
+              <CardHeader floated={false} shadow={false} className="rounded-none flex items-center justify-center">
+                <Typography variant="h6" color="blue-gray">
+                  Control de permisos
+                </Typography>
+              </CardHeader>
+              <CardBody>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Quien puede borrar actividades
+                  </label>
+                  <select
+                    value={permissions['delete_activity'] || 'user'}
+                    onChange={(e) => handlePermissionChange('delete_activity', e.target.value)}
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  >
+                    <option value="user">Usuario</option>
+                    <option value="admin">Administrador</option>
+                  </select>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Quien puede editar el estado de "Pago de tarifa"
+                  </label>
+                  <select
+                    value={permissions['edit_pago_tarifa_status'] || 'user'}
+                    onChange={(e) => handlePermissionChange('edit_pago_tarifa_status', e.target.value)}
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  >
+                    <option value="user">Usuario</option>
+                    <option value="admin">Administrador</option>
+                  </select>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Quien puede editar el millaje de los vehiculos
+                  </label>
+                  <select
+                    value={permissions['edit_vehicle_mileage'] || 'user'}
+                    onChange={(e) => handlePermissionChange('edit_vehicle_mileage', e.target.value)}
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  >
+                    <option value="user">Usuario</option>
+                    <option value="admin">Administrador</option>
+                  </select>
+                </div>
+              </CardBody>
+            </Card>
           </div>
         </div>
       )
