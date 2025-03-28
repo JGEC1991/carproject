@@ -34,6 +34,7 @@ function VehicleRecordCard({ vehicle, isEditMode = false, userRole }) {
   const [carOwnership, setCarOwnership] = useState(vehicle?.car_ownership || 'Propio');
   const [carPaymentDay, setCarPaymentDay] = useState(vehicle?.car_payment_day || '');
   const [deposit, setDeposit] = useState(vehicle?.deposit || 0);
+  const [financesTimeRange, setFinancesTimeRange] = useState('all');
 
   const activityTypes = [
         "Llanta averiada",
@@ -45,13 +46,13 @@ function VehicleRecordCard({ vehicle, isEditMode = false, userRole }) {
         "Actualizacion de millaje",
         "Inspeccion fisica",
         "Reparacion",
-        "Cambio de aceite",
-        "Calibracion de llantas",
-        "Cambio o relleno de coolant",
-        "Cambio de frenos"
+				"Cambio de aceite",
+				"Calibracion de llantas",
+				"Cambio o relleno de coolant",
+				"Cambio de frenos"
       ].sort();
 
-  const statusOptions = ["Completado", "Pendiente", "Vencido"];
+  const statusOptions = ["Completado", "Pendiente", "Vencido", "Cancelado"];
 
   useEffect(() => {
     const fetchActivityHistory = async () => {
@@ -110,10 +111,27 @@ function VehicleRecordCard({ vehicle, isEditMode = false, userRole }) {
 
     const fetchFinancialData = async () => {
       try {
-        const { data, error } = await supabase
+        let startDate;
+        const today = new Date();
+
+        switch (financesTimeRange) {
+          case 'currentMonth':
+            startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            break;
+          default:
+            startDate = null;
+        }
+
+        let query = supabase
           .from('activities')
-          .select('activity_type, amount, status')
+          .select('activity_type, amount, status, date')
           .eq('vehicle_id', vehicle.id);
+
+        if (startDate) {
+          query = query.gte('date', startDate.toISOString().split('T')[0]);
+        }
+
+        const { data, error } = await query;
 
         if (error) {
           console.error('Error fetching activities:', error);
@@ -151,7 +169,7 @@ function VehicleRecordCard({ vehicle, isEditMode = false, userRole }) {
       fetchReparaciones();
       fetchFinancialData();
     }
-  }, [vehicle?.id]);
+  }, [vehicle?.id, financesTimeRange]);
 
       const handleUpload = async (photo, folder, setPhotoState, fieldName) => {
         if (!photo) return;
@@ -552,6 +570,23 @@ function VehicleRecordCard({ vehicle, isEditMode = false, userRole }) {
           {activeTab === 'finanzas' && userRole === 'admin' && (
             <div>
               <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Finanzas</h3>
+
+              {/* Time Range Filters */}
+              <div className="flex space-x-4 mb-4">
+                <button
+                  onClick={() => setFinancesTimeRange('all')}
+                  className={`px-4 py-2 rounded-lg ${financesTimeRange === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                >
+                  Historico
+                </button>
+                <button
+                  onClick={() => setFinancesTimeRange('currentMonth')}
+                  className={`px-4 py-2 rounded-lg ${financesTimeRange === 'currentMonth' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                >
+                  Mes actual
+                </button>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div className="flex flex-col items-center justify-center p-4 border rounded-lg shadow-md">
                   <span className="material-icons text-green-500 text-3xl">trending_up</span>
