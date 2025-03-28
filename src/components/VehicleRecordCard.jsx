@@ -192,7 +192,7 @@ function VehicleRecordCard({ vehicle, isEditMode = false, userRole }) {
 
       const { data: updateData, error: updateError } = await supabase
         .from('vehicles')
-        .update({ [fieldName]: fullUrl })
+        .update({ [fieldName]: fullUrl, [`${fieldName.replace('_url', '_date')}`]: new Date().toISOString() })
         .eq('id', vehicle.id);
 
       if (updateError) {
@@ -235,9 +235,8 @@ function VehicleRecordCard({ vehicle, isEditMode = false, userRole }) {
   };
 
   // Handle image click to zoom
-  const handleImageClick = (imageUrl) => {
+  const handleImageClick = (imageUrl) =>
     setZoomedImage(imageUrl);
-  };
 
   // Close the zoom modal
   const closeModal = () => {
@@ -411,7 +410,12 @@ function VehicleRecordCard({ vehicle, isEditMode = false, userRole }) {
                   accept="image/*"
                 />
                 {vehicle?.front_image_url && (
-                  <img src={vehicle.front_image_url} alt={t('Frontal')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.front_image_url)} style={{ width: '130%', height: '130%' }} />
+                  <>
+                    <img src={vehicle.front_image_url} alt={t('Frontal')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.front_image_url)} style={{ width: '130%', height: '130%' }} />
+                    {vehicle?.front_image_date && (
+                      <p className="text-xs text-gray-500 mt-1">Subido: {timeAgo(vehicle.front_image_date)}</p>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -425,7 +429,12 @@ function VehicleRecordCard({ vehicle, isEditMode = false, userRole }) {
                   accept="image/*"
                 />
                 {vehicle?.rear_image_url && (
-                  <img src={vehicle.rear_image_url} alt={t('Trasera')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.rear_image_url)} style={{ width: '130%', height: '130%' }} />
+                  <>
+                    <img src={vehicle.rear_image_url} alt={t('Trasera')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.rear_image_url)} style={{ width: '130%', height: '130%' }} />
+                    {vehicle?.rear_image_date && (
+                      <p className="text-xs text-gray-500 mt-1">Subido: {timeAgo(vehicle.rear_image_date)}</p>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -439,7 +448,12 @@ function VehicleRecordCard({ vehicle, isEditMode = false, userRole }) {
                   accept="image/*"
                 />
                 {vehicle?.right_image_url && (
-                  <img src={vehicle.right_image_url} alt={t('Derecha')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.right_image_url)} style={{ width: '130%', height: '130%' }} />
+                  <>
+                    <img src={vehicle.right_image_url} alt={t('Derecha')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.right_image_url)} style={{ width: '130%', height: '130%' }} />
+                    {vehicle?.right_image_date && (
+                      <p className="text-xs text-gray-500 mt-1">Subido: {timeAgo(vehicle.right_image_date)}</p>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -453,7 +467,12 @@ function VehicleRecordCard({ vehicle, isEditMode = false, userRole }) {
                   accept="image/*"
                 />
                 {vehicle?.left_image_url && (
-                  <img src={vehicle.left_image_url} alt={t('Izquierda')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.left_image_url)} style={{ width: '130%', height: '130%' }} />
+                  <>
+                    <img src={vehicle.left_image_url} alt={t('Izquierda')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.left_image_url)} style={{ width: '130%', height: '130%' }} />
+                    {vehicle?.left_image_date && (
+                      <p className="text-xs text-gray-500 mt-1">Subido: {timeAgo(vehicle.left_image_date)}</p>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -467,7 +486,12 @@ function VehicleRecordCard({ vehicle, isEditMode = false, userRole }) {
                   accept="image/*"
                 />
                 {vehicle?.dashboard_image_url && (
-                  <img src={vehicle.dashboard_image_url} alt={t('Tablero')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.dashboard_image_url)} style={{ width: '130%', height: '130%' }} />
+                  <>
+                    <img src={vehicle.dashboard_image_url} alt={t('Tablero')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.dashboard_image_url)} style={{ width: '130%', height: '130%' }} />
+                    {vehicle?.dashboard_image_date && (
+                      <p className="text-xs text-gray-500 mt-1">Subido: {timeAgo(vehicle.dashboard_image_date)}</p>
+                    )}
+                  </>
                 )}
               </div>
             </div>
