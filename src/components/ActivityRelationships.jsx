@@ -53,7 +53,7 @@ function ActivityRelationships({ activity }) {
   const handleVehicleChange = async (e) => {
     const newVehicleId = e.target.value;
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('activities')
         .update({ vehicle_id: newVehicleId })
         .eq('id', activity.id);
@@ -75,7 +75,7 @@ function ActivityRelationships({ activity }) {
   const handleDriverChange = async (e) => {
     const newDriverId = e.target.value;
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('activities')
         .update({ driver_id: newDriverId })
         .eq('id', activity.id);
@@ -107,9 +107,7 @@ function ActivityRelationships({ activity }) {
         >
           <option value="">Seleccionar Vehiculo</option>
           {vehicles.map((vehicle) => (
-            <option key={vehicle.id} value={vehicle.id}>
-              {vehicle.make} {vehicle.model} ({vehicle.license_plate})
-            </option>
+            <option key={vehicle.id} value={vehicle.id}>{vehicle.make} {vehicle.model} ({vehicle.license_plate})</option>
           ))}
         </select>
       </div>
@@ -123,9 +121,7 @@ function ActivityRelationships({ activity }) {
         >
           <option value="">Seleccionar Conductor</option>
           {drivers.map((driver) => (
-            <option key={driver.id} value={driver.id}>
-              {driver.name}
-            </option>
+            <option key={driver.id} value={driver.id}>{driver.name}</option>
           ))}
         </select>
       </div>

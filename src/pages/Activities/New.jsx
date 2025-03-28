@@ -70,7 +70,7 @@ const NewActivity = () => {
 
     const fetchVehicles = async () => {
       try {
-        const { data, error } = await supabase.from('vehicles').select('id, make, model');
+        const { data, error } = await supabase.from('vehicles').select('id, make, model, license_plate');
         if (error) {
           console.error('Error fetching vehicles:', error);
           setError(error.message);
@@ -256,7 +256,7 @@ const NewActivity = () => {
             <select id="vehicle_id" name="vehicle_id" value={newActivity.vehicle_id} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
               <option value="">Selecciona un vehiculo</option>
               {vehicles.map((vehicle) => (
-                <option key={vehicle.id} value={vehicle.id}>{vehicle.make} {vehicle.model}</option>
+                <option key={vehicle.id} value={vehicle.id}>{vehicle.make} {vehicle.model} ({vehicle.license_plate})</option>
               ))}
             </select>
           </div>
