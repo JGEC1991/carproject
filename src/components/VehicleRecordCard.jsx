@@ -1,157 +1,157 @@
 import React, { useState, useEffect, useRef } from 'react';
-    import { supabase } from '../../supabaseClient';
-    import { useTranslation } from 'react-i18next';
+import { supabase } from '../../supabaseClient';
+import { useTranslation } from 'react-i18next';
 
-    function VehicleRecordCard({ vehicle, isEditMode = false, userRole }) {
-      const [activeTab, setActiveTab] = useState('details');
-      const [make, setMake] = useState(vehicle?.make || '');
-      const [model, setModel] = useState(vehicle?.model || '');
-      const [color, setColor] = useState(vehicle?.color || '');
-      const [year, setYear] = useState(vehicle?.year || '');
-      const [licensePlate, setLicensePlate] = useState(vehicle?.license_plate || '');
-      const [vin, setVin] = useState(vehicle?.vin || '');
-      const [mileage, setMileage] = useState(vehicle?.mileage || '');
-      const [status, setStatus] = useState(vehicle?.status || '');
-      const [observations, setObservations] = useState(vehicle?.observations || '');
+function VehicleRecordCard({ vehicle, isEditMode = false, userRole }) {
+  const [activeTab, setActiveTab] = useState('details');
+  const [make, setMake] = useState(vehicle?.make || '');
+  const [model, setModel] = useState(vehicle?.model || '');
+  const [color, setColor] = useState(vehicle?.color || '');
+  const [year, setYear] = useState(vehicle?.year || '');
+  const [licensePlate, setLicensePlate] = useState(vehicle?.license_plate || '');
+  const [vin, setVin] = useState(vehicle?.vin || '');
+  const [mileage, setMileage] = useState(vehicle?.mileage || '');
+  const [status, setStatus] = useState(vehicle?.status || '');
+  const [observations, setObservations] = useState(vehicle?.observations || '');
 
-      const [frontPhoto, setFrontPhoto] = useState(null);
-      const [rearPhoto, setRearPhoto] = useState(null);
-      const [rightPhoto, setRightPhoto] = useState(null);
-      const [leftPhoto, setLeftPhoto] = useState(null);
-      const [dashboardPhoto, setDashboardPhoto] = useState(null);
-      const [activityHistory, setActivityHistory] = useState([]);
-      const [reparaciones, setReparaciones] = useState([]);
-      const [finanzas, setFinanzas] = useState({
-        totalRevenue: 0,
-        totalOverdueRevenue: 0,
-        totalExpenses: 0,
-      });
-      const modalRef = useRef(null);
-      const { t } = useTranslation('vehicleRecordCard');
-      const [zoomedImage, setZoomedImage] = useState(null);
+  const [frontPhoto, setFrontPhoto] = useState(null);
+  const [rearPhoto, setRearPhoto] = useState(null);
+  const [rightPhoto, setRightPhoto] = useState(null);
+  const [leftPhoto, setLeftPhoto] = useState(null);
+  const [dashboardPhoto, setDashboardPhoto] = useState(null);
+  const [activityHistory, setActivityHistory] = useState([]);
+  const [reparaciones, setReparaciones] = useState([]);
+  const [finanzas, setFinanzas] = useState({
+    totalRevenue: 0,
+    totalOverdueRevenue: 0,
+    totalExpenses: 0,
+  });
+  const modalRef = useRef(null);
+  const { t } = useTranslation('vehicleRecordCard');
+  const [zoomedImage, setZoomedImage] = useState(null);
 
-      const [gps, setGps] = useState(vehicle?.gps || false);
-      const [carOwnership, setCarOwnership] = useState(vehicle?.car_ownership || 'Propio');
-      const [carPaymentDay, setCarPaymentDay] = useState(vehicle?.car_payment_day || '');
-      const [deposit, setDeposit] = useState(vehicle?.deposit || 0);
+  const [gps, setGps] = useState(vehicle?.gps || false);
+  const [carOwnership, setCarOwnership] = useState(vehicle?.car_ownership || 'Propio');
+  const [carPaymentDay, setCarPaymentDay] = useState(vehicle?.car_payment_day || '');
+  const [deposit, setDeposit] = useState(vehicle?.deposit || 0);
 
-      const activityTypes = [
-            "Llanta averiada",
-            "Afinamiento",
-            "Pago de tarifa",
-            "Otro",
-            "Lavado de vehiculo",
-            "Vehiculo remolcado",
-            "Actualizacion de millaje",
-            "Inspeccion fisica",
-            "Reparacion",
-            "Cambio de aceite",
-            "Calibracion de llantas",
-            "Cambio o relleno de coolant",
-            "Cambio de frenos"
-          ].sort();
+  const activityTypes = [
+        "Llanta averiada",
+        "Afinamiento",
+        "Pago de tarifa",
+        "Otro",
+        "Lavado de vehiculo",
+        "Vehiculo remolcado",
+        "Actualizacion de millaje",
+        "Inspeccion fisica",
+        "Reparacion",
+        "Cambio de aceite",
+        "Calibracion de llantas",
+        "Cambio o relleno de coolant",
+        "Cambio de frenos"
+      ].sort();
 
-      const statusOptions = ["Completado", "Pendiente", "Vencido"];
+  const statusOptions = ["Completado", "Pendiente", "Vencido"];
 
-      useEffect(() => {
-        const fetchActivityHistory = async () => {
-          const activityTypesToFetch = [
-            "Afinamiento",
-            "Calibracion de llantas",
-            "Cambio de aceite",
-            "Cambio o relleno de coolant",
-            "Inspeccion fisica",
-            "Lavado de vehiculo"
-          ];
-          const historyData = [];
-          for (const activityType of activityTypesToFetch) {
-            try {
-              const { data, error } = await supabase
-                .from('activities')
-                .select('date')
-                .eq('vehicle_id', vehicle.id)
-                .eq('activity_type', activityType)
-                .order('date', { ascending: false })
-                .limit(1);
+  useEffect(() => {
+    const fetchActivityHistory = async () => {
+      const activityTypesToFetch = [
+        "Afinamiento",
+        "Calibracion de llantas",
+        "Cambio de aceite",
+        "Cambio o relleno de coolant",
+        "Inspeccion fisica",
+        "Lavado de vehiculo"
+      ];
+      const historyData = [];
+      for (const activityType of activityTypesToFetch) {
+        try {
+          const { data, error } = await supabase
+            .from('activities')
+            .select('date')
+            .eq('vehicle_id', vehicle.id)
+            .eq('activity_type', activityType)
+            .order('date', { ascending: false })
+            .limit(1);
 
-              if (error) {
-                console.error(`Error fetching ${activityType} history:`, error);
-              } else {
-                if (data && data.length > 0) {
-                  historyData.push({ activity_type: activityType, date: data[0].date });
-                }
-              }
-            } catch (error) {
-              console.error(`Error fetching ${activityType} history:`, error);
+          if (error) {
+            console.error(`Error fetching ${activityType} history:`, error);
+          } else {
+            if (data && data.length > 0) {
+              historyData.push({ activity_type: activityType, date: data[0].date });
             }
           }
-          historyData.sort((a, b) => new Date(b.date) - new Date(a.date));
-          setActivityHistory(historyData);
-        };
-
-         const fetchReparaciones = async () => {
-          try {
-            const { data, error } = await supabase
-              .from('activities')
-              .select('date, activity_type, description')
-              .eq('vehicle_id', vehicle.id)
-              .eq('activity_type', 'Reparacion')
-              .order('date', { ascending: false });
-
-            if (error) {
-              console.error('Error fetching reparaciones:', error);
-            } else {
-              setReparaciones(data);
-            }
-          } catch (error) {
-            console.error('Error fetching reparaciones:', error);
-          }
-        };
-
-        const fetchFinancialData = async () => {
-          try {
-            const { data, error } = await supabase
-              .from('activities')
-              .select('activity_type, amount, status')
-              .eq('vehicle_id', vehicle.id);
-
-            if (error) {
-              console.error('Error fetching activities:', error);
-              return;
-            }
-
-            let totalRevenue = 0;
-            let totalOverdueRevenue = 0;
-            let totalExpenses = 0;
-
-            data.forEach(activity => {
-              if (activity.activity_type === 'Pago de tarifa') {
-                if (activity.status === 'Completado') {
-                  totalRevenue += activity.amount || 0;
-                } else if (activity.status === 'Vencido') {
-                  totalOverdueRevenue += activity.amount || 0;
-                }
-              } else if (activity.status === 'Completado') {
-                totalExpenses += activity.amount || 0;
-              }
-            });
-
-            setFinanzas({
-              totalRevenue,
-              totalOverdueRevenue,
-              totalExpenses,
-            });
-          } catch (error) {
-            console.error('Error fetching financial data:', error);
-          }
-        };
-
-        if (vehicle?.id) {
-          fetchActivityHistory();
-          fetchReparaciones();
-          fetchFinancialData();
+        } catch (error) {
+          console.error(`Error fetching ${activityType} history:`, error);
         }
-      }, [vehicle?.id]);
+      }
+      historyData.sort((a, b) => new Date(b.date) - new Date(a.date));
+      setActivityHistory(historyData);
+    };
+
+     const fetchReparaciones = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('activities')
+          .select('date, activity_type, description, amount')
+          .eq('vehicle_id', vehicle.id)
+          .eq('activity_type', 'Reparacion')
+          .order('date', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching reparaciones:', error);
+        } else {
+          setReparaciones(data);
+        }
+      } catch (error) {
+        console.error('Error fetching reparaciones:', error);
+      }
+    };
+
+    const fetchFinancialData = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('activities')
+          .select('activity_type, amount, status')
+          .eq('vehicle_id', vehicle.id);
+
+        if (error) {
+          console.error('Error fetching activities:', error);
+          return;
+        }
+
+        let totalRevenue = 0;
+        let totalOverdueRevenue = 0;
+        let totalExpenses = 0;
+
+        data.forEach(activity => {
+          if (activity.activity_type === 'Pago de tarifa') {
+            if (activity.status === 'Completado') {
+              totalRevenue += activity.amount || 0;
+            } else if (activity.status === 'Vencido') {
+              totalOverdueRevenue += activity.amount || 0;
+            }
+          } else if (activity.status === 'Completado') {
+            totalExpenses += activity.amount || 0;
+          }
+        });
+
+        setFinanzas({
+          totalRevenue,
+          totalOverdueRevenue,
+          totalExpenses,
+        });
+      } catch (error) {
+        console.error('Error fetching financial data:', error);
+      }
+    };
+
+    if (vehicle?.id) {
+      fetchActivityHistory();
+      fetchReparaciones();
+      fetchFinancialData();
+    }
+  }, [vehicle?.id]);
 
       const handleUpload = async (photo, folder, setPhotoState, fieldName) => {
         if (!photo) return;
@@ -535,8 +535,12 @@ import React, { useState, useEffect, useRef } from 'react';
                         <span className="text-xs text-gray-500">{timeAgo(reparacion.date)}</span>
                       </div>
                       <p className="mt-2 text-gray-600">{reparacion.description}</p>
+                      <p className="mt-1 text-gray-600">Monto: ${reparacion.amount}</p>
                     </div>
                   ))}
+                  <div className="mt-4 border-t pt-2">
+                    <p className="text-gray-700 font-semibold">Total: ${reparaciones.reduce((acc, reparacion) => acc + (reparacion.amount || 0), 0)}</p>
+                  </div>
                 </div>
               ) : (
                 <p>No hay reparaciones para este vehículo.</p>
