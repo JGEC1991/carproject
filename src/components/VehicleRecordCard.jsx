@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useTranslation } from 'react-i18next';
@@ -115,8 +116,17 @@ function VehicleRecordCard({ vehicle, isEditMode = false, userRole }) {
         const today = new Date();
 
         switch (financesTimeRange) {
+          case 'lastWeek':
+            startDate = new Date(today.setDate(today.getDate() - 14));
+            break;
+          case 'currentWeek':
+            startDate = new Date(today.setDate(today.getDate() - 7));
+            break;
+          case 'lastMonth':
+            startDate = new Date(today.setMonth(today.getMonth() - 2));
+            break;
           case 'currentMonth':
-            startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            startDate = new Date(today.setMonth(today.getMonth() - 1));
             break;
           default:
             startDate = null;
@@ -580,10 +590,28 @@ function VehicleRecordCard({ vehicle, isEditMode = false, userRole }) {
                   Historico
                 </button>
                 <button
+                  onClick={() => setFinancesTimeRange('currentWeek')}
+                  className={`px-4 py-2 rounded-lg ${financesTimeRange === 'currentWeek' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                >
+                  Semana actual
+                </button>
+                <button
+                  onClick={() => setFinancesTimeRange('lastWeek')}
+                  className={`px-4 py-2 rounded-lg ${financesTimeRange === 'lastWeek' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                >
+                  Semana pasada
+                </button>
+                <button
                   onClick={() => setFinancesTimeRange('currentMonth')}
                   className={`px-4 py-2 rounded-lg ${financesTimeRange === 'currentMonth' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
                 >
                   Mes actual
+                </button>
+                <button
+                  onClick={() => setFinancesTimeRange('lastMonth')}
+                  className={`px-4 py-2 rounded-lg ${financesTimeRange === 'lastMonth' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                >
+                  Mes pasado
                 </button>
               </div>
 
@@ -667,21 +695,4 @@ function VehicleRecordCard({ vehicle, isEditMode = false, userRole }) {
             </button>
           </div>
 
-          {/* Image Zoom Modal */}
-          {zoomedImage && (
-            <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-800 bg-opacity-75 z-50" onClick={closeModal}>
-              <div className="relative" ref={modalRef} onClick={(e) => e.stopPropagation()}>
-                <img src={zoomedImage} alt="Zoomed" className="max-w-4xl max-h-4xl rounded-lg" style={{ maxWidth: '80vw', maxHeight: '80vh' }} />
-                <button onClick={closeModal} className="absolute top-4 right-4 bg-gray-700 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-600">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-6 h-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    export default VehicleRecordCard;
+          {
