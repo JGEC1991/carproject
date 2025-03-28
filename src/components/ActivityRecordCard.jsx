@@ -30,6 +30,38 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab, customAct
   const [expandedImage, setExpandedImage] = useState(null);
   const [attachment, setAttachment] = useState(null);
   const navigate = useNavigate();
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const { data: authUser, error: authError } = await supabase.auth.getUser();
+        if (authError) {
+          console.error('Error fetching user:', authError);
+          return;
+        }
+
+        const userId = authUser.user.id;
+
+        const { data: userData, error: userRoleError } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', userId)
+          .single();
+
+        if (userRoleError) {
+          console.error('Error fetching user role:', userRoleError);
+          return;
+        }
+
+        setUserRole(userData?.role || 'user');
+      } catch (error) {
+        console.error('Error fetching user role:', error.message);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
 
   const handleSave = async () => {
     try {
@@ -43,16 +75,21 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab, customAct
         }
       }
 
+      const updates = {
+        date: date,
+        description: description,
+        activity_type: activityType,
+        amount: amount,
+      };
+
+      // Conditionally update status based on user role and activity type
+      if (activityType !== 'Pago de tarifa' || userRole === 'admin') {
+        updates.status = status;
+      }
+
       const { data, error } = await supabase
         .from('activities')
-        .update({
-          date: date,
-          description: description,
-          activity_type: activityType,
-          status: status,
-          amount: amount,
-          attachment_url: attachmentUrl,
-        })
+        .update(updates)
         .eq('id', activity.id)
         .select();
 
@@ -114,7 +151,7 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab, customAct
     setExpandedImage(null);
   };
 
-  const handleAttachmentChange = (e) => {
+  const handleAttachmentChange = async (e) => {
     const file = e.target.files[0];
     setAttachment(file);
   };
@@ -173,6 +210,7 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab, customAct
               value={status}
               onChange={(e) => setStatus(e.target.value)}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              disabled={activityType === 'Pago de tarifa' && userRole !== 'admin'}
             >
               <option value="">Seleccionar estado</option>
               {statusOptions.map((option) => (
@@ -196,7 +234,6 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab, customAct
       {activeTab === 'files' && (
         <div>
           <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">{t('Adjuntos', { ns: 'activityRecordCard' })}</h3>
-
           {activity?.attachment_url ? (
             <img
               src={activity.attachment_url}
@@ -207,7 +244,6 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab, customAct
           ) : (
             <p>{t('No se econtraron adjuntos.', { ns: 'activityRecordCard' })}</p>
           )}
-
           <label className="block text-sm font-medium text-gray-700 mt-4">Subir archivo</label>
           <input
             type="file"
