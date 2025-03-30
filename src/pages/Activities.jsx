@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
-import Table from '../components/Table';
+import { useState, useEffect } from 'react'
+import { supabase } from '../supabaseClient'
+import Table from '../components/Table'
 import { Link, useNavigate } from 'react-router-dom';
 
 const Activities = () => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [activities, setActivities] = useState([])
   const [filters, setFilters] = useState({
     dateFrom: '',
     dateTo: '',
@@ -19,10 +19,20 @@ const Activities = () => {
   const [drivers, setDrivers] = useState([]);
   const [activityTypeOptions, setActivityTypeOptions] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [showColumnVisibility, setShowColumnVisibility] = useState(false);
+  const [visibleColumns, setVisibleColumns] = useState([
+    'date',
+    'description',
+    'activity_type',
+    'vehicle_name',
+    'driver_name',
+    'status',
+    'amount',
+  ]);
 
   const navigate = useNavigate();
 
-  const columns = [
+  const allColumns = [
     { key: 'date', title: 'Fecha', sortable: true },
     { key: 'description', title: 'Descripcion', sortable: true },
     { key: 'activity_type', title: 'Tipo de actividad', sortable: true },
@@ -31,6 +41,8 @@ const Activities = () => {
     { key: 'status', title: 'Estado', sortable: true },
     { key: 'amount', title: 'Monto', sortable: true },
   ];
+
+  const columns = allColumns.filter(col => visibleColumns.includes(col.key));
 
   const defaultActivityTypes = [
         "Llanta averiada",
@@ -192,6 +204,12 @@ const Activities = () => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
+  const toggleColumnVisibility = (key) => {
+    setVisibleColumns(prev =>
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+    );
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center h-full">Cargando...</div>;
   }
@@ -209,12 +227,20 @@ const Activities = () => {
         >
           Agregar actividad
         </Link>
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded focus:outline-none focus:shadow-outline text-sm"
-        >
-          <span className="material-icons">filter_list</span>
-        </button>
+        <div>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded focus:outline-none focus:shadow-outline text-sm mr-2"
+          >
+            <span className="material-icons">filter_list</span>
+          </button>
+          <button
+            onClick={() => setShowColumnVisibility(!showColumnVisibility)}
+            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-1 px-3 rounded focus:outline-none focus:shadow-outline text-sm"
+          >
+            <span className="material-icons">view_column</span>
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -264,6 +290,27 @@ const Activities = () => {
               <option value="Vencido">Vencido</option>
               <option value="Cancelado">Cancelado</option>
             </select>
+          </div>
+        </div>
+      )}
+
+      {/* Column Visibility Toggle */}
+      {showColumnVisibility && (
+        <div className="mb-4 p-4 bg-gray-100 rounded-lg">
+          <h3 className="text-lg font-semibold mb-2">Mostrar/Ocultar columnas</h3>
+          <div className="flex flex-wrap gap-2">
+            {allColumns.map(column => (
+              <label key={column.key} className="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  className="form-checkbox h-5 w-5 text-blue-600"
+                  value={column.key}
+                  checked={visibleColumns.includes(column.key)}
+                  onChange={() => toggleColumnVisibility(column.key)}
+                />
+                <span className="ml-2 text-gray-700">{column.title}</span>
+              </label>
+            ))}
           </div>
         </div>
       )}

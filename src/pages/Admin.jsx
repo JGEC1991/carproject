@@ -14,6 +14,9 @@ const Admin = () => {
   const [newActivityType, setNewActivityType] = useState('');
   const [organizationId, setOrganizationId] = useState(null);
   const [permissions, setPermissions] = useState({}); // Store permissions as an object
+  const [maintenanceCadence, setMaintenanceCadence] = useState(30);
+
+  const maintenanceCadenceOptions = [30, 45, 60, 90, 120, 180];
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -59,6 +62,20 @@ const Admin = () => {
       }
 
       setUsers(data)
+
+      // Fetch organization data including maintenance_cadence_days
+      const { data: orgData, error: orgDataError } = await supabase
+        .from('organizations')
+        .select('maintenance_cadence_days')
+        .eq('id', userData.organization_id)
+        .single();
+
+      if (orgDataError) {
+        console.error('Error fetching organization data:', orgDataError);
+        // Handle error appropriately, maybe set a default value
+      } else {
+        setMaintenanceCadence(orgData?.maintenance_cadence_days || 30);
+      }
     } catch (err) {
       setError(err.message)
     } finally {
@@ -284,7 +301,7 @@ const Admin = () => {
       await fetchUsers();
       setNewEmail('');
       setNewRole('user');
-      alert(`User added successfully! Temporary password is: ${randomPassword}. Please communicate this to the user securely.`);
+      alert(`Usuario agregado correctamente la contraseña temporal es: ${randomPassword}. Por favor comunicale esto al usuario de manera segura.`);
 
     } catch (err) {
       setError(err.message);
@@ -317,7 +334,7 @@ const Admin = () => {
 
         // Refresh the user list
         await fetchUsers();
-        alert('User deleted successfully!');
+        alert('Usuario eleminado exitosamente!');
       } catch (err) {
         setError(err.message);
       } finally {
@@ -340,7 +357,7 @@ const Admin = () => {
 
           // Refresh the user list
           await fetchUsers();
-          alert('User role updated successfully!');
+          alert('Rol de usuario actualizado con exito!');
         } catch (err) {
           setError(err.message);
         } finally {
@@ -390,7 +407,7 @@ const Admin = () => {
 
       await fetchActivityTypes();
       setNewActivityType('');
-      alert('Activity type added successfully!');
+      alert('Tipo de actividad agregada exitosamente!');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -399,7 +416,7 @@ const Admin = () => {
   };
 
   const handleDeleteActivityType = async (activityTypeId) => {
-    if (window.confirm('Are you sure you want to delete this activity type?')) {
+    if (window.confirm('Estar por eleminar un tipo de actividad!')) {
       try {
         setLoading(true);
         setError(null);
@@ -415,7 +432,7 @@ const Admin = () => {
         }
 
         await fetchActivityTypes();
-        alert('Activity type deleted successfully!');
+        alert('Tipo de actividad eliminada exitosamente!');
       } catch (err) {
         setError(err.message);
       } finally {
@@ -492,7 +509,59 @@ const Admin = () => {
 
       // Refresh the permissions list
       await fetchPermissions();
-      alert(`Permission for ${action} updated successfully!`);
+      alert(`Permisos para ${action} actualizados exitosamente!`);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMaintenanceCadenceChange = async (e) => {
+    const newCadence = parseInt(e.target.value, 10);
+    setMaintenanceCadence(newCadence);
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data: authUser, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        setError(userError.message);
+        return;
+      }
+      const userId = authUser.user.id;
+
+      const { data: userData, error: orgError } = await supabase
+        .from('users')
+        .select('organization_id')
+        .eq('id', userId)
+        .single();
+
+      if (orgError) {
+        setError(orgError.message);
+        return;
+      }
+
+      const organizationId = userData?.organization_id;
+
+      if (!organizationId) {
+        setError('Unable to determine organization ID.');
+        return;
+      }
+
+      // Update the maintenance cadence in the organizations table
+      const { error: updateError } = await supabase
+        .from('organizations')
+        .update({ maintenance_cadence_days: newCadence })
+        .eq('id', organizationId);
+
+      if (updateError) {
+        setError(updateError.message);
+        return;
+      }
+
+      alert('La cadencia de mantenimientos se actualizo correctamente!');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -675,6 +744,26 @@ const Admin = () => {
                 <option value="admin">Administrador</option>
               </select>
             </div>
+          </div>
+
+          {/* Maintenance Cadence Setting */}
+          <div className="mt-12">
+            <h2 className="text-xl font-semibold mb-2">Configuracion de Cadencia de Mantenimiento</h2>
+            <label htmlFor="maintenanceCadence" className="block text-gray-700 text-sm font-bold mb-2">
+              Seleccionar Cadencia (dias)
+            </label>
+            <select
+              id="maintenanceCadence"
+              value={maintenanceCadence}
+              onChange={handleMaintenanceCadenceChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            >
+              {maintenanceCadenceOptions.map((cadence) => (
+                <option key={cadence} value={cadence}>
+                  {cadence}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       )

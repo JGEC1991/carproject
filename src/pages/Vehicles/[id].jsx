@@ -1,85 +1,99 @@
 import React, { useState, useEffect } from 'react';
-    import { useParams, Link } from 'react-router-dom';
-    import { supabase } from '../../../supabaseClient';
-    import VehicleRecordCard from '../../../src/components/VehicleRecordCard';
+import { useParams, Link } from 'react-router-dom';
+import { supabase } from '../../../supabaseClient';
+import VehicleRecordCard from '../../../src/components/VehicleRecordCard';
 
-    function VehicleRecord() {
-      const { id } = useParams();
-      const [vehicle, setVehicle] = useState(null);
-      const [loading, setLoading] = useState(true);
-      const [drivers, setDrivers] = useState([]);
-      const [selectedDriver, setSelectedDriver] = useState(null);
-      const [userRole, setUserRole] = useState(null); // Add userRole state
+function VehicleRecord() {
+  const { id } = useParams();
+  const [vehicle, setVehicle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [drivers, setDrivers] = useState([]);
+  const [selectedDriver, setSelectedDriver] = useState(null);
+  const [userRole, setUserRole] = useState(null); // Add userRole state
 
-      useEffect(() => {
-        const fetchVehicle = async () => {
-          setLoading(true);
-          try {
-            const { data, error } = await supabase
-              .from('vehicles')
-              .select('*')
-              .eq('id', id)
-              .single();
+  useEffect(() => {
+    const fetchVehicle = async () => {
+      setLoading(true);
+      try {
+        // Check if id is a valid UUID before fetching
+        if (!isValidUUID(id)) {
+          console.error('Invalid vehicle ID:', id);
+          setError('Invalid vehicle ID');
+          return;
+        }
 
-            if (error) {
-              console.error('Error fetching vehicle:', error);
-              alert(error.message);
-            } else {
-              setVehicle(data);
-              setSelectedDriver(data.driver_id || null);
-              console.log('Vehicle data:', data); // Add console log here
-            }
-          } catch (error) {
-            console.error('Error fetching vehicle:', error.message);
-            alert(error.message);
-          } finally {
-            setLoading(false);
-          }
+        const { data, error } = await supabase
+          .from('vehicles')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching vehicle:', error);
+          alert(error.message);
+        } else {
+          setVehicle(data);
+          setSelectedDriver(data.driver_id || null);
+          console.log('Vehicle data:', data); // Add console log here
+        }
+      } catch (error) {
+        console.error('Error fetching vehicle:', error.message);
+        alert(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchDrivers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('drivers')
+          .select('id, name');
+
+        if (error) {
+          console.error('Error fetching drivers:', error);
+          alert(error.message);
+        } else {
+          setDrivers(data);
+        }
+      } catch (error) {
+        console.error('Error fetching drivers:', error.message);
+        alert(error.message);
+      }
+    };
+
+    const fetchUserRole = async () => {
+      try {
+        const { data: authUser, error: authError } = await supabase.auth.getUser();
+        if (authError) {
+          console.error('Error fetching user:', authError);
+          return;
+        }
+
+        const userId = authUser.user.id;
+
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', userId)
+          .single();
+
+        if (userError) {
+          console.error('Error fetching user role:', userError);
+          return;
+        }
+
+        setUserRole(userData?.role || 'user');
+      } catch (error) {
+        console.error('Error fetching user role:', error.message);
+      }
         };
 
-        const fetchDrivers = async () => {
-          try {
-            const { data, error } = await supabase
-              .from('drivers')
-              .select('id, name');
-
-            if (error) {
-              console.error('Error fetching drivers:', error);
-              alert(error.message);
-            } else {
-              setDrivers(data);
-            }
-          } catch (error) {
-            console.error('Error fetching drivers:', error.message);
-            alert(error.message);
-          }
-        };
-
-        const fetchUserRole = async () => {
-          try {
-            const { data: authUser, error: authError } = await supabase.auth.getUser();
-            if (authError) {
-              console.error('Error fetching user:', authError);
-              return;
-            }
-
-            const userId = authUser.user.id;
-
-            const { data: userData, error: userError } = await supabase
-              .from('users')
-              .select('role')
-              .eq('id', userId)
-              .single();
-
-            if (userError) {
-              console.error('Error fetching user role:', userError);
-              return;
-            }
-
-            setUserRole(userData?.role || 'user');
-          } catch (error) {
-            console.error('Error fetching user role:', error.message);
-          }
+        // Helper function to validate UUID format
+        const isValidUUID = (uuid) => {
+          if (!uuid) return false;
+          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+          return uuidRegex.test(uuid);
         };
 
         fetchVehicle();
@@ -156,7 +170,7 @@ import React, { useState, useEffect } from 'react';
       return (
         <div className="container mx-auto p-6">
           <h1 className="text-3xl font-semibold mb-4">Detalles de vehiculo</h1>
-          <VehicleRecordCard vehicle={vehicle} isEditMode={true} userRole={userRole} />
+          <VehicleRecordCard vehicleId={id} isEditMode={true} userRole={userRole} />
 
           {userRole === 'admin' && (
             <div className="mt-4">
