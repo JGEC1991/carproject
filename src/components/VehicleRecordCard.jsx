@@ -41,6 +41,7 @@ function VehicleRecordCard({ vehicleId, isEditMode = false, userRole }) {
   const [mileage, setMileage] = useState('');
   const [status, setStatus] = useState('');
   const [observations, setObservations] = useState('');
+  const [activities, setActivities] = useState([]);
 
   useEffect(() => {
     if (vehicle) {
