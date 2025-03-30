@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
     import { supabase } from '../supabaseClient';
-    import Table from '../components/Table';
+    import ActivitiesTable from '../components/ActivitiesTable';
+    import ActivitiesFilters from '../components/ActivitiesFilters';
+    import ActivitiesActiveFilters from '../components/ActivitiesActiveFilters';
     import { Link, useNavigate } from 'react-router-dom';
     import { unparse } from 'papaparse';
 
@@ -32,6 +34,7 @@ import { useState, useEffect } from 'react';
       ]);
 
       const navigate = useNavigate();
+      const [userId, setUserId] = useState(null);
 
       const columnMap = {
         date: 'Fecha',
@@ -83,6 +86,60 @@ import { useState, useEffect } from 'react';
       useEffect(() => {
         fetchActivities();
       }, [filters]);
+
+      useEffect(() => {
+        const fetchUser = async () => {
+          const { data: authUser, error: userError } = await supabase.auth.getUser();
+          if (userError) {
+            setError(userError.message);
+            return;
+          }
+          setUserId(authUser?.user?.id);
+        };
+        fetchUser();
+      }, []);
+
+      useEffect(() => {
+        const loadUserPreferences = async () => {
+          if (!userId) return;
+          setLoading(true);
+          try {
+            // Load filters
+            const { data: filterData, error: filterError } = await supabase
+              .from('user_filters')
+              .select('filter_data')
+              .eq('user_id', userId)
+              .single();
+            if (filterError && filterError.code !== 'PGRST116') {
+              console.error('Error fetching filters:', filterError);
+              setError(filterError.message);
+            } else if (filterData) {
+              setFilters(filterData.filter_data || {});
+            }
+
+            // Load visible columns
+            const { data: columnData, error: columnError } = await supabase
+              .from('user_visible_columns')
+              .select('visible_columns')
+              .eq('user_id', userId)
+              .single();
+            if (columnError && columnError.code !== 'PGRST116') {
+              console.error('Error fetching visible columns:', columnError);
+              setError(columnError.message);
+            } else if (columnData) {
+              setVisibleColumns(columnData.visible_columns || []);
+            }
+          } catch (err) {
+            setError(err.message);
+          } finally {
+            setLoading(false);
+          }
+        };
+
+        if (userId) {
+          loadUserPreferences();
+        }
+      }, [userId]);
 
       const fetchVehicles = async () => {
         try {
@@ -212,13 +269,33 @@ import { useState, useEffect } from 'react';
       };
 
       const handleFilterChange = (e) => {
-        setFilters({ ...filters, [e.target.name]: e.target.value });
+        const newFilters = { ...filters, [e.target.name]: e.target.value };
+        setFilters(newFilters);
+        saveFilters(newFilters);
       };
 
-      const toggleColumnVisibility = (key) => {
-        setVisibleColumns(prev =>
-          prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
-        );
+      const toggleColumnVisibility = async (key) => {
+        const newVisibleColumns = visibleColumns.includes(key) ? visibleColumns.filter(k => k !== key) : [...visibleColumns, key];
+        setVisibleColumns(newVisibleColumns);
+        await saveVisibleColumns(newVisibleColumns);
+      };
+
+      const clearFilters = () => {
+        const defaultFilters = {
+          dateFrom: '',
+          dateTo: '',
+          activityType: '',
+          driverId: '',
+          vehicleId: '',
+          status: '',
+        };
+        setFilters(defaultFilters);
+        saveFilters(defaultFilters);
+      };
+
+      const getVehicleDisplayName = (vehicleId) => {
+        const vehicle = vehicles.find(v => v.id === vehicleId);
+        return vehicle ? `${vehicle.make} ${vehicle.model} (${vehicle.license_plate})` : 'N/A';
       };
 
       const activeFilters = Object.entries(filters)
@@ -234,7 +311,10 @@ import { useState, useEffect } from 'react';
             const driver = drivers.find(d => d.id === value);
             displayValue = driver ? driver.name : 'N/A';
           }
-          if (key === 'vehicleId') label = 'Vehiculo';
+          if (key === 'vehicleId') {
+            label = 'Vehiculo';
+            displayValue = getVehicleDisplayName(value);
+          }
           if (key === 'status') label = 'Estado';
           return { label, value: displayValue };
         });
@@ -253,6 +333,54 @@ import { useState, useEffect } from 'react';
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+      };
+
+      const saveFilters = async (newFilters) => {
+        if (!userId) return;
+        try {
+          console.log('Saving filters:', newFilters, 'for user:', userId);
+          const { data, error } = await supabase
+            .from('user_filters')
+            .upsert(
+              [{ user_id: userId, filter_data: newFilters }],
+              { onConflict: 'user_id' }
+            )
+            .select();
+
+          if (error) {
+            console.error('Error saving filters:', error);
+            setError(error.message);
+          } else {
+            console.log('Filters saved successfully:', data);
+          }
+        } catch (err) {
+          console.error('Unexpected error saving filters:', err);
+          setError(err.message);
+        }
+      };
+
+      const saveVisibleColumns = async (newVisibleColumns) => {
+        if (!userId) return;
+        try {
+          console.log('Saving visible columns:', newVisibleColumns, 'for user:', userId);
+          const { data, error } = await supabase
+            .from('user_visible_columns')
+            .upsert(
+              [{ user_id: userId, visible_columns: newVisibleColumns }],
+              { onConflict: 'user_id' }
+            )
+            .select();
+
+          if (error) {
+            console.error('Error saving visible columns:', error);
+            setError(error.message);
+          } else {
+            console.log('Visible columns saved successfully:', data);
+          }
+        } catch (err) {
+          console.error('Unexpected error saving visible columns:', err);
+          setError(err.message);
+        }
       };
 
       if (loading) {
@@ -275,13 +403,13 @@ import { useState, useEffect } from 'react';
             <div>
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded focus:outline-none focus:shadow-outline text-sm mr-2"
+                className="text-gray-700 hover:text-blue-700 font-bold py-1 px-3 rounded focus:outline-none focus:shadow-outline text-sm mr-2"
               >
-                <span className="material-icons">filter_list</span>
+                <span className="material-icons">filter_alt</span>
               </button>
               <button
                 onClick={() => setShowColumnVisibility(!showColumnVisibility)}
-                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-1 px-3 rounded focus:outline-none focus:shadow-outline text-sm"
+                className="text-gray-700 hover:text-blue-700 font-bold py-1 px-3 rounded focus:outline-none focus:shadow-outline text-sm"
               >
                 <span className="material-icons">view_column</span>
               </button>
@@ -290,66 +418,17 @@ import { useState, useEffect } from 'react';
 
           {/* Filters */}
           {showFilters && (
-            <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label htmlFor="dateFrom" className="block text-gray-700 text-sm font-bold mb-2">Fecha desde</label>
-                <input type="date" id="dateFrom" name="dateFrom" value={filters.dateFrom} onChange={handleFilterChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-              </div>
-              <div>
-                <label htmlFor="dateTo" className="block text-gray-700 text-sm font-bold mb-2">Fecha hasta</label>
-                <input type="date" id="dateTo" name="dateTo" value={filters.dateTo} onChange={handleFilterChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-              </div>
-              <div>
-                <label htmlFor="activityType" className="block text-gray-700 text-sm font-bold mb-2">Tipo de actividad</label>
-                <select id="activityType" name="activityType" value={filters.activityType} onChange={handleFilterChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                  <option value="">Todos</option>
-                  {activityTypeOptions.map((type) => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="driverId" className="block text-gray-700 text-sm font-bold mb-2">Conductor</label>
-                <select id="driverId" name="driverId" value={filters.driverId} onChange={handleFilterChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                  <option value="">Todos</option>
-                  {drivers.map((driver) => (
-                    <option key={driver.id} value={driver.id}>{driver.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="vehicleId" className="block text-gray-700 text-sm font-bold mb-2">Vehiculo</label>
-                <select id="vehicleId" name="vehicleId" value={filters.vehicleId} onChange={handleFilterChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                  <option value="">Todos</option>
-                  {vehicles.map((vehicle) => (
-                    <option key={vehicle.id} value={vehicle.id}>{vehicle.make} {vehicle.model} ({vehicle.license_plate})</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="status" className="block text-gray-700 text-sm font-bold mb-2">Estado</label>
-                <select id="status" name="status" value={filters.status} onChange={handleFilterChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                  <option value="">Todos</option>
-                  <option value="Pendiente">Pendiente</option>
-                  <option value="Completado">Completado</option>
-                  <option value="Vencido">Vencido</option>
-                  <option value="Cancelado">Cancelado</option>
-                </select>
-              </div>
-            </div>
+            <ActivitiesFilters
+              filters={filters}
+              activityTypeOptions={activityTypeOptions}
+              drivers={drivers}
+              vehicles={vehicles}
+              handleFilterChange={handleFilterChange}
+            />
           )}
 
           {/* Active Filters Display */}
-          {activeFilters.length > 0 && (
-            <div className="mb-4">
-              <span className="font-bold">Filtros:</span>
-              {activeFilters.map((filter) => (
-                <span key={filter.label} className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">
-                  {filter.label}: {filter.value}
-                </span>
-              ))}
-            </div>
-          )}
+          <ActivitiesActiveFilters activeFilters={activeFilters} />
 
           {/* Column Visibility Toggle */}
           {showColumnVisibility && (
@@ -372,23 +451,28 @@ import { useState, useEffect } from 'react';
             </div>
           )}
 
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-between items-center mb-4">
+            {activeFilters.length > 0 && (
+              <button
+                onClick={clearFilters}
+                className="text-red-500 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-sm mr-2"
+              >
+                Limpiar filtros
+              </button>
+            )}
             <button
               onClick={exportToCSV}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-sm mr-2"
+              className="text-blue-500 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-sm"
             >
               Exportar a CSV
             </button>
           </div>
 
-          <Table
-            data={activities}
+          <ActivitiesTable
+            activities={activities}
             columns={columns}
-            onView={() => {}}
-            onEdit={() => {}}
-            onDelete={handleDeleteActivity}
-            onRowClick={(activity) => navigate(`/activities/${activity.id}`)}
-            className="shadow-md rounded-lg"
+            handleDeleteActivity={handleDeleteActivity}
+            columnMap={columnMap}
           />
         </div>
       );
