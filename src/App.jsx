@@ -16,6 +16,7 @@ import { BrowserRouter, Route, Routes, Link, Navigate } from 'react-router-dom';
     import NewActivity from './pages/Activities/New';
     import NewVehicle from './pages/Vehicles/New';
     import NewDriver from './pages/Drivers/New';
+    import CSVImport from './CSVImport'; // Import the new component
 
     function App() {
       const [session, setSession] = useState(null);
@@ -213,6 +214,7 @@ import { BrowserRouter, Route, Routes, Link, Navigate } from 'react-router-dom';
                         </>
                       )}
                       <Route path="/confirmation" element={<Confirmation />} />
+                      <Route path="/import" element={<CSVImport />} /> {/* Add the new route */}
                     </Routes>
                   </main>
                 </div>

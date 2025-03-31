@@ -19,7 +19,8 @@ import React, { useState, useEffect } from 'react';
               { path: '/drivers', icon: 'people', label: 'Conductores' },
               { path: '/admin', icon: 'admin_panel_settings', label: 'Administrador' },
             ]
-          : [])
+          : []),
+        { path: '/import', icon: 'upload_file', label: 'Importar CSV' } // Add the new menu item
       ];
 
       const handleLogout = async () => {
