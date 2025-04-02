@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  Typography,
+  Input,
+  Select,
+  Option,
+  Button,
+} from "@material-tailwind/react";
 
 const AutomaticActivities = () => {
   const [activities, setActivities] = useState([]);
