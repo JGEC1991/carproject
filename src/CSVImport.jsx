@@ -63,7 +63,7 @@ import React, { useState, useEffect } from 'react';
 
         const fetchDrivers = async () => {
           try {
-            const { data, error } = await supabase.from('users').select('id, email, role').eq('role', 'user');
+            const { data, error } = await supabase.from('drivers').select('id, name, role').eq('role', 'user');
             if (error) {
               console.error('Error fetching drivers:', error);
               setError(error.message);
@@ -148,11 +148,11 @@ import React, { useState, useEffect } from 'react';
               if (field === 'amount' && isNaN(Number(value))) {
                 rowErrors[header] = 'Invalid amount format';
               }
-              if (field === 'driver_id' && !drivers.find(driver => driver.email === value)) {
-                rowErrors[header] = 'Invalid driver email';
+              if (field === 'driver_id' && !drivers.find(driver => driver.id === value)) {
+                rowErrors[header] = 'Invalid driver ID';
               }
-              if (field === 'vehicle_id' && !vehicles.find(vehicle => vehicle.license_plate === value)) {
-                rowErrors[header] = 'Invalid vehicle license plate';
+              if (field === 'vehicle_id' && !vehicles.find(vehicle => vehicle.id === value)) {
+                rowErrors[header] = 'Invalid vehicle ID';
               }
             }
           });
@@ -171,31 +171,7 @@ import React, { useState, useEffect } from 'react';
           Object.keys(columnMappings).forEach(header => {
             const field = columnMappings[header];
             if (field) {
-              if (field === 'driver_id') {
-                // Map driver email to driver ID
-                const driverEmail = row[header];
-                const driver = drivers.find(driver => driver.email === driverEmail);
-                if (driver) {
-                  transformedRow[field] = driver.id;
-                } else {
-                  transformedRow[field] = null;
-                  importResult.status = 'failed';
-                  importResult.error = `Driver with email ${driverEmail} not found`;
-                }
-              } else if (field === 'vehicle_id') {
-                // Map vehicle license plate to vehicle ID
-                const licensePlate = row[header];
-                const vehicle = vehicles.find(vehicle => vehicle.license_plate === licensePlate);
-                if (vehicle) {
-                  transformedRow[field] = vehicle.id;
-                } else {
-                  transformedRow[field] = null;
-                  importResult.status = 'failed';
-                  importResult.error = `Vehicle with license plate ${licensePlate} not found`;
-                }
-              } else {
-                transformedRow[field] = row[header];
-              }
+              transformedRow[field] = row[header];
             }
           });
           return { ...transformedRow, importResult }; // Return both transformed row and import result
