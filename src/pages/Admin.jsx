@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../supabaseClient'
 import { Navigate } from 'react-router-dom'
 import { Button, Input, Typography, Select, Option } from "@material-tailwind/react";
+import AutomaticActivities from '../components/AutomaticActivities'; // Import the new component
 
 const Admin = () => {
   const [loading, setLoading] = useState(true);
@@ -93,7 +94,6 @@ const Admin = () => {
         setError(userError.message);
         return;
       }
-
       const userId = authUser.user.id;
 
       const { data: userData, error: orgError } = await supabase
@@ -764,6 +764,11 @@ const Admin = () => {
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Automatic Activities Management */}
+          <div className="mt-12">
+            <AutomaticActivities />
           </div>
         </div>
       )
