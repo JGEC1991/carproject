@@ -165,8 +165,9 @@ import React, { useState, useEffect } from 'react';
       };
 
       const transformData = () => {
-        return csvData.map(row => {
+        return csvData.map((row, index) => {
           const transformedRow = {};
+          const importResult = { row: index + 1, status: 'success', error: null, ...row }; // Initialize result
           Object.keys(columnMappings).forEach(header => {
             const field = columnMappings[header];
             if (field) {
@@ -174,24 +175,40 @@ import React, { useState, useEffect } from 'react';
                 // Map driver email to driver ID
                 const driverEmail = row[header];
                 const driver = drivers.find(driver => driver.email === driverEmail);
-                transformedRow[field] = driver ? driver.id : null;
+                if (driver) {
+                  transformedRow[field] = driver.id;
+                } else {
+                  transformedRow[field] = null;
+                  importResult.status = 'failed';
+                  importResult.error = `Driver with email ${driverEmail} not found`;
+                }
               } else if (field === 'vehicle_id') {
                 // Map vehicle license plate to vehicle ID
                 const licensePlate = row[header];
                 const vehicle = vehicles.find(vehicle => vehicle.license_plate === licensePlate);
-                transformedRow[field] = vehicle ? vehicle.id : null;
+                if (vehicle) {
+                  transformedRow[field] = vehicle.id;
+                } else {
+                  transformedRow[field] = null;
+                  importResult.status = 'failed';
+                  importResult.error = `Vehicle with license plate ${licensePlate} not found`;
+                }
               } else {
                 transformedRow[field] = row[header];
               }
             }
           });
-          return transformedRow;
+          return { ...transformedRow, importResult }; // Return both transformed row and import result
         });
       };
 
       const handleSaveMappings = async () => {
         if (validateData()) {
-          const transformedData = transformData();
+          const transformedWithResults = transformData();
+          const transformedData = transformedWithResults.map(item => {
+            const { importResult, ...row } = item;
+            return row;
+          });
           setUploading(true);
           try {
             if (!organizationId) {
@@ -205,32 +222,29 @@ import React, { useState, useEffect } from 'react';
               organization_id: organizationId,
             }));
 
-            // Log the data being sent to the function
-            console.log('Data being sent to Supabase function:', JSON.stringify(dataWithOrgId));
-
             const { data, error } = await supabase
               .rpc('import_activities_from_csv', { activities_data: JSON.stringify(dataWithOrgId), org_id: organizationId });
 
             if (error) {
               alert('Error inserting data: ' + error.message);
-              setImportResults(transformedData.map((row, index) => ({
-                ...row,
+              setImportResults(transformedWithResults.map((item) => ({
+                ...item.importResult,
                 status: 'failed',
                 error: error.message,
               })));
             } else {
               console.log('Data inserted successfully:', data);
               alert('Data imported successfully!');
-              setImportResults(transformedData.map(row => ({
-                ...row,
+              setImportResults(transformedWithResults.map(item => ({
+                ...item.importResult,
                 status: 'success',
                 error: null,
               })));
             }
           } catch (err) {
             alert('Unexpected error: ' + err.message);
-            setImportResults(transformedData.map(row => ({
-              ...row,
+            setImportResults(transformedWithResults.map(item => ({
+              ...item.importResult,
               status: 'failed',
               error: err.message,
             })));
@@ -347,7 +361,6 @@ import React, { useState, useEffect } from 'react';
                 </div>
               )}
 
-              <>
               <div className="overflow-x-auto mt-4">
                 <table className="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
                   <thead>
@@ -370,7 +383,6 @@ import React, { useState, useEffect } from 'react';
                   </tbody>
                 </table>
               </div>
-              </>
             </>
           )}
         </div>
