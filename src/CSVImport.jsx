@@ -147,8 +147,8 @@ function CSVImport() {
           const value = row[header];
           // Add validation logic here based on the field
           if (field === 'date') {
-            if (isNaN(Date.parse(value))) {
-              rowErrors[header] = 'Invalid date format';
+            if (isNaN(new Date(value).getTime())) {
+              rowErrors[header] = 'Invalid date format. Use YYYY-MM-DD or MM/DD/YYYY.';
             }
           } else if (field === 'amount') {
             if (isNaN(Number(value))) {
@@ -157,7 +157,7 @@ function CSVImport() {
           } else if (field === 'driver_id' || field === 'vehicle_id' || field === 'organization_id') {
             const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
             if (!uuidRegex.test(value)) {
-              rowErrors[header] = 'Invalid UUID format';
+              rowErrors[header] = `Invalid UUID format. Expected xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`;
             }
           }
         }
