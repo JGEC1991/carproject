@@ -113,7 +113,7 @@ import React, { useState, useRef, useEffect } from 'react';
         <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
           <div className="border-b pb-4 mb-6">
             <h2 className="text-2xl font-bold text-gray-800">Detalles de conductor</h2>
-            <p className="text-gray-600">Id: {driver?.id}</p>
+            <p className="text-gray-600">Driver ID: {driver?.id}</p>
           </div>
 
           {/* Tabs */}

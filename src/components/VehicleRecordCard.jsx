@@ -315,7 +315,7 @@ function VehicleRecordCard({ vehicleId, isEditMode = false, userRole }) {
           {isEditMode ? t('Editar vehiculo') : t('')}
         </h2>
         <p className="text-gray-600">
-          {vehicle?.license_plate ? `${t('Id')}: ${vehicle.id}` : t('Agregar un vehiculo')}
+          {vehicle?.license_plate ? `${t('Matricula')}: ${vehicle.license_plate}` : t('Agregar un vehiculo')}
         </p>
       </div>
 
