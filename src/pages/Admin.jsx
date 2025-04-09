@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../supabaseClient'
 import { Navigate } from 'react-router-dom'
 import { Button, Input, Typography, Select, Option } from "@material-tailwind/react";
+import AutomaticActivities from '../components/AutomaticActivities';
 
 const Admin = () => {
   const [loading, setLoading] = useState(true);
@@ -699,6 +700,11 @@ const Admin = () => {
             ) : (
               <p>No hay tipos de actividad.</p>
             )}
+          </div>
+
+          {/* Automatic Activities Management */}
+          <div className="mt-12">
+            <AutomaticActivities />
           </div>
 
           {/* Permission Control Section */}
