@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { Button } from './ui/button';
 
 const DataTable = ({ 
   columns, 
@@ -14,6 +15,7 @@ const DataTable = ({
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
+  const [sortedData, setSortedData] = useState([...data]);
   
   // Calculate total pages
   const totalPages = Math.ceil(data.length / pageSize);
@@ -69,23 +71,25 @@ const DataTable = ({
     return (
       <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
         <div className="flex justify-between flex-1 sm:hidden">
-          <button
+          <Button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
             className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="outline"
           >
             Previous
-          </button>
+          </Button>
           <span className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md">
             Page {currentPage} of {totalPages}
           </span>
-          <button
+          <Button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
             className="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="outline"
           >
             Next
-          </button>
+          </Button>
         </div>
         <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
           <div>
@@ -99,19 +103,20 @@ const DataTable = ({
           </div>
           <div>
             <nav className="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-              <button
+              <Button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                variant="outline"
               >
                 <span className="sr-only">Previous</span>
                 <span className="material-icons text-sm">chevron_left</span>
-              </button>
-              
+              </Button>
+
               {/* Page numbers */}
               {Array.from({ length: Math.min(5, totalPages) }).map((_, idx) => {
                 let pageNumber;
-                
+
                 // Logic to show correct page numbers around current page
                 if (totalPages <= 5) {
                   pageNumber = idx + 1;
@@ -122,9 +127,9 @@ const DataTable = ({
                 } else {
                   pageNumber = currentPage - 2 + idx;
                 }
-                
+
                 return pageNumber > 0 && pageNumber <= totalPages ? (
-                  <button
+                  <Button
                     key={pageNumber}
                     onClick={() => handlePageChange(pageNumber)}
                     className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium
@@ -132,20 +137,22 @@ const DataTable = ({
                         ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
                         : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                       }`}
+                    variant="outline"
                   >
                     {pageNumber}
-                  </button>
+                  </Button>
                 ) : null;
               })}
-              
-              <button
+
+              <Button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                variant="outline"
               >
                 <span className="sr-only">Next</span>
                 <span className="material-icons text-sm">chevron_right</span>
-              </button>
+              </Button>
             </nav>
           </div>
         </div>
@@ -168,7 +175,7 @@ const DataTable = ({
                   }`}
                 >
                   <div className="flex items-center space-x-1">
-                    <span>{column.label}</span>
+                    <span>{column.title}</span>
                     {column.sortable && (
                       <span className="text-gray-400">
                         {getSortDirectionIndicator(column.key)}
@@ -237,11 +244,11 @@ const DataTable = ({
   );
 };
 
-DataTable.propTypes = {
+Table.propTypes = {
   columns: PropTypes.arrayOf(
     PropTypes.shape({
       key: PropTypes.string.isRequired,
-      label: PropTypes.string.isRequired,
+      title: PropTypes.string.isRequired,
       sortable: PropTypes.bool,
       render: PropTypes.func,
     })
@@ -256,4 +263,4 @@ DataTable.propTypes = {
   className: PropTypes.string,
 };
 
-export default DataTable;
+export default Table;

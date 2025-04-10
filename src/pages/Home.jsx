@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { useNavigate } from 'react-router-dom';
+import { Button } from '../components/ui/button'; // Import the Button component
 
 const Home = () => {
   const [email, setEmail] = useState('')
@@ -258,14 +259,14 @@ const Home = () => {
             )}
 
             <div className="flex items-center justify-between">
-              <button
+              <Button
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                 type="submit"
                 onClick={isSignup ? handleSignup : handleLogin}
                 disabled={loading}
               >
                 {loading ? 'Loading...' : isSignup ? 'Crear' : 'Ingresar'}
-              </button>
+              </Button>
               <button
                 className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
                 type="button"

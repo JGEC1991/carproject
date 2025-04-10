@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { supabase } from '../../../supabaseClient';
+import { supabase } from '../../../supabaseClient'; // Corrected import
 import VehicleRecordCard from '../../../src/components/VehicleRecordCard';
+import { Button } from '../../../src/components/ui/button';
 
 function VehicleRecord() {
   const { id } = useParams();
@@ -195,13 +196,13 @@ function VehicleRecord() {
           )}
 
           {userRole === 'admin' && (
-            <button
+            <Button
               onClick={handleAssignDriver}
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4"
               disabled={loading}
             >
               {loading ? 'Asignando...' : 'Asignar Conductor'}
-            </button>
+            </Button>
           )}
         </div>
       );
