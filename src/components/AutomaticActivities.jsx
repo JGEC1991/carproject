@@ -10,7 +10,6 @@ import {
   Option,
   Button,
 } from "@material-tailwind/react";
-// import { Button } from "@/components/ui/button";
 
 const AutomaticActivities = () => {
   const [activities, setActivities] = useState([]);
@@ -402,7 +401,7 @@ const AutomaticActivities = () => {
             <select id="status" name="status" value={newActivity.status} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
               <option value="">Seleccionar estado</option>
               {statusOptions.map((option) => (
-                <option key={option.value} value={option.value}>{option}</option>
+                <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
           </div>
@@ -454,13 +453,13 @@ const AutomaticActivities = () => {
           )}
         </div>
         <div className="flex items-center justify-end">
-          <Button
+          <button
             type="submit"
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             disabled={loading}
           >
             {loading ? 'Agregando...' : 'Agregar actividad automatica'}
-          </Button>
+          </button>
         </div>
       </form>
 
@@ -473,12 +472,12 @@ const AutomaticActivities = () => {
               <p>Tipo: {activity.activity_type}</p>
               <p>Cadencia: {activity.cadence}</p>
               <p>Aplicar a: {activity.apply_to_type}</p>
-              <Button
+              <button
                 onClick={() => handleDeleteActivity(activity.id)}
                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline text-sm mt-2"
               >
                 Borrar
-              </Button>
+              </button>
             </div>
           ))}
         </div>

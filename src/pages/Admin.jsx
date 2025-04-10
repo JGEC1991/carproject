@@ -652,12 +652,12 @@ const Admin = () => {
                     </select>
                   </td>
                   <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                    <Button
+                    <button
                       onClick={() => handleDeleteUser(user.id)}
                       className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                     >
                       Borrar
-                    </Button>
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -688,12 +688,12 @@ const Admin = () => {
                 {activityTypes.map((type) => (
                   <li key={type.id} className="flex items-center justify-between py-2">
                     {type.name}
-                    <Button
+                    <button
                       onClick={() => handleDeleteActivityType(type.id)}
                       className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                     >
                       Borrar
-                    </Button>
+                    </button>
                   </li>
                 ))}
               </ul>

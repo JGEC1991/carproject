@@ -7,11 +7,10 @@ import {
   CardBody,
   Typography,
   Input,
+  Button,
   Select,
   Option,
-  Button,
 } from "@material-tailwind/react";
-// import { Button } from "@/components/ui/button"; // Removed duplicate import
 
 const MyProfile = () => {
   const [loading, setLoading] = useState(true);
@@ -105,8 +104,8 @@ const MyProfile = () => {
         if (driverData?.vehicle_id) {
           fetchAssignedVehicle(driverData.vehicle_id);
         }
-      } catch (error) {
-        console.error('Error fetching driver details:', error.message);
+      } catch (err) {
+        console.error('Error fetching driver details:', err);
         setDriverDetails(null); // Ensure driverDetails is null in case of an exception
       }
     };
@@ -125,8 +124,8 @@ const MyProfile = () => {
         }
 
         setAssignedVehicle(vehicleData);
-      } catch (error) {
-        console.error('Error fetching assigned vehicle:', error.message);
+      } catch (err) {
+        console.error('Error fetching assigned vehicle:', err);
       }
     };
 
@@ -144,8 +143,8 @@ const MyProfile = () => {
         }
 
         setAvailableVehicles(availableVehicleData);
-      } catch (error) {
-        console.error('Error fetching available vehicles:', error.message);
+      } catch (err) {
+        console.error('Error fetching available vehicles:', err);
       }
     };
 
@@ -160,7 +159,6 @@ const MyProfile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
     setError(null);
 
     try {

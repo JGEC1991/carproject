@@ -1,7 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useNavigate, Link } from 'react-router-dom';
-import { Button, Input, Typography, Select, Option } from "@material-tailwind/react";
+
+const activityTypes = [
+  "Llanta averiada",
+  "Afinamiento",
+  "Pago de tarifa",
+  "Otro",
+  "Lavado de vehiculo",
+  "Vehiculo remolcado",
+  "Actualizacion de millaje",
+  "Inspeccion fisica",
+  "Reparacion",
+  "Cambio de aceite",
+  "Calibracion de llantas",
+  "Cambio o relleno de coolant",
+  "Cambio de frenos"
+].sort();
 
 const NewActivity = () => {
   const [loading, setLoading] = useState(false);
@@ -70,7 +85,7 @@ const NewActivity = () => {
 
     const fetchDrivers = async () => {
       try {
-        const { data, error } = await supabase.from('drivers').select('id, name');
+        const { data, error } = await supabase.from('drivers').select('id, name, vehicle_id');
         if (error) {
           console.error('Error fetching drivers:', error);
           setError(error.message);
@@ -127,6 +142,19 @@ const NewActivity = () => {
     fetchDrivers();
     fetchCustomActivityTypes();
   }, []);
+
+  useEffect(() => {
+    // Auto-select vehicle when driver is selected
+    if (newActivity.driver_id) {
+      const driver = drivers.find(d => d.id === newActivity.driver_id);
+      if (driver && driver.vehicle_id) {
+        setNewActivity(prevState => ({ ...prevState, vehicle_id: driver.vehicle_id }));
+      } else {
+        // Clear vehicle selection if driver has no assigned vehicle
+        setNewActivity(prevState => ({ ...prevState, vehicle_id: '' }));
+      }
+    }
+  }, [newActivity.driver_id, drivers]);
 
   const handleInputChange = (e) => {
     setNewActivity({ ...newActivity, [e.target.id]: e.target.value });
@@ -224,8 +252,22 @@ const NewActivity = () => {
             <input type="date" id="date" name="date" value={newActivity.date} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
           </div>
           <div className="mb-4">
-            <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">Descripcion</label>
-            <textarea id="description" name="description" value={newActivity.description} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+            <label htmlFor="driver_id" className="block text-gray-700 text-sm font-bold mb-2">Conductor</label>
+            <select id="driver_id" name="driver_id" value={newActivity.driver_id} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+              <option value="">Selecciona un conductor</option>
+              {drivers.map((driver) => (
+                <option key={driver.id} value={driver.id}>{driver.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-4">
+            <label htmlFor="vehicle_id" className="block text-gray-700 text-sm font-bold mb-2">Vehiculo</label>
+            <select id="vehicle_id" name="vehicle_id" value={newActivity.vehicle_id} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" disabled={!newActivity.driver_id}>
+              <option value="">Selecciona un vehiculo</option>
+              {vehicles.map((vehicle) => (
+                <option key={vehicle.id} value={vehicle.id}>{vehicle.make} {vehicle.model} ({vehicle.license_plate})</option>
+              ))}
+            </select>
           </div>
           <div className="mb-4">
             <label htmlFor="activity_type" className="block text-gray-700 text-sm font-bold mb-2">Tipo de actividad</label>
@@ -237,22 +279,8 @@ const NewActivity = () => {
             </select>
           </div>
           <div className="mb-4">
-            <label htmlFor="vehicle_id" className="block text-gray-700 text-sm font-bold mb-2">Vehiculo</label>
-            <select id="vehicle_id" name="vehicle_id" value={newActivity.vehicle_id} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-              <option value="">Selecciona un vehiculo</option>
-              {vehicles.map((vehicle) => (
-                <option key={vehicle.id} value={vehicle.id}>{vehicle.make} {vehicle.model}</option>
-              ))}
-            </select>
-          </div>
-          <div className="mb-4">
-            <label htmlFor="driver_id" className="block text-gray-700 text-sm font-bold mb-2">Conductor</label>
-            <select id="driver_id" name="driver_id" value={newActivity.driver_id} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-              <option value="">Selecciona un conductor</option>
-              {drivers.map((driver) => (
-                <option key={driver.id} value={driver.id}>{driver.name}</option>
-              ))}
-            </select>
+            <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">Descripcion</label>
+            <textarea id="description" name="description" value={newActivity.description} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
           </div>
           <div className="mb-4">
             <label htmlFor="status" className="block text-gray-700 text-sm font-bold mb-2">Estado</label>
@@ -272,13 +300,13 @@ const NewActivity = () => {
           <input type="file" id="attachment" name="attachment" accept="image/*, application/pdf" onChange={(e) => setAttachment(e.target.files[0])} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
         </div>
         <div className="flex items-center justify-end">
-          <Button
+          <button
             type="submit"
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             disabled={loading}
           >
             {loading ? 'Agregando...' : 'Agregar actividad'}
-          </Button>
+          </button>
           <Link to="/activities" className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800 ml-4">
             Cancelar
           </Link>

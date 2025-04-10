@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
     import { Link, useLocation, useNavigate } from 'react-router-dom';
     import { supabase } from '../supabaseClient';
-    import { Button } from './ui/button'; // Corrected import path
 
     const Sidebar = ({ userRole, isSidebarOpen, setIsSidebarOpen }) => {
       const location = useLocation();
@@ -45,16 +44,14 @@ import React, { useState } from 'react';
             {!collapsed && (
               <div className="text-xl font-bold text-white">CarFleet</div>
             )}
-            <Button 
-              variant="ghost"
-              size="icon"
+            <button 
               onClick={() => setCollapsed(!collapsed)} 
               className="p-1 rounded-md hover:bg-gray-700 focus:outline-none"
             >
               <span className="material-icons">
                 {collapsed ? 'chevron_right' : 'chevron_left'}
               </span>
-            </Button>
+            </button>
           </div>
           
           <nav className="mt-5">
@@ -76,15 +73,14 @@ import React, { useState } from 'react';
           </nav>
           
           <div className="absolute bottom-0 w-full p-4 border-t border-gray-700">
-            <Button
-              variant="ghost"
+            <button
               onClick={handleLogout}
               className={`flex items-center text-gray-300 hover:text-white transition-colors duration-200
                 ${collapsed ? 'justify-center' : 'justify-start'}`}
             >
               <span className="material-icons">logout</span>
               {!collapsed && <span className="ml-3">Cerrar Sesion</span>}
-            </Button>
+            </button>
           </div>
         </div>
       );

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import Table from '../components/Table'
 import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '../../src/components/ui/button'; // Corrected import path (again!)
 
 const Vehicles = () => {
   const [loading, setLoading] = useState(true)
@@ -175,12 +174,12 @@ const Vehicles = () => {
   return (
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-4">
-        <Button
+        <Link
           className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded focus:outline-none focus:shadow-outline text-sm"
-          asChild
+          to="/vehicles/new"
         >
-          <Link to="/vehicles/new">Agregar vehiculo</Link>
-        </Button>
+          Agregar vehiculo
+        </Link>
       </div>
 
       <Table
