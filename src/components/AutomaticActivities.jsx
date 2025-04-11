@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import Modal from './Modal';
+import { Button } from "@material-tailwind/react";
 
 const AutomaticActivities = () => {
   const [activities, setActivities] = useState([]);
@@ -416,9 +417,18 @@ const AutomaticActivities = () => {
     }
   };
 
+  const buttonStyle = {
+    color: 'inherit',
+    backgroundColor: 'transparent',
+    padding: 0,
+    margin: 0,
+    border: 'none',
+    boxShadow: 'none',
+    marginRight: '8px', // Add spacing between buttons
+  };
+
   return (
     <div className="container mx-auto p-6">
-      {/* Removed the h2 header here */}
       {error && <p className="text-red-500 mb-4">Error: {error}</p>}
 
       {/* Add/Edit Automatic Activity Form */}
@@ -432,7 +442,7 @@ const AutomaticActivities = () => {
                 <input type="text" id="name" name="name" value={newActivity.name} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
               </div>
               <div>
-                <label htmlFor="use_case" className="block text-gray-700 text-sm font-bold mb-2">Caso de uso</label>
+                <label htmlFor="use_case" className="block text-gray-700 text-sm font-bold mb-2">Utilidad</label>
                 <input type="text" id="use_case" name="use_case" value={newActivity.use_case} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
               </div>
               <div>
@@ -541,36 +551,52 @@ const AutomaticActivities = () => {
       </Modal>
 
       {/* Display Existing Automatic Activities */}
-      <button
+      <Button
         onClick={() => openModal(null)}
-        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-4"
+        color="green"
+        className="mb-4"
       >
         Agregar nueva actividad automatica
-      </button>
+      </Button>
       {activities.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {activities.map((activity) => (
-            <div key={activity.id} className="bg-white shadow-md rounded-lg p-4">
-              <h4 className="text-lg font-semibold">{activity.name}</h4>
-              <p className="text-gray-600">{activity.use_case}</p>
-              <p className="text-gray-600">Tipo: {activity.activity_type}</p>
-              <p className="text-gray-600">Cadencia: {activity.cadence}</p>
-              <div className="flex space-x-2 mt-2">
-                <button
-                  onClick={() => openModal(activity)}
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                  Editar
-                </button>
-                <button
-                  onClick={() => handleDeleteActivity(activity.id)}
-                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                  Borrar
-                </button>
-              </div>
-            </div>
-          ))}
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Utilidad</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cadencia</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {activities.map((activity) => (
+                <tr key={activity.id}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{activity.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{activity.use_case}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{activity.activity_type}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{activity.cadence}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <Button
+                      onClick={() => openModal(activity)}
+                      style={{ ...buttonStyle, color: 'blue' }}
+                      size="sm"
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      onClick={() => handleDeleteActivity(activity.id)}
+                      style={{ ...buttonStyle, color: 'red' }}
+                      size="sm"
+                    >
+                      Borrar
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : (
         <p>No hay actividades automaticas.</p>

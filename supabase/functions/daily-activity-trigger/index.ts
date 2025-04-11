@@ -26,6 +26,7 @@ Deno.serve(async (req)=>{
       weekday: 'long'
     });
     const todayDateString = today.toISOString().slice(0, 10);
+    const todayDayOfMonth = today.getDate();
 
     // Fetch all automatic activities that apply today
     const { data: automaticActivities, error: automaticActivitiesError } = await supabaseService.from('automatic_activities').select('*');
@@ -44,13 +45,17 @@ Deno.serve(async (req)=>{
 
     // Iterate through each automatic activity and create activities if needed
     for (const activityDefinition of automaticActivities){
-      const { driver_id, vehicle_id, activity_type, cadence, day_of_week, start_date, description, status, amount, organization_id } = activityDefinition;
+      const { driver_id, vehicle_id, activity_type, cadence, day_of_week, day_of_month, start_date, description, status, amount, organization_id } = activityDefinition;
       let shouldCreateActivity = false;
 
       if (cadence === 'daily') {
         shouldCreateActivity = true;
       } else if (cadence === 'weekly') {
         if (day_of_week && day_of_week.includes(todayDayOfWeek)) {
+          shouldCreateActivity = true;
+        }
+      } else if (cadence === 'monthly') {
+        if (day_of_month === todayDayOfMonth) {
           shouldCreateActivity = true;
         }
       }
