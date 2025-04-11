@@ -236,8 +236,8 @@ const AutomaticActivities = () => {
   };
 
   const openModal = (activity) => {
-    setEditingActivityId(activity.id);
-    setNewActivity({
+    setEditingActivityId(activity ? activity.id : null);
+    setNewActivity(activity ? {
       name: activity.name,
       use_case: activity.use_case,
       activity_type: activity.activity_type,
@@ -250,6 +250,19 @@ const AutomaticActivities = () => {
       amount: activity.amount,
       driver_id: activity.driver_id,
       vehicle_id: activity.vehicle_id,
+    } : {
+      name: '',
+      use_case: '',
+      activity_type: '',
+      cadence: '',
+      day_of_week: [],
+      day_of_month: null,
+      start_date: '',
+      description: '',
+      status: 'Pendiente',
+      amount: 0,
+      driver_id: null,
+      vehicle_id: null,
     });
     setIsModalOpen(true);
   };
@@ -523,6 +536,12 @@ const AutomaticActivities = () => {
 
       {/* Display Existing Automatic Activities */}
       <h3 className="text-xl font-semibold mb-4">Actividades automaticas existentes</h3>
+      <button
+        onClick={() => openModal(null)}
+        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-4"
+      >
+        Agregar nueva actividad automatica
+      </button>
       {activities.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {activities.map((activity) => (
