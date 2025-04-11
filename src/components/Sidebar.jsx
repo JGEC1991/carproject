@@ -39,13 +39,13 @@ import React, { useState, useEffect } from 'react';
       };
 
       return (
-        <div className={`sidebar ${collapsed ? 'w-16' : 'w-64'} fixed inset-y-0 left-0 z-30 bg-gray-800 text-white transition-all duration-300 ease-in-out`}>
+        <div className={`sidebar ${collapsed ? 'w-16' : 'w-64'} fixed inset-y-0 left-0 z-30 bg-gray-900 text-white transition-all duration-300 ease-in-out`}> {/* Changed bg-gray-800 to bg-gray-900 */}
           <div className="flex items-center justify-between px-4 py-5 border-b border-gray-700">
             {!collapsed && (
-              <div className="text-xl font-bold text-white">CarFleet</div>
+              <div className="text-xl font-bold text-white">CarFleetPro</div> // Changed CarFleet to CarFleetPro
             )}
-            <button 
-              onClick={() => setCollapsed(!collapsed)} 
+            <button
+              onClick={() => setCollapsed(!collapsed)}
               className="p-1 rounded-md hover:bg-gray-700 focus:outline-none"
             >
               <span className="material-icons">
@@ -53,14 +53,14 @@ import React, { useState, useEffect } from 'react';
               </span>
             </button>
           </div>
-          
+
           <nav className="mt-5">
             <ul className="space-y-2 px-2">
               {menuItems.map((item) => (
                 <li key={item.path}>
                   <Link
                     to={item.path}
-                    className={`flex items-center px-4 py-3 rounded-md transition-colors duration-200 
+                    className={`flex items-center px-4 py-3 rounded-md transition-colors duration-200
                       ${location.pathname === item.path ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}
                       ${collapsed ? 'justify-center' : 'justify-start'}`}
                   >
@@ -71,7 +71,7 @@ import React, { useState, useEffect } from 'react';
               ))}
             </ul>
           </nav>
-          
+
           <div className="absolute bottom-0 w-full p-4 border-t border-gray-700">
             <button
               onClick={handleLogout}
