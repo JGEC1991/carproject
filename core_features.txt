@@ -1,0 +1,33 @@
+Car Fleet Pro is a comprehensive fleet management CRM designed to streamline and optimize various aspects of managing a car fleet. Its core features include:
+
+1.  **Vehicle Management:** Allows users to manage and track vehicles, including details such as make, model, year, color, license plate, VIN, status, vehicle type, fuel type, transmission type, insurance information, and registration expiry date. It also provides maintenance tracking capabilities.
+
+2.  **Driver Management:** Enables the management of drivers, including their names, license numbers, phone numbers, and email addresses.
+
+3.  **Activity Tracking:** Facilitates the tracking of various activities related to the fleet, such as maintenance, repairs, and other events. Users can filter activities by date, type, driver, vehicle, and status.
+
+4.  **Expense Tracking:** Allows users to record and manage expenses associated with the fleet, including details such as date, amount, description, status, activity type, driver, and vehicle.
+
+5.  **Revenue Reporting:** Provides tools for generating revenue reports to help users better manage their finances.
+
+6.  **User Authentication and Authorization:** Securely manages user accounts, roles, and permissions, including signup, login, and password reset functionalities. It supports different user roles, such as owners, admins, and regular users.
+
+7.  **Organization Management:** Enables the creation and management of organizations, allowing multiple users to collaborate within the same organization.
+
+8.  **Customizable Filters and Column Visibility:** Allows users to customize filters and column visibility on various data tables to suit their specific needs and preferences.
+
+9.  **Data Export:** Provides the ability to export data to CSV format for further analysis and reporting.
+
+10. **Maintenance Tracking:** Calculates and displays the maintenance status of vehicles based on the last oil change date and a predefined maintenance cadence.
+
+11. **Automatic Activities:** Allows users to schedule automatic activities based on different cadences (daily, weekly, monthly) and assign them to specific drivers and vehicles.
+
+12. **Vehicle Photos History:** Enables users to upload and track vehicle photos over time, with a date filter to view photos taken on specific dates.
+
+13. **Role Segmentation for Access:** Implements role-based access control to restrict access to certain features and data based on user roles (e.g., admin, user).
+
+14. **Customizable Activity Types:** Allows users to define and customize activity types to adapt the system to their specific business needs.
+
+15. **Permissions Setup:** Provides a granular permission system to control user access to specific functionalities and data within the application.
+
+These features collectively provide a robust platform for managing and optimizing car fleet operations.
