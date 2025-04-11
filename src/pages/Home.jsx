@@ -208,24 +208,26 @@ const Home = () => {
           <p className="text-lg text-gray-700 mb-8">
             Centraliza el control de vehículos, conductores, gastos y mantenimiento en una plataforma intuitiva y segura.
           </p>
-          <div className="flex justify-center space-x-4">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="flex justify-center space-x-4">
+              <button
+                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                onClick={toggleLoginModal}
+              >
+                Iniciar Sesión
+              </button>
+              <button
+                className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                onClick={toggleSignupModal}
+              >
+                Registrarse
+              </button>
+            </div>
             <button
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               onClick={toggleDemoRequest}
             >
               Solicitar una demostración
-            </button>
-            <button
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              onClick={toggleLoginModal}
-            >
-              Iniciar Sesión
-            </button>
-            <button
-              className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              onClick={toggleSignupModal}
-            >
-              Registrarse
             </button>
           </div>
         </div>
