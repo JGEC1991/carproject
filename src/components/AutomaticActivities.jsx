@@ -1,32 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  Typography,
-  Input,
-  Select,
-  Option,
-  Button,
-} from "@material-tailwind/react";
+import Modal from './Modal';
 
 const AutomaticActivities = () => {
   const [activities, setActivities] = useState([]);
   const [newActivity, setNewActivity] = useState({
+    name: '',
+    use_case: '',
     activity_type: '',
     cadence: '',
-    day_of_week: [], // Changed to array
-    day_of_month: null, // Changed to null
+    day_of_week: [],
+    day_of_month: null,
     start_date: '',
-    end_date: '',
     description: '',
     status: 'Pendiente',
     amount: 0,
-    apply_to_type: '',
-    vehicle_id: null,
     driver_id: null,
-    vehicle_status: null,
+    vehicle_id: null,
   });
   const [vehicles, setVehicles] = useState([]);
   const [drivers, setDrivers] = useState([]);
@@ -34,6 +24,8 @@ const AutomaticActivities = () => {
   const [error, setError] = useState(null);
   const [organizationId, setOrganizationId] = useState(null);
   const [activityTypeOptions, setActivityTypeOptions] = useState([]);
+  const [editingActivityId, setEditingActivityId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const cadenceOptions = [
     { value: 'daily', label: 'Diario' },
@@ -49,23 +41,11 @@ const AutomaticActivities = () => {
     { value: 'Saturday', label: 'Sabado' },
     { value: 'Sunday', label: 'Domingo' }
   ];
-  const applyToOptions = [
-    { value: 'all_vehicles', label: 'Todos los vehiculos' },
-    { value: 'all_drivers', label: 'Todos los conductores' },
-    { value: 'specific_vehicle', label: 'Vehiculo especifico' },
-    { value: 'specific_driver', label: 'Conductor especifico' },
-    { value: 'vehicle_status', label: 'Estado del vehiculo' }
-  ];
   const statusOptions = [
     { value: 'Pendiente', label: 'Pendiente' },
     { value: 'Completado', label: 'Completado' },
     { value: 'Vencido', label: 'Vencido' },
     { value: 'Cancelado', label: 'Cancelado' }
-  ];
-  const vehicleStatusOptions = [
-    { value: 'Disponible', label: 'Disponible' },
-    { value: 'Ocupado', label: 'Ocupado' },
-    { value: 'Mantenimiento', label: 'Mantenimiento' }
   ];
 
   const defaultActivityTypes = [
@@ -130,7 +110,7 @@ const AutomaticActivities = () => {
 
     const fetchDrivers = async () => {
       try {
-        const { data, error } = await supabase.from('drivers').select('id, name');
+        const { data, error } = await supabase.from('drivers').select('id, name, vehicle_id');
         if (error) {
           console.error('Error fetching drivers:', error);
           setError(`Error al obtener los conductores: ${error.message}`);
@@ -219,6 +199,19 @@ const AutomaticActivities = () => {
     fetchAutomaticActivities();
   }, [organizationId]);
 
+  useEffect(() => {
+    // Auto-select vehicle when driver is selected
+    if (newActivity.driver_id) {
+      const driver = drivers.find(d => d.id === newActivity.driver_id);
+      if (driver && driver.vehicle_id) {
+        setNewActivity(prevState => ({ ...prevState, vehicle_id: driver.vehicle_id }));
+      } else {
+        // Clear vehicle selection if driver has no assigned vehicle
+        setNewActivity(prevState => ({ ...prevState, vehicle_id: null }));
+      }
+    }
+  }, [newActivity.driver_id, drivers]);
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -242,6 +235,48 @@ const AutomaticActivities = () => {
     }
   };
 
+  const openModal = (activity) => {
+    setEditingActivityId(activity.id);
+    setNewActivity({
+      name: activity.name,
+      use_case: activity.use_case,
+      activity_type: activity.activity_type,
+      cadence: activity.cadence,
+      day_of_week: activity.day_of_week || [],
+      day_of_month: activity.day_of_month,
+      start_date: activity.start_date,
+      description: activity.description,
+      status: activity.status,
+      amount: activity.amount,
+      driver_id: activity.driver_id,
+      vehicle_id: activity.vehicle_id,
+    });
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    cancelEditing();
+  };
+
+  const cancelEditing = () => {
+    setEditingActivityId(null);
+    setNewActivity({
+      name: '',
+      use_case: '',
+      activity_type: '',
+      cadence: '',
+      day_of_week: [],
+      day_of_month: null,
+      start_date: '',
+      description: '',
+      status: 'Pendiente',
+      amount: 0,
+      driver_id: null,
+      vehicle_id: null,
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -253,40 +288,70 @@ const AutomaticActivities = () => {
         return;
       }
 
-      const { data, error } = await supabase
-        .from('automatic_activities')
-        .insert([
+      let query = supabase.from('automatic_activities');
+
+      if (editingActivityId) {
+        // Update existing activity
+        query = query.update({
+          name: newActivity.name,
+          use_case: newActivity.use_case,
+          activity_type: newActivity.activity_type,
+          cadence: newActivity.cadence,
+          day_of_week: newActivity.day_of_week.length > 0 ? newActivity.day_of_week : null,
+          day_of_month: newActivity.cadence !== 'monthly' ? null : newActivity.day_of_month,
+          start_date: newActivity.start_date || null,
+          description: newActivity.description,
+          status: newActivity.status,
+          amount: newActivity.amount,
+          driver_id: newActivity.driver_id,
+          vehicle_id: newActivity.vehicle_id,
+          organization_id: organizationId,
+        }).eq('id', editingActivityId);
+      } else {
+        // Insert new activity
+        query = query.insert([
           {
-            ...newActivity,
-            organization_id: organizationId,
+            name: newActivity.name,
+            use_case: newActivity.use_case,
+            activity_type: newActivity.activity_type,
+            cadence: newActivity.cadence,
             day_of_week: newActivity.day_of_week.length > 0 ? newActivity.day_of_week : null,
             day_of_month: newActivity.cadence !== 'monthly' ? null : newActivity.day_of_month,
             start_date: newActivity.start_date || null,
-            end_date: newActivity.end_date || null,
+            description: newActivity.description,
+            status: newActivity.status,
+            amount: newActivity.amount,
+            driver_id: newActivity.driver_id,
+            vehicle_id: newActivity.vehicle_id,
+            organization_id: organizationId,
           },
-        ])
-        .select();
+        ]);
+      }
+
+      const { data, error } = await query.select();
 
       if (error) {
-        setError(`Error al agregar actividad automatica: ${error.message}`);
+        setError(`Error al ${editingActivityId ? 'actualizar' : 'agregar'} actividad automatica: ${error.message}`);
       } else {
         console.log('Automatic activity added:', data);
-        alert('Actividad automatica agregada exitosamente!');
+        alert(`Actividad automatica ${editingActivityId ? 'actualizada' : 'agregada'} exitosamente!`);
         setNewActivity({
+          name: '',
+          use_case: '',
           activity_type: '',
           cadence: '',
           day_of_week: [],
           day_of_month: null,
           start_date: '',
-          end_date: '',
           description: '',
           status: 'Pendiente',
           amount: 0,
-          apply_to_type: '',
-          vehicle_id: null,
           driver_id: null,
-          vehicle_status: null,
+          vehicle_id: null,
         });
+        setEditingActivityId(null); // Clear editing ID after successful submission
+        setIsModalOpen(false);
+
         // Refresh activities
         const { data: newData, error: newError } = await supabase
           .from('automatic_activities')
@@ -337,131 +402,124 @@ const AutomaticActivities = () => {
       <h2 className="text-2xl font-semibold mb-4">Administrar actividades automaticas</h2>
       {error && <p className="text-red-500 mb-4">Error: {error}</p>}
 
-      {/* Add New Automatic Activity Form */}
-      <form onSubmit={handleSubmit} className="mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="activity_type" className="block text-gray-700 text-sm font-bold mb-2">Tipo de actividad</label>
-            <select id="activity_type" name="activity_type" value={newActivity.activity_type} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-              <option value="">Seleccionar tipo de actividad</option>
-              {activityTypeOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="cadence" className="block text-gray-700 text-sm font-bold mb-2">Cadencia</label>
-            <select id="cadence" name="cadence" value={newActivity.cadence} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-              <option value="">Seleccionar cadencia</option>
-              {cadenceOptions.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </div>
-          {newActivity.cadence === 'weekly' && (
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">Dia de la semana</label>
-              <div className="flex flex-wrap">
-                {dayOfWeekOptions.map((day) => (
-                  <label key={day.value} className="inline-flex items-center mr-4">
-                    <input
-                      type="checkbox"
-                      className="form-checkbox h-5 w-5 text-blue-600"
-                      name="day_of_week"
-                      value={day.value}
-                      checked={newActivity.day_of_week.includes(day.value)}
-                      onChange={handleInputChange}
-                    />
-                    <span className="ml-2 text-gray-700">{day.label}</span>
-                  </label>
-                ))}
+      {/* Add/Edit Automatic Activity Form */}
+      <Modal isOpen={isModalOpen} onClose={closeModal}>
+        <div className="mb-8 bg-white shadow-md rounded-lg p-4">
+          <h3 className="text-lg font-semibold mb-2">{editingActivityId ? 'Editar actividad automatica' : 'Agregar nueva actividad automatica'}</h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">Nombre</label>
+                <input type="text" id="name" name="name" value={newActivity.name} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+              </div>
+              <div>
+                <label htmlFor="use_case" className="block text-gray-700 text-sm font-bold mb-2">Caso de uso</label>
+                <input type="text" id="use_case" name="use_case" value={newActivity.use_case} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+              </div>
+              <div>
+                <label htmlFor="activity_type" className="block text-gray-700 text-sm font-bold mb-2">Tipo de actividad</label>
+                <select id="activity_type" name="activity_type" value={newActivity.activity_type} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                  <option value="">Seleccionar tipo de actividad</option>
+                  {activityTypeOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="cadence" className="block text-gray-700 text-sm font-bold mb-2">Cadencia</label>
+                <select id="cadence" name="cadence" value={newActivity.cadence} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                  <option value="">Seleccionar cadencia</option>
+                  {cadenceOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+              {newActivity.cadence === 'weekly' && (
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">Dia de la semana</label>
+                  <div className="flex flex-wrap">
+                    {dayOfWeekOptions.map((day) => (
+                      <label key={day.value} className="inline-flex items-center mr-4">
+                        <input
+                          type="checkbox"
+                          id={`day_of_week_${day.value}`}
+                          name="day_of_week"
+                          value={day.value}
+                          checked={newActivity.day_of_week.includes(day.value)}
+                          onChange={handleInputChange}
+                          className="mr-2 leading-tight"
+                        />
+                        <span className="text-gray-700">{day.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {newActivity.cadence === 'monthly' && (
+                <div>
+                  <label htmlFor="day_of_month" className="block text-gray-700 text-sm font-bold mb-2">Dia del mes</label>
+                  <input type="number" id="day_of_month" name="day_of_month" value={newActivity.day_of_month} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" min="1" max="31" />
+                </div>
+              )}
+              <div>
+                <label htmlFor="start_date" className="block text-gray-700 text-sm font-bold mb-2">Fecha de inicio</label>
+                <input type="date" id="start_date" name="start_date" value={newActivity.start_date} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+              </div>
+              <div>
+                <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">Descripcion</label>
+                <textarea id="description" name="description" value={newActivity.description} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+              </div>
+              <div>
+                <label htmlFor="status" className="block text-gray-700 text-sm font-bold mb-2">Estado</label>
+                <select id="status" name="status" value={newActivity.status} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                  <option value="">Seleccionar estado</option>
+                  {statusOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="amount" className="block text-gray-700 text-sm font-bold mb-2">Monto</label>
+                <input type="number" id="amount" name="amount" value={newActivity.amount} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+              </div>
+              <div>
+                <label htmlFor="driver_id" className="block text-gray-700 text-sm font-bold mb-2">Conductor</label>
+                <select id="driver_id" name="driver_id" value={newActivity.driver_id || ''} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                  <option value="">Seleccionar conductor</option>
+                  {drivers.map((driver) => (
+                    <option key={driver.id} value={driver.id}>{driver.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="vehicle_id" className="block text-gray-700 text-sm font-bold mb-2">Vehiculo</label>
+                <select id="vehicle_id" name="vehicle_id" value={newActivity.vehicle_id || ''} onChange={handleInputChange} disabled className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                  <option value="">Seleccionar vehiculo</option>
+                  {vehicles.map((vehicle) => (
+                    <option key={vehicle.id} value={vehicle.id}>{vehicle.make} {vehicle.model} ({vehicle.license_plate})</option>
+                  ))}
+                </select>
               </div>
             </div>
-          )}
-          {newActivity.cadence === 'monthly' && (
-            <div>
-              <label htmlFor="day_of_month" className="block text-gray-700 text-sm font-bold mb-2">Dia del mes</label>
-              <input type="number" id="day_of_month" name="day_of_month" value={newActivity.day_of_month} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" min="1" max="31" />
+            <div className="flex items-center justify-end">
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              >
+                {loading ? 'Guardando...' : 'Guardar actividad automatica'}
+              </button>
+              <button
+                type="button"
+                onClick={closeModal}
+                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2"
+              >
+                Cancelar
+              </button>
             </div>
-          )}
-          <div>
-            <label htmlFor="start_date" className="block text-gray-700 text-sm font-bold mb-2">Fecha de inicio</label>
-            <input type="date" id="start_date" name="start_date" value={newActivity.start_date} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-          </div>
-          <div>
-            <label htmlFor="end_date" className="block text-gray-700 text-sm font-bold mb-2">Fecha de finalizacion</label>
-            <input type="date" id="end_date" name="end_date" value={newActivity.end_date} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-          </div>
-          <div>
-            <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">Descripcion</label>
-            <textarea id="description" name="description" value={newActivity.description} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-          </div>
-          <div>
-            <label htmlFor="status" className="block text-gray-700 text-sm font-bold mb-2">Estado</label>
-            <select id="status" name="status" value={newActivity.status} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-              <option value="">Seleccionar estado</option>
-              {statusOptions.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="amount" className="block text-gray-700 text-sm font-bold mb-2">Monto</label>
-            <input type="number" id="amount" name="amount" value={newActivity.amount} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-          </div>
-          <div>
-            <label htmlFor="apply_to_type" className="block text-gray-700 text-sm font-bold mb-2">Aplicar a</label>
-            <select id="apply_to_type" name="apply_to_type" value={newActivity.apply_to_type} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-              <option value="">Seleccionar aplicacion</option>
-              {applyToOptions.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </div>
-          {newActivity.apply_to_type === 'specific_vehicle' && (
-            <div>
-              <label htmlFor="vehicle_id" className="block text-gray-700 text-sm font-bold mb-2">Vehiculo</label>
-              <select id="vehicle_id" name="vehicle_id" value={newActivity.vehicle_id || ''} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                <option value="">Seleccionar vehiculo</option>
-                {vehicles.map((vehicle) => (
-                  <option key={vehicle.id} value={vehicle.id}>{vehicle.make} {vehicle.model} ({vehicle.license_plate})</option>
-                ))}
-              </select>
-            </div>
-          )}
-          {newActivity.apply_to_type === 'specific_driver' && (
-            <div>
-              <label htmlFor="driver_id" className="block text-gray-700 text-sm font-bold mb-2">Conductor</label>
-              <select id="driver_id" name="driver_id" value={newActivity.driver_id || ''} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                <option value="">Seleccionar conductor</option>
-                {drivers.map((driver) => (
-                  <option key={driver.id} value={driver.id}>{driver.name}</option>
-                ))}
-              </select>
-            </div>
-          )}
-          {newActivity.apply_to_type === 'vehicle_status' && (
-            <div>
-              <label htmlFor="vehicle_status" className="block text-gray-700 text-sm font-bold mb-2">Estado del vehiculo</label>
-              <select id="vehicle_status" name="vehicle_status" value={newActivity.vehicle_status || ''} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                <option value="">Seleccionar estado</option>
-                {vehicleStatusOptions.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
-            </div>
-          )}
+          </form>
         </div>
-        <div className="flex items-center justify-end">
-          <button
-            type="submit"
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            disabled={loading}
-          >
-            {loading ? 'Agregando...' : 'Agregar actividad automatica'}
-          </button>
-        </div>
-      </form>
+      </Modal>
 
       {/* Display Existing Automatic Activities */}
       <h3 className="text-xl font-semibold mb-4">Actividades automaticas existentes</h3>
@@ -469,15 +527,24 @@ const AutomaticActivities = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {activities.map((activity) => (
             <div key={activity.id} className="bg-white shadow-md rounded-lg p-4">
-              <p>Tipo: {activity.activity_type}</p>
-              <p>Cadencia: {activity.cadence}</p>
-              <p>Aplicar a: {activity.apply_to_type}</p>
-              <button
-                onClick={() => handleDeleteActivity(activity.id)}
-                className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline text-sm mt-2"
-              >
-                Borrar
-              </button>
+              <h4 className="text-lg font-semibold">{activity.name}</h4>
+              <p className="text-gray-600">{activity.use_case}</p>
+              <p className="text-gray-600">Tipo: {activity.activity_type}</p>
+              <p className="text-gray-600">Cadencia: {activity.cadence}</p>
+              <div className="flex space-x-2 mt-2">
+                <button
+                  onClick={() => openModal(activity)}
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                >
+                  Editar
+                </button>
+                <button
+                  onClick={() => handleDeleteActivity(activity.id)}
+                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                >
+                  Borrar
+                </button>
+              </div>
             </div>
           ))}
         </div>
