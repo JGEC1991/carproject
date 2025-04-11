@@ -23,6 +23,7 @@ const Home = () => {
   const [demoCity, setDemoCity] = useState('');
   const [demoCountry, setDemoCountry] = useState('');
   const [demoNeeds, setDemoNeeds] = useState('');
+  const [successMessage, setSuccessMessage] = useState(''); // New state for success message
 
   const navigate = useNavigate();
 
@@ -142,6 +143,58 @@ const Home = () => {
 
     const toggleDemoRequest = () => {
         setShowDemoRequest(!showDemoRequest);
+    };
+
+    const submitDemoRequest = async () => {
+        setLoading(true);
+        setError(null);
+        setSuccessMessage(''); // Clear any previous success message
+
+        try {
+            console.log('Submitting demo request with:', {
+                phone: demoPhone,
+                email: demoEmail,
+                num_vehicles: demoVehicles,
+                city: demoCity,
+                country: demoCountry,
+                business_needs: demoNeeds,
+            });
+
+            const { data, error } = await supabase
+                .from('demo_requests')
+                .insert([
+                    {
+                        phone: demoPhone,
+                        email: demoEmail,
+                        num_vehicles: demoVehicles,
+                        city: demoCity,
+                        country: demoCountry,
+                        business_needs: demoNeeds,
+                    },
+                ]);
+
+            if (error) {
+                console.error('Supabase insert error:', error);
+                setError(error.message);
+            } else {
+                console.log('Supabase insert data:', data);
+                // Clear the form
+                setDemoPhone('');
+                setDemoEmail('');
+                setDemoVehicles('');
+                setDemoCity('');
+                setDemoCountry('');
+                setDemoNeeds('');
+
+                setSuccessMessage('Su solicitud ha sido recibida y será procesada en las próximas 24 horas.');
+                //toggleDemoRequest(); // Close the modal
+            }
+        } catch (err) {
+            console.error('Error submitting demo request:', err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
   return (
@@ -575,15 +628,15 @@ const Home = () => {
               onChange={(e) => setDemoNeeds(e.target.value)}
             />
           </div>
-          
+          {successMessage && (
+            <p className="text-green-500 text-xs italic mt-4">{successMessage}</p>
+          )}
           <div className="flex items-center justify-center">
             <button
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               type="button"
-              onClick={() => {
-                // Handle demo request submission here
-                toggleDemoRequest();
-              }}
+              onClick={submitDemoRequest}
+              disabled={loading}
             >
               Enviar Solicitud
             </button>
