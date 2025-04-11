@@ -6,7 +6,7 @@ const AutomaticActivities = () => {
   const [activities, setActivities] = useState([]);
   const [newActivity, setNewActivity] = useState({
     name: '',
-    utilidad: '',
+    use_case: '',
     activity_type: '',
     cadence: '',
     day_of_week: [],
@@ -114,7 +114,7 @@ const AutomaticActivities = () => {
         if (error) {
           console.error('Error fetching drivers:', error);
           setError(`Error al obtener los conductores: ${error.message}`);
-          } else {
+        } else {
           setDrivers(data);
         }
       } catch (err) {
@@ -239,7 +239,7 @@ const AutomaticActivities = () => {
     setEditingActivityId(activity ? activity.id : null);
     setNewActivity(activity ? {
       name: activity.name,
-      utilidad: activity.utilidad,
+      use_case: activity.use_case,
       activity_type: activity.activity_type,
       cadence: activity.cadence,
       day_of_week: activity.day_of_week || [],
@@ -252,7 +252,7 @@ const AutomaticActivities = () => {
       vehicle_id: activity.vehicle_id,
     } : {
       name: '',
-      utilidad: '',
+      use_case: '',
       activity_type: '',
       cadence: '',
       day_of_week: [],
@@ -276,7 +276,7 @@ const AutomaticActivities = () => {
     setEditingActivityId(null);
     setNewActivity({
       name: '',
-      utilidad: '',
+      use_case: '',
       activity_type: '',
       cadence: '',
       day_of_week: [],
@@ -301,28 +301,56 @@ const AutomaticActivities = () => {
         return;
       }
 
-      // Call the new Supabase function for specific driver
-      const { data, error } = await supabase.rpc('create_recurring_activities_for_driver', {
-        driver_id: newActivity.driver_id,
-        activity_type: newActivity.activity_type,
-        cadence: newActivity.cadence,
-        day_of_week: newActivity.day_of_week.length > 0 ? newActivity.day_of_week : null,
-        day_of_month: newActivity.cadence !== 'monthly' ? null : newActivity.day_of_month,
-        start_date: newActivity.start_date || null,
-        description: newActivity.description,
-        status: newActivity.status,
-        amount: newActivity.amount,
-        organization_id: organizationId,
-      });
+      let query = supabase.from('automatic_activities');
+
+      if (editingActivityId) {
+        // Update existing activity
+        query = query.update({
+          name: newActivity.name,
+          use_case: newActivity.use_case,
+          activity_type: newActivity.activity_type,
+          cadence: newActivity.cadence,
+          day_of_week: newActivity.day_of_week.length > 0 ? newActivity.day_of_week : null,
+          day_of_month: newActivity.cadence !== 'monthly' ? null : newActivity.day_of_month,
+          start_date: newActivity.start_date || null,
+          description: newActivity.description,
+          status: newActivity.status,
+          amount: newActivity.amount,
+          driver_id: newActivity.driver_id,
+          vehicle_id: newActivity.vehicle_id,
+          organization_id: organizationId,
+        }).eq('id', editingActivityId);
+      } else {
+        // Insert new activity
+        query = query.insert([
+          {
+            name: newActivity.name,
+            use_case: newActivity.use_case,
+            activity_type: newActivity.activity_type,
+            cadence: newActivity.cadence,
+            day_of_week: newActivity.day_of_week.length > 0 ? newActivity.day_of_week : null,
+            day_of_month: newActivity.cadence !== 'monthly' ? null : newActivity.day_of_month,
+            start_date: newActivity.start_date || null,
+            description: newActivity.description,
+            status: newActivity.status,
+            amount: newActivity.amount,
+            driver_id: newActivity.driver_id,
+            vehicle_id: newActivity.vehicle_id,
+            organization_id: organizationId,
+          },
+        ]);
+      }
+
+      const { data, error } = await query.select();
 
       if (error) {
-        setError(`Error al crear actividad automatica para el conductor: ${error.message}`);
+        setError(`Error al ${editingActivityId ? 'actualizar' : 'agregar'} actividad automatica: ${error.message}`);
       } else {
-        console.log('Automatic activity created for driver:', data);
-        alert('Actividad automatica creada exitosamente para el conductor!');
+        console.log('Automatic activity added:', data);
+        alert(`Actividad automatica ${editingActivityId ? 'actualizada' : 'agregada'} exitosamente!`);
         setNewActivity({
           name: '',
-          utilidad: '',
+          use_case: '',
           activity_type: '',
           cadence: '',
           day_of_week: [],
@@ -336,20 +364,20 @@ const AutomaticActivities = () => {
         });
         setEditingActivityId(null); // Clear editing ID after successful submission
         setIsModalOpen(false);
+
+        // Refresh activities
+        const { data: newData, error: newError } = await supabase
+          .from('automatic_activities')
+          .select('*')
+          .eq('organization_id', organizationId);
+
+        if (newError) {
+          setError(`Error al refrescar actividades automaticas: ${newError.message}`);
+          return;
+        }
+
+        setActivities(newData);
       }
-
-      // Refresh activities
-      const { data: newData, error: newError } = await supabase
-        .from('automatic_activities')
-        .select('*')
-        .eq('organization_id', organizationId);
-
-      if (newError) {
-        setError(`Error al refrescar actividades automaticas: ${newError.message}`);
-        return;
-      }
-
-      setActivities(newData);
     } catch (err) {
       setError(`Error inesperado: ${err.message}`);
     } finally {
@@ -384,6 +412,9 @@ const AutomaticActivities = () => {
 
   return (
     <div className="container mx-auto p-6">
+      {/* Removed the h2 header here */}
+      {error && <p className="text-red-500 mb-4">Error: {error}</p>}
+
       {/* Add/Edit Automatic Activity Form */}
       <Modal isOpen={isModalOpen} onClose={closeModal}>
         <div className="mb-8 bg-white shadow-md rounded-lg p-4">
@@ -395,8 +426,8 @@ const AutomaticActivities = () => {
                 <input type="text" id="name" name="name" value={newActivity.name} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
               </div>
               <div>
-                <label htmlFor="utilidad" className="block text-gray-700 text-sm font-bold mb-2">Utilidad</label>
-                <input type="text" id="utilidad" name="utilidad" value={newActivity.utilidad} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+                <label htmlFor="use_case" className="block text-gray-700 text-sm font-bold mb-2">Caso de uso</label>
+                <input type="text" id="use_case" name="use_case" value={newActivity.use_case} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
               </div>
               <div>
                 <label htmlFor="activity_type" className="block text-gray-700 text-sm font-bold mb-2">Tipo de actividad</label>
@@ -515,7 +546,7 @@ const AutomaticActivities = () => {
           {activities.map((activity) => (
             <div key={activity.id} className="bg-white shadow-md rounded-lg p-4">
               <h4 className="text-lg font-semibold">{activity.name}</h4>
-              <p className="text-gray-600">{activity.utilidad}</p>
+              <p className="text-gray-600">{activity.use_case}</p>
               <p className="text-gray-600">Tipo: {activity.activity_type}</p>
               <p className="text-gray-600">Cadencia: {activity.cadence}</p>
               <div className="flex space-x-2 mt-2">
