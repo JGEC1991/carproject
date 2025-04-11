@@ -31,6 +31,7 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab, customAct
   const [attachment, setAttachment] = useState(null);
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState(null);
+  const [requirePhotoDateFilter, setRequirePhotoDateFilter] = useState(false);
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -63,11 +64,80 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab, customAct
     fetchUserRole();
   }, []);
 
+  useEffect(() => {
+    const fetchActivityType = async () => {
+      try {
+        const { data: authUser, error: userError } = await supabase.auth.getUser();
+        if (userError) {
+          console.error('Error fetching user:', userError);
+          return;
+        }
+        const userId = authUser.user.id;
+
+        const { data: userData, error: orgError } = await supabase
+          .from('users')
+          .select('organization_id')
+          .eq('id', userId)
+          .single();
+
+        if (orgError) {
+          console.error('Error fetching organization:', orgError);
+          return;
+        }
+
+        const organizationId = userData?.organization_id;
+
+        console.log('activityType:', activityType); // Log activityType
+        console.log('organizationId:', organizationId); // Log organizationId
+
+        const { data: activityTypeData, error: activityTypeError } = await supabase
+          .from('activity_types')
+          .select('require_photo_date_filter')
+          .eq('name', activityType)
+          .eq('organization_id', organizationId)
+          .single();
+
+        if (activityTypeError) {
+          console.error('Error fetching activity type:', activityTypeError);
+          return;
+        }
+
+        console.log('Activity Type Data from Supabase:', activityTypeData); // Log the data from Supabase
+        setRequirePhotoDateFilter(activityTypeData?.require_photo_date_filter || false);
+      } catch (error) {
+        console.error('Error fetching activity type:', error);
+      }
+    };
+
+    if (activityType) {
+      fetchActivityType();
+    }
+  }, [activityType]);
+
+  const handleCheckPhotoDate = (file) => {
+    if (!file) return false;
+
+    const today = new Date().toISOString().split('T')[0];
+
+    // Use lastModified date
+    const photoDate = new Date(file.lastModified).toISOString().split('T')[0];
+
+    console.log('requirePhotoDateFilter:', requirePhotoDateFilter); // Log the comparison result
+    return photoDate === today;
+  };
+
   const handleSave = async () => {
     try {
       let attachmentUrl = activity?.attachment_url;
 
       if (attachment) {
+        if (requirePhotoDateFilter) {
+          if (!handleCheckPhotoDate(attachment)) {
+            alert('Solo se permiten fotos tomadas en la fecha actual.');
+            return;
+          }
+        }
+
         attachmentUrl = await handleFileUpload(attachment);
         if (!attachmentUrl) {
           alert('Failed to upload attachment. Please try again.');
@@ -153,6 +223,13 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab, customAct
 
   const handleAttachmentChange = async (e) => {
     const file = e.target.files[0];
+    if (requirePhotoDateFilter) {
+      if (!handleCheckPhotoDate(file)) {
+        alert('Solo se permiten fotos tomadas en la fecha actual.');
+        e.target.value = null;
+        return;
+      }
+    }
     setAttachment(file);
   };
 
@@ -165,38 +242,40 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab, customAct
     <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
       <div className="border-b pb-4 mb-6">
         <h2 className="text-2xl font-bold text-gray-800">
-          {isEditMode ? t('Editar Actividad', { ns: 'activityRecordCard' }) : t('Detalles de Actividad', { ns: 'activityRecordCard' })}
+          {isEditMode ? (t('Editar Actividad', { ns: 'activityRecordCard' })) : (t('Detalles de Actividad', { ns: 'activityRecordCard' }))}
         </h2>
-        <p className="text-gray-600">ID: {activity?.id}</p>
+        <p className="text-gray-600">
+          ID: {activity?.id}
+        </p>
       </div>
 
       {activeTab === 'information' && (
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('Fecha', { ns: 'activityRecordCard' })}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">{t('Fecha', { ns: 'activityRecordCard' })}</label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               placeholder={t('Ingresar fecha', { ns: 'activityRecordCard' })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all h-32"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-24"
               placeholder={t('Ingresar descripción', { ns: 'activityRecordCard' })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Actividad</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Actividad</label>
             <select
               value={activityType}
               onChange={(e) => setActivityType(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             >
               <option value="">Seleccionar tipo de actividad</option>
               {allActivityTypes.map((type) => (
@@ -205,11 +284,11 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab, customAct
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               disabled={activityType === 'Pago de tarifa' && userRole !== 'admin'}
             >
               <option value="">Seleccionar estado</option>
@@ -219,12 +298,12 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab, customAct
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Monto</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Monto</label>
             <input
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               placeholder="Ingresar monto"
             />
           </div>
@@ -233,23 +312,25 @@ function ActivityRecordCard({ activity, isEditMode = false, activeTab, customAct
 
       {activeTab === 'files' && (
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">{t('Adjuntos', { ns: 'activityRecordCard' })}</h3>
+          <h3 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">{t('Adjuntos', { ns: 'activityRecordCard' })}</h3>
           {activity?.attachment_url ? (
-            <img
-              src={activity.attachment_url}
-              alt="Attachment"
-              className="rounded-lg w-40 h-40 object-cover cursor-pointer"
-              onClick={() => handleImageClick(activity.attachment_url)}
-            />
+            <div className="mb-4">
+              <img
+                src={activity.attachment_url}
+                alt="Attachment"
+                className="rounded-lg w-40 h-40 object-cover cursor-pointer"
+                onClick={() => handleImageClick(activity.attachment_url)}
+              />
+            </div>
           ) : (
-            <p>{t('No se econtraron adjuntos.', { ns: 'activityRecordCard' })}</p>
+            <p className="text-gray-500">{t('No se econtraron adjuntos.', { ns: 'activityRecordCard' })}</p>
           )}
-          <label className="block text-sm font-medium text-gray-700 mt-4">Subir archivo</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Subir archivo</label>
           <input
             type="file"
             accept="image/*, application/pdf"
             onChange={handleAttachmentChange}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           />
         </div>
       )}

@@ -192,7 +192,7 @@ const Admin = () => {
       await fetchUsers();
       setNewEmail('');
       setNewRole('user');
-      alert(`Usuario agregado correctamente la contraseña temporal es: ${randomPassword}. Por favor comunicale esto al usuario de manera segura.`);
+      alert(`Usuario agregado correctamente la contraseña temporal es: ${randomPassword}. Por favor comunicatele esto al usuario de manera segura.`);
 
     } catch (err) {
       setError(`Error al agregar usuario: ${err.message}`);
@@ -565,7 +565,7 @@ const Admin = () => {
                 />
               </div>
               <Checkbox
-                label="Requiere foto de hoy?"
+                label="Requerir adjunto reciente?"
                 checked={newActivityTypeRequiresDateFilter}
                 onChange={(e) => setNewActivityTypeRequiresDateFilter(e.target.checked)}
                 // containerProps={{ className: "self-center" }} // Align checkbox if needed
