@@ -412,7 +412,7 @@ const AutomaticActivities = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <h2 className="text-2xl font-semibold mb-4">Administrar actividades automaticas</h2>
+      {/* Removed the h2 header here */}
       {error && <p className="text-red-500 mb-4">Error: {error}</p>}
 
       {/* Add/Edit Automatic Activity Form */}
@@ -535,7 +535,6 @@ const AutomaticActivities = () => {
       </Modal>
 
       {/* Display Existing Automatic Activities */}
-      <h3 className="text-xl font-semibold mb-4">Actividades automaticas existentes</h3>
       <button
         onClick={() => openModal(null)}
         className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-4"

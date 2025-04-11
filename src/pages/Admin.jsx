@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../supabaseClient'
 import { Navigate } from 'react-router-dom'
-import { Button, Input, Typography, Select, Option } from "@material-tailwind/react";
+import { Button, Input, Typography, Select, Option, Checkbox } from "@material-tailwind/react";
 import AutomaticActivities from '../components/AutomaticActivities';
 
 const Admin = () => {
@@ -13,24 +13,18 @@ const Admin = () => {
   const [newRole, setNewRole] = useState('user');
   const [activityTypes, setActivityTypes] = useState([]);
   const [newActivityType, setNewActivityType] = useState('');
+  const [newActivityTypeRequiresDateFilter, setNewActivityTypeRequiresDateFilter] = useState(false);
   const [organizationId, setOrganizationId] = useState(null);
-  const [permissions, setPermissions] = useState({}); // Store permissions as an object
+  const [permissions, setPermissions] = useState({});
   const [maintenanceCadence, setMaintenanceCadence] = useState(30);
 
   const maintenanceCadenceOptions = [30, 45, 60, 90, 120, 180];
 
   const fetchUsers = useCallback(async () => {
-    setLoading(true);
     setError(null);
-
     try {
       const { data: authUser, error: authError } = await supabase.auth.getUser();
-
-      if (authError) {
-        setError(authError.message);
-        return;
-      }
-
+      if (authError) throw authError;
       const userId = authUser.user.id;
 
       const { data: userData, error: orgError } = await supabase
@@ -38,63 +32,38 @@ const Admin = () => {
         .select('organization_id, is_owner')
         .eq('id', userId)
         .single();
-
-      if (orgError) {
-        setError(orgError.message);
-        return;
-      }
+      if (orgError) throw orgError;
 
       setOrganizationId(userData?.organization_id);
       setIsOwner(userData?.is_owner || false);
 
-      if (!userData?.is_owner) {
-        // Redirect non-owners
-        return;
-      }
+      if (!userData?.is_owner) return; // Early exit for non-owners
 
-      const { data, error: usersError } = await supabase
+      const { data: usersData, error: usersError } = await supabase
         .from('users')
         .select('id, name, email, role')
-        .eq('organization_id', userData.organization_id)
+        .eq('organization_id', userData.organization_id);
+      if (usersError) throw usersError;
+      setUsers(usersData);
 
-      if (usersError) {
-        setError(usersError.message)
-        return
-      }
-
-      setUsers(data)
-
-      // Fetch organization data including maintenance_cadence_days
       const { data: orgData, error: orgDataError } = await supabase
         .from('organizations')
         .select('maintenance_cadence_days')
         .eq('id', userData.organization_id)
         .single();
+      if (orgDataError) console.error('Error fetching org data:', orgDataError);
+      else setMaintenanceCadence(orgData?.maintenance_cadence_days || 30);
 
-      if (orgDataError) {
-        console.error('Error fetching organization data:', orgDataError);
-        // Handle error appropriately, maybe set a default value
-      } else {
-        setMaintenanceCadence(orgData?.maintenance_cadence_days || 30);
-      }
     } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+      setError(err.message);
     }
   }, []);
 
   const fetchActivityTypes = useCallback(async () => {
-    setLoading(true);
     setError(null);
-
     try {
       const { data: authUser, error: userError } = await supabase.auth.getUser();
-      if (userError) {
-        setError(userError.message);
-        return;
-      }
-
+      if (userError) throw userError;
       const userId = authUser.user.id;
 
       const { data: userData, error: orgError } = await supabase
@@ -102,42 +71,27 @@ const Admin = () => {
         .select('organization_id')
         .eq('id', userId)
         .single();
-
-      if (orgError) {
-        setError(orgError.message);
-        return;
-      }
-
+      if (orgError) throw orgError;
       const organizationId = userData?.organization_id;
+      if (!organizationId) throw new Error('Organization ID not found');
 
       const { data, error } = await supabase
         .from('activity_types')
         .select('*')
         .eq('organization_id', organizationId);
-
-      if (error) {
-        setError(error.message);
-        return;
-      }
-
+      if (error) throw error;
       setActivityTypes(data);
+
     } catch (err) {
       setError(err.message);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   const fetchPermissions = useCallback(async () => {
-    setLoading(true);
     setError(null);
-
     try {
       const { data: authUser, error: userError } = await supabase.auth.getUser();
-      if (userError) {
-        setError(userError.message);
-        return;
-      }
+      if (userError) throw userError;
       const userId = authUser.user.id;
 
       const { data: userData, error: orgError } = await supabase
@@ -145,60 +99,46 @@ const Admin = () => {
         .select('organization_id')
         .eq('id', userId)
         .single();
-
-      if (orgError) {
-        setError(orgError.message);
-        return;
-      }
-
+      if (orgError) throw orgError;
       const organizationId = userData?.organization_id;
-
-      if (!organizationId) {
-        setError('Unable to determine organization ID.');
-        return;
-      }
+      if (!organizationId) throw new Error('Organization ID not found');
 
       const { data, error } = await supabase
         .from('permissions')
         .select('*')
         .eq('organization_id', organizationId);
+      if (error) throw error;
 
-      if (error) {
-        setError(error.message);
-        return;
-      }
-
-      // Convert the array of permissions to an object for easier access
       const permissionsObject = data.reduce((acc, permission) => {
         acc[permission.action] = permission.role;
         return acc;
       }, {});
-
       setPermissions(permissionsObject);
+
     } catch (err) {
       setError(err.message);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchUsers();
-    fetchActivityTypes();
-    fetchPermissions();
-  }, [fetchUsers, fetchActivityTypes, fetchPermissions]);
+    const fetchAllData = async () => {
+      setLoading(true);
+      await Promise.all([
+        fetchUsers(),
+        fetchActivityTypes(),
+        fetchPermissions()
+      ]);
+      setLoading(false);
+    };
+    fetchAllData();
+  }, [fetchUsers, fetchActivityTypes, fetchPermissions]); // Dependencies are correct
 
   const handleAddUser = async () => {
+    // setLoading(true); // Consider managing loading state per action
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-
-      // 1. Get the user's organization ID
       const { data: authUser, error: userError } = await supabase.auth.getUser();
-      if (userError) {
-        setError(userError.message);
-        return;
-      }
+      if (userError) throw userError;
       const userId = authUser.user.id;
 
       const { data: userData, error: orgError } = await supabase
@@ -206,79 +146,33 @@ const Admin = () => {
         .select('organization_id')
         .eq('id', userId)
         .single();
-
-      if (orgError) {
-        setError(orgError.message);
-        return;
-      }
-
+      if (orgError) throw orgError;
       const organizationId = userData?.organization_id;
+      if (!organizationId) throw new Error('Unable to determine organization ID.');
 
-      if (!organizationId) {
-        setError('Unable to determine organization ID.');
-        return;
-      }
-
-      // 2. Generate a random password
       const randomPassword = Math.random().toString(36).slice(-8);
 
-      // 3. Create the user in auth.users
       const { data: authResponse, error: authError } = await supabase.auth.signUp({
         email: newEmail,
         password: randomPassword,
-        options: {
-          data: {
-            role: newRole,
-          },
-        },
+        options: { data: { role: newRole } },
       });
+      if (authError) throw authError;
 
-      if (authError) {
-        setError(authError.message);
-        return;
-      }
-
-      // 4. Update the user record in public.users
-      const { error: updateError } = await supabase
+      // Use upsert for user profile to handle potential race conditions or existing stubs
+      const { error: upsertError } = await supabase
         .from('users')
-        .update({
-          organization_id: organizationId,
-          role: newRole,
-          name: newEmail, // Set the name to the email for simplicity
-          email: newEmail,
-        })
-        .eq('id', authResponse.user.id);
-
-      if (updateError) {
-        setError(updateError.message);
-        // Optionally delete the auth user if the update fails
-        await supabase.auth.admin.deleteUser(authResponse.user.id);
-        return;
-      }
-
-      // 5. Insert the user into the public.users table
-      const { error: insertError } = await supabase
-        .from('users')
-        .insert({
+        .upsert({
           id: authResponse.user.id,
           organization_id: organizationId,
           role: newRole,
-          name: newEmail,
+          name: newEmail, // Default name to email
           email: newEmail,
-        });
+        }, { onConflict: 'id' }); // Specify conflict resolution if needed, or handle separately
+      if (upsertError) throw upsertError;
 
-      if (insertError) {
-        setError(insertError.message);
-        // Optionally delete the auth user and user record if the insert fails
-        await supabase.auth.admin.deleteUser(authResponse.user.id);
-        await supabase
-          .from('users')
-          .delete()
-          .eq('id', authResponse.user.id);
-        return;
-      }
 
-      // 6. Insert the user into the organization_members table
+      // Insert into organization_members
       const { error: memberError } = await supabase
         .from('organization_members')
         .insert({
@@ -286,491 +180,497 @@ const Admin = () => {
           user_id: authResponse.user.id,
           role: newRole,
         });
-
-      if (memberError) {
-        setError(memberError.message);
-        // Optionally delete the auth user and user record if the member insert fails
-        await supabase.auth.admin.deleteUser(authResponse.user.id);
-        await supabase
-          .from('users')
-          .delete()
-          .eq('id', authResponse.user.id);
-        return;
+      // Consider handling potential duplicate member entries if necessary
+      if (memberError && memberError.code !== '23505') { // Ignore unique violation if user might already be a member
+         // If insert fails for other reasons, attempt cleanup
+         console.error("Error adding org member:", memberError);
+         // Consider cleanup logic here if needed (delete auth user, user profile)
+         throw memberError;
       }
 
-      // 7. Refresh the user list
+
       await fetchUsers();
       setNewEmail('');
       setNewRole('user');
       alert(`Usuario agregado correctamente la contraseña temporal es: ${randomPassword}. Por favor comunicale esto al usuario de manera segura.`);
 
     } catch (err) {
-      setError(err.message);
+      setError(`Error al agregar usuario: ${err.message}`);
+      // Add more robust error handling/cleanup if needed
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
-  const handleDeleteUser = async (userId) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
+  const handleDeleteUser = async (userIdToDelete) => {
+    // Prevent owner from deleting themselves? Add check if needed.
+    if (window.confirm('Are you sure you want to delete this user? This action is irreversible.')) {
+      // setLoading(true);
+      setError(null);
       try {
-        // Delete the user from auth.users
-        const { error: authError } = await supabase.auth.admin.deleteUser(userId);
-
-        if (authError) {
-          setError(authError.message);
-          return;
+        // Attempt to delete from auth first
+        const { error: authError } = await supabase.auth.admin.deleteUser(userIdToDelete);
+        // Handle cases where user might not exist in auth but exists elsewhere
+        if (authError && authError.message !== 'User not found') {
+            throw authError; // Throw unexpected auth errors
         }
 
-        // Delete the user from the public.users table
+        // Delete from public.users (might cascade delete from org_members depending on FK constraints)
         const { error: userError } = await supabase
           .from('users')
           .delete()
-          .eq('id', userId);
+          .eq('id', userIdToDelete);
+        if (userError) throw userError;
 
-        if (userError) {
-          setError(userError.message);
-          return;
-        }
+        // Optional: Explicitly delete from organization_members if cascade delete isn't set up
+        // const { error: memberError } = await supabase
+        //   .from('organization_members')
+        //   .delete()
+        //   .eq('user_id', userIdToDelete);
+        // if (memberError) throw memberError;
 
-        // Refresh the user list
-        await fetchUsers();
-        alert('Usuario eleminado exitosamente!');
+
+        await fetchUsers(); // Refresh list
+        alert('Usuario eliminado exitosamente!');
+
       } catch (err) {
-        setError(err.message);
+        setError(`Error al eliminar usuario: ${err.message}`);
+        alert(`Error al eliminar usuario: ${err.message}`); // Show error to user
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     }
   };
 
-  const handleRoleChange = async (userId, newRole) => {
+  const handleRoleChange = async (userId, newRoleValue) => {
+    // setLoading(true);
+    setError(null);
     try {
-      const { error } = await supabase
+      // Update role in public.users table
+      const { error: userUpdateError } = await supabase
         .from('users')
-        .update({ role: newRole })
+        .update({ role: newRoleValue })
         .eq('id', userId);
+      if (userUpdateError) throw userUpdateError;
 
-          if (error) {
-            setError(error.message);
-            return;
-          }
+      // Update role in organization_members table
+      const { error: memberUpdateError } = await supabase
+        .from('organization_members')
+        .update({ role: newRoleValue })
+        .eq('user_id', userId)
+        .eq('organization_id', organizationId); // Ensure we only update for the current org
+      if (memberUpdateError) throw memberUpdateError;
 
-          // Refresh the user list
-          await fetchUsers();
-          alert('Rol de usuario actualizado con exito!');
-        } catch (err) {
-          setError(err.message);
-        } finally {
-          setLoading(false);
-        }
-      };
+      // Optional: Update role in auth.users custom data (if used)
+      // const { error: authUpdateError } = await supabase.auth.admin.updateUserById(
+      //   userId, { user_metadata: { role: newRoleValue } } // or app_metadata
+      // );
+      // if (authUpdateError) throw authUpdateError;
+
+      await fetchUsers(); // Refresh list
+      alert('Rol de usuario actualizado con exito!');
+    } catch (err) {
+      setError(`Error al cambiar rol: ${err.message}`);
+      alert(`Error al cambiar rol: ${err.message}`);
+      // Consider reverting changes if one part fails
+    } finally {
+      // setLoading(false);
+    }
+  };
 
   const handleAddActivityType = async () => {
+    if (!newActivityType.trim()) {
+        alert('Por favor ingrese un nombre para el tipo de actividad.');
+        return;
+    }
+    // setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-
-      const { data: authUser, error: userError } = await supabase.auth.getUser();
-      if (userError) {
-        setError(userError.message);
-        return;
-      }
-      const userId = authUser.user.id;
-
-      const { data: userData, error: orgError } = await supabase
-        .from('users')
-        .select('organization_id')
-        .eq('id', userId)
-        .single();
-
-      if (orgError) {
-        setError(orgError.message);
-        return;
-      }
-
-      const organizationId = userData?.organization_id;
-
-      if (!organizationId) {
-        setError('Unable to determine organization ID.');
-        return;
-      }
+      if (!organizationId) throw new Error('Organization ID not found');
 
       const { data, error } = await supabase
         .from('activity_types')
-        .insert([{ name: newActivityType, organization_id: organizationId }])
-        .select();
+        .insert([{
+          name: newActivityType.trim(),
+          organization_id: organizationId,
+          require_photo_date_filter: newActivityTypeRequiresDateFilter
+        }])
+        .select(); // Select to confirm insertion
 
-      if (error) {
-        setError(error.message);
-        return;
-      }
+      if (error) throw error;
 
-      await fetchActivityTypes();
+      await fetchActivityTypes(); // Refresh list
       setNewActivityType('');
+      setNewActivityTypeRequiresDateFilter(false); // Reset form
       alert('Tipo de actividad agregada exitosamente!');
     } catch (err) {
-      setError(err.message);
+      setError(`Error al agregar tipo de actividad: ${err.message}`);
+      alert(`Error al agregar tipo de actividad: ${err.message}`);
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
   const handleDeleteActivityType = async (activityTypeId) => {
-    if (window.confirm('Estar por eleminar un tipo de actividad!')) {
+    if (window.confirm('Esta por eliminar un tipo de actividad! Esto podria afectar actividades existentes.')) {
+      // setLoading(true);
+      setError(null);
       try {
-        setLoading(true);
-        setError(null);
-
+        // Check if activities use this type? Optional, depends on desired behavior.
         const { error } = await supabase
           .from('activity_types')
           .delete()
           .eq('id', activityTypeId);
 
-        if (error) {
-          setError(error.message);
-          return;
-        }
+        if (error) throw error;
 
-        await fetchActivityTypes();
+        await fetchActivityTypes(); // Refresh list
         alert('Tipo de actividad eliminada exitosamente!');
       } catch (err) {
-        setError(err.message);
+        setError(`Error al eliminar tipo de actividad: ${err.message}`);
+        alert(`Error al eliminar tipo de actividad: ${err.message}`);
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     }
   };
+
+  // --- OPTIMISTIC UPDATE for Checkbox ---
+  const handleActivityTypeDateFilterToggle = async (activityTypeId, currentValue) => {
+    const newValue = !currentValue;
+
+    // 1. Optimistically update the UI state
+    setActivityTypes(prevTypes =>
+      prevTypes.map(type =>
+        type.id === activityTypeId
+          ? { ...type, require_photo_date_filter: newValue }
+          : type
+      )
+    );
+
+    setError(null); // Clear previous errors
+
+    try {
+      // 2. Update the database
+      const { error } = await supabase
+        .from('activity_types')
+        .update({ require_photo_date_filter: newValue })
+        .eq('id', activityTypeId);
+
+      if (error) {
+        // 3. Revert UI on error
+        setActivityTypes(prevTypes =>
+          prevTypes.map(type =>
+            type.id === activityTypeId
+              ? { ...type, require_photo_date_filter: currentValue } // Revert back
+              : type
+          )
+        );
+        throw error; // Throw error to be caught below
+      }
+
+      // 4. Optional: Show success message (or remove if UI update is enough)
+      // console.log('Configuracion de filtro de fecha actualizada!');
+
+    } catch (err) {
+      setError(`Error al actualizar filtro de fecha: ${err.message}`);
+      alert(`Error al actualizar filtro de fecha: ${err.message}`);
+      // UI is already reverted by the time we get here if error occurred in try block
+    }
+    // No finally block needed for loading state if removed
+    // No need to call fetchActivityTypes unless you want to double-verify consistency
+  };
+  // --- End Optimistic Update ---
+
 
   const handlePermissionChange = async (action, role) => {
+    // setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
+      if (!organizationId) throw new Error('Organization ID not found');
 
-      const { data: authUser, error: userError } = await supabase.auth.getUser();
-      if (userError) {
-        setError(userError.message);
-        return;
-      }
-      const userId = authUser.user.id;
-
-      const { data: userData, error: orgError } = await supabase
-        .from('users')
-        .select('organization_id')
-        .eq('id', userId)
-        .single();
-
-      if (orgError) {
-        setError(orgError.message);
-        return;
-      }
-
-      const organizationId = userData?.organization_id;
-
-      if (!organizationId) {
-        setError('Unable to determine organization ID.');
-        return;
-      }
-
-      // Check if the permission already exists
-      const { data: existingPermission, error: selectError } = await supabase
+      // Use upsert to handle both insert and update scenarios
+      const { error } = await supabase
         .from('permissions')
-        .select('*')
-        .eq('organization_id', organizationId)
-        .eq('action', action)
-        .single();
+        .upsert({
+            organization_id: organizationId,
+            action: action,
+            role: role
+        }, {
+            onConflict: 'organization_id, action' // Specify conflict columns
+        });
 
-      if (selectError && selectError.code !== 'PGRST116') { // Ignore "no data found" error
-        setError(selectError.message);
-        return;
-      }
+      if (error) throw error;
 
-      if (existingPermission) {
-        // Update the existing permission
-        const { error: updateError } = await supabase
-          .from('permissions')
-          .update({ role })
-          .eq('id', existingPermission.id);
+      // Update local state optimistically or fetch again
+      setPermissions(prev => ({ ...prev, [action]: role })); // Optimistic update
+      // await fetchPermissions(); // Or fetch again
 
-        if (updateError) {
-          setError(updateError.message);
-          return;
-        }
-      } else {
-        // Insert a new permission
-        const { error: insertError } = await supabase
-          .from('permissions')
-          .insert([{ organization_id: organizationId, action, role }]);
-
-        if (insertError) {
-          setError(insertError.message);
-          return;
-        }
-      }
-
-      // Refresh the permissions list
-      await fetchPermissions();
       alert(`Permisos para ${action} actualizados exitosamente!`);
     } catch (err) {
-      setError(err.message);
+      setError(`Error al actualizar permisos: ${err.message}`);
+      alert(`Error al actualizar permisos: ${err.message}`);
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
-  const handleMaintenanceCadenceChange = async (e) => {
-    const newCadence = parseInt(e.target.value, 10);
+  const handleMaintenanceCadenceChange = async (eventOrValue) => {
+    // Handle both direct value (from Select onChange) and event object
+    const newCadence = parseInt(typeof eventOrValue === 'object' ? eventOrValue.target.value : eventOrValue, 10);
+
+    // Optimistically update local state
     setMaintenanceCadence(newCadence);
+    setError(null);
 
     try {
-      setLoading(true);
-      setError(null);
+      if (!organizationId) throw new Error('Organization ID not found');
 
-      const { data: authUser, error: userError } = await supabase.auth.getUser();
-      if (userError) {
-        setError(userError.message);
-        return;
-      }
-      const userId = authUser.user.id;
-
-      const { data: userData, error: orgError } = await supabase
-        .from('users')
-        .select('organization_id')
-        .eq('id', userId)
-        .single();
-
-      if (orgError) {
-        setError(orgError.message);
-        return;
-      }
-
-      const organizationId = userData?.organization_id;
-
-      if (!organizationId) {
-        setError('Unable to determine organization ID.');
-        return;
-      }
-
-      // Update the maintenance cadence in the organizations table
-      const { error: updateError } = await supabase
+      const { error } = await supabase
         .from('organizations')
         .update({ maintenance_cadence_days: newCadence })
         .eq('id', organizationId);
 
-      if (updateError) {
-        setError(updateError.message);
-        return;
+      if (error) {
+        // Revert optimistic update? Fetching org data again might be simpler
+        await fetchUsers(); // Re-fetch user/org data to get potentially reverted cadence
+        throw error;
       }
 
       alert('La cadencia de mantenimientos se actualizo correctamente!');
     } catch (err) {
-      setError(err.message);
+      setError(`Error al actualizar cadencia: ${err.message}`);
+      alert(`Error al actualizar cadencia: ${err.message}`);
     } finally {
-      setLoading(false);
+      // setLoading(false); // If using loading state
     }
   };
 
       if (loading) {
-        return <div className="flex items-center justify-center h-full">Cargando...</div>
+        return <div className="flex items-center justify-center h-screen">Cargando...</div> // Use h-screen for full height
       }
 
-      if (error) {
-        return <div className="flex items-center justify-center h-full text-red-500">Error: {error}</div>
+      if (error && !isOwner) { // Show error prominently if user is not owner and error occurs
+         return <div className="p-6 text-red-500">Error: {error}</div>;
       }
 
-      if (!isOwner) {
+      if (!isOwner && !loading) { // Redirect non-owners only after loading is complete
         return <Navigate to="/my-profile" replace />;
       }
 
+      // Main Admin Content
       return (
-        <div className="container mx-auto p-6">
-          <h1 className="text-3xl font-semibold mb-4">Panel de administracion</h1>
+        <div className="container mx-auto p-6 space-y-12"> {/* Added space-y for vertical spacing */}
+          <h1 className="text-3xl font-semibold mb-6">Panel de administracion</h1>
+          {error && <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">Error: {error}</div>} {/* Show errors clearly */}
 
-          {/* Add User Form */}
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-2">Generar un token de invitacion</h2>
-            <div className="flex space-x-4">
-              <Input
-                type="email"
-                placeholder="Ingresar correo electronico"
-                className="shadow appearance-none border-none rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
-              />
-              <select
-                value={newRole}
-                onChange={(e) => setNewRole(e.target.value)}
-                className="shadow appearance-none border rounded w-32 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              >
-                <option value="user">Usuario</option>
-                <option value="admin">Administrador</option>
-              </select>
+          {/* Add User Section */}
+          <section className="p-4 border rounded-lg shadow-sm bg-white"> {/* Added bg-white */}
+            <h2 className="text-xl font-semibold mb-4">Generar un token de invitacion</h2>
+            <div className="flex flex-col md:flex-row gap-4 items-end"> {/* Use gap for spacing */}
+              <div className="flex-grow">
+                <Input
+                  type="email"
+                  label="Correo Electronico"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  // Removed className="flex-grow" as Input might handle width, or use w-full on parent div
+                />
+              </div>
+              <div className="w-full md:w-48"> {/* Fixed width for select */}
+                <Select label="Rol" value={newRole} onChange={(val) => setNewRole(val)}>
+                  <Option value="user">Usuario</Option>
+                  <Option value="admin">Administrador</Option>
+                </Select>
+              </div>
               <Button
                 onClick={handleAddUser}
-                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                color="green"
+                className="w-full md:w-auto" // Keep responsive width
               >
                 Generar Invitacion
               </Button>
             </div>
-          </div>
+          </section>
 
-          {/* User List */}
-          <table className="min-w-full leading-normal">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Nombre
-                </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Correo Electronico
-                </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Rol
-                </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {users.map((user) => (
-                <tr key={user.id}>
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                    {user.name}
-                  </td>
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                    {user.email}
-                  </td>
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                    <select
-                      value={user.role}
-                      onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    >
-                      <option value="user">Usuario</option>
-                      <option value="admin">Administrador</option>
-                    </select>
-                  </td>
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                    <button
-                      onClick={() => handleDeleteUser(user.id)}
-                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    >
-                      Borrar
-                    </button>
-                  </td>
+          {/* User List Section */}
+          <section className="p-4 border rounded-lg shadow-sm bg-white overflow-x-auto"> {/* Added bg-white */}
+            <h2 className="text-xl font-semibold mb-4">Administrar Usuarios</h2>
+            <table className="min-w-full divide-y divide-gray-200"> {/* Use divide-y */}
+              <thead className="bg-gray-50"> {/* Use thead class */}
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nombre
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Correo Electronico
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Rol
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Acciones
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {users.map((user) => (
+                  <tr key={user.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {user.name || user.email}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {user.email}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <div className="w-32"> {/* Constrain width of select */}
+                        <Select
+                          value={user.role}
+                          onChange={(val) => handleRoleChange(user.id, val)}
+                          size="md" // Adjust size if needed
+                        >
+                          <Option value="user">Usuario</Option>
+                          <Option value="admin">Administrador</Option>
+                        </Select>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <Button
+                        onClick={() => handleDeleteUser(user.id)}
+                        color="red"
+                        size="sm"
+                        variant="text" // Use text variant for no background/border
+                      >
+                        Borrar
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
 
-          {/* Activity Types Management */}
-          <div className="mt-12">
-            <h2 className="text-xl font-semibold mb-2">Administrar tipos de actividad</h2>
-            <div className="flex space-x-4 mb-4">
-              <Input
-                type="text"
-                placeholder="Nuevo tipo de actividad"
-                className="shadow appearance-none border-none rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                value={newActivityType}
-                onChange={(e) => setNewActivityType(e.target.value)}
+
+          {/* Activity Types Management Section */}
+          <section className="p-4 border rounded-lg shadow-sm bg-white"> {/* Added bg-white */}
+            <h2 className="text-xl font-semibold mb-4">Administrar tipos de actividad personalizados</h2>
+            {/* Add Form */}
+            <div className="flex flex-col md:flex-row gap-4 items-end mb-6"> {/* Use gap, items-end */}
+              <div className="flex-grow">
+                <Input
+                  type="text"
+                  label="Nuevo tipo de actividad"
+                  value={newActivityType}
+                  onChange={(e) => setNewActivityType(e.target.value)}
+                />
+              </div>
+              <Checkbox
+                label="Requiere foto de hoy?"
+                checked={newActivityTypeRequiresDateFilter}
+                onChange={(e) => setNewActivityTypeRequiresDateFilter(e.target.checked)}
+                // containerProps={{ className: "self-center" }} // Align checkbox if needed
               />
               <Button
                 onClick={handleAddActivityType}
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                color="blue"
+                className="w-full md:w-auto"
               >
-                Agregar tipo de actividad
+                Agregar tipo
               </Button>
             </div>
 
+            {/* List */}
             {activityTypes.length > 0 ? (
-              <ul className="list-disc pl-5">
+              <ul className="divide-y divide-gray-200"> {/* Use divide-y */}
                 {activityTypes.map((type) => (
-                  <li key={type.id} className="flex items-center justify-between py-2">
-                    {type.name}
-                    <button
-                      onClick={() => handleDeleteActivityType(type.id)}
-                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    >
-                      Borrar
-                    </button>
+                  <li key={type.id} className="flex items-center justify-between py-3">
+                    <span className="text-sm font-medium text-gray-900">{type.name}</span>
+                    <div className="flex items-center space-x-3"> {/* Use space-x */}
+                       <Checkbox
+                          // label="Requiere foto de hoy?" // Label might be redundant here, use title
+                          checked={type.require_photo_date_filter || false}
+                          onChange={() => handleActivityTypeDateFilterToggle(type.id, type.require_photo_date_filter)}
+                          title="Marcar si el adjunto para este tipo de actividad debe ser una foto tomada hoy."
+                          color="blue" // Match button color?
+                       />
+                       <Button
+                         onClick={() => handleDeleteActivityType(type.id)}
+                         color="red"
+                         size="sm"
+                         variant="text" // Use text variant for less emphasis
+                       >
+                         Borrar
+                       </Button>
+                    </div>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p>No hay tipos de actividad.</p>
+              <p className="text-sm text-gray-500">No hay tipos de actividad personalizados.</p>
             )}
-          </div>
+          </section>
 
-          {/* Automatic Activities Management */}
-          <div className="mt-12">
+          {/* Automatic Activities Management Section */}
+          <section className="p-4 border rounded-lg shadow-sm bg-white"> {/* Added bg-white */}
+             <h2 className="text-xl font-semibold mb-4">Actividades Automaticas</h2> {/* Added title */}
             <AutomaticActivities />
-          </div>
+          </section>
 
           {/* Permission Control Section */}
-          <div className="mt-12">
-            <h2 className="text-xl font-semibold mb-2">Control de permisos</h2>
-            {/* Example Permission Controls */}
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                Quien puede borrar actividades
-              </label>
-              <select
-                value={permissions['delete_activity'] || 'user'}
-                onChange={(e) => handlePermissionChange('delete_activity', e.target.value)}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              >
-                <option value="user">Usuario</option>
-                <option value="admin">Administrador</option>
-              </select>
+          <section className="p-4 border rounded-lg shadow-sm bg-white"> {/* Added bg-white */}
+            <h2 className="text-xl font-semibold mb-4">Control de permisos</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> {/* Use gap, adjust columns */}
+              <div> {/* Wrap each Select in a div for better spacing control */}
+                 <Select
+                    label="Quien puede borrar actividades"
+                    value={permissions['delete_activity'] || 'user'} // Default to 'user' if undefined
+                    onChange={(val) => handlePermissionChange('delete_activity', val)}
+                  >
+                    <Option value="user">Usuario</Option>
+                    <Option value="admin">Administrador</Option>
+                  </Select>
+              </div>
+              <div>
+                 <Select
+                    label='Quien puede editar "Pago de tarifa"' // Shorter label
+                    value={permissions['edit_pago_tarifa_status'] || 'user'}
+                    onChange={(val) => handlePermissionChange('edit_pago_tarifa_status', val)}
+                  >
+                    <Option value="user">Usuario</Option>
+                    <Option value="admin">Administrador</Option>
+                  </Select>
+              </div>
+              <div>
+                 <Select
+                    label="Quien puede editar millaje vehiculos" // Shorter label
+                    value={permissions['edit_vehicle_mileage'] || 'user'}
+                    onChange={(val) => handlePermissionChange('edit_vehicle_mileage', val)}
+                  >
+                    <Option value="user">Usuario</Option>
+                    <Option value="admin">Administrador</Option>
+                  </Select>
+              </div>
+              {/* Add more permission controls as needed */}
             </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                Quien puede editar el estado de "Pago de tarifa"
-              </label>
-              <select
-                value={permissions['edit_pago_tarifa_status'] || 'user'}
-                onChange={(e) => handlePermissionChange('edit_pago_tarifa_status', e.target.value)}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              >
-                <option value="user">Usuario</option>
-                <option value="admin">Administrador</option>
-              </select>
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                Quien puede editar el millaje de los vehiculos
-              </label>
-              <select
-                value={permissions['edit_vehicle_mileage'] || 'user'}
-                onChange={(e) => handlePermissionChange('edit_vehicle_mileage', e.target.value)}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              >
-                <option value="user">Usuario</option>
-                <option value="admin">Administrador</option>
-              </select>
-            </div>
-          </div>
+          </section>
 
-          {/* Maintenance Cadence Setting */}
-          <div className="mt-12">
-            <h2 className="text-xl font-semibold mb-2">Configuracion de Cadencia de Mantenimiento</h2>
-            <label htmlFor="maintenanceCadence" className="block text-gray-700 text-sm font-bold mb-2">
-              Seleccionar Cadencia (dias)
-            </label>
-            <select
-              id="maintenanceCadence"
-              value={maintenanceCadence}
-              onChange={handleMaintenanceCadenceChange}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            >
-              {maintenanceCadenceOptions.map((cadence) => (
-                <option key={cadence} value={cadence}>
-                  {cadence}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Maintenance Cadence Setting Section */}
+          <section className="p-4 border rounded-lg shadow-sm bg-white"> {/* Added bg-white */}
+            <h2 className="text-xl font-semibold mb-4">Configuracion de Cadencia de Mantenimiento</h2>
+            <div className="w-full md:w-1/2 lg:w-1/3"> {/* Adjust width */}
+              <Select
+                label="Seleccionar Cadencia (dias)"
+                value={maintenanceCadence.toString()} // Select expects string value
+                onChange={handleMaintenanceCadenceChange} // Pass handler directly
+              >
+                {maintenanceCadenceOptions.map((cadence) => (
+                  <Option key={cadence} value={cadence.toString()}>
+                    {`${cadence} dias`} {/* Add units */}
+                  </Option>
+                ))}
+              </Select>
+            </div>
+          </section>
         </div>
       )
     }
