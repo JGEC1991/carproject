@@ -54,7 +54,7 @@ function VehiclePhotos({ vehicle, frontPhoto, setFrontPhoto, rearPhoto, setRearP
               onChange={(e) => {
                 const file = e.target.files[0];
                 if (handleCheckPhotoDate(file)) {
-                  setRearPhoto(e.target.files[0]);
+                  setRearPhoto(file);
                   handleUpload(file, 'rear', setRearPhoto, 'rear_image_url');
                 } else {
                   alert('Solo se permiten fotos tomadas en la fecha actual.');
@@ -82,7 +82,7 @@ function VehiclePhotos({ vehicle, frontPhoto, setFrontPhoto, rearPhoto, setRearP
               onChange={(e) => {
                 const file = e.target.files[0];
                 if (handleCheckPhotoDate(file)) {
-                  setRightPhoto(e.target.files[0]);
+                  setRightPhoto(file);
                   handleUpload(file, 'right', setRightPhoto, 'right_image_url');
                 } else {
                   alert('Solo se permiten fotos tomadas en la fecha actual.');
@@ -110,7 +110,7 @@ function VehiclePhotos({ vehicle, frontPhoto, setFrontPhoto, rearPhoto, setRearP
               onChange={(e) => {
                 const file = e.target.files[0];
                 if (handleCheckPhotoDate(file)) {
-                  setLeftPhoto(e.target.files[0]);
+                  setLeftPhoto(file);
                   handleUpload(file, 'left', setLeftPhoto, 'left_image_url');
                 } else {
                   alert('Solo se permiten fotos tomadas en la fecha actual.');
@@ -138,7 +138,7 @@ function VehiclePhotos({ vehicle, frontPhoto, setFrontPhoto, rearPhoto, setRearP
               onChange={(e) => {
                 const file = e.target.files[0];
                 if (handleCheckPhotoDate(file)) {
-                  setDashboardPhoto(e.target.files[0]);
+                  setDashboardPhoto(file);
                   handleUpload(file, 'dashboard', setDashboardPhoto, 'dashboard_image_url');
                 } else {
                   alert('Solo se permiten fotos tomadas en la fecha actual.');

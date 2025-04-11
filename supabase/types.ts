@@ -19,6 +19,8 @@ export type Database = {
           driver_id: string | null;
           id: string;
           vehicle_id: string | null;
+          amount: number | null; // Added amount field
+          status: Database["public"]["Enums"]["payment_status"] | null; // Added status field
         };
         Insert: {
           activity_type?: string | null;
@@ -29,6 +31,8 @@ export type Database = {
           driver_id?: string | null;
           id?: string;
           vehicle_id?: string | null;
+          amount?: number | null; // Added amount field
+          status?: Database["public"]["Enums"]["payment_status"] | null; // Added status field
         };
         Update: {
           activity_type?: string | null;
@@ -39,6 +43,8 @@ export type Database = {
           driver_id?: string | null;
           id?: string;
           vehicle_id?: string | null;
+          amount?: number | null; // Added amount field
+          status?: Database["public"]["Enums"]["payment_status"] | null; // Added status field
         };
         Relationships: [
           {
@@ -70,6 +76,7 @@ export type Database = {
           phone: string | null;
           police_records_photo: string | null;
           profile_photo: string | null;
+          vehicle_id: string | null; // Added vehicle_id
         };
         Insert: {
           address?: string | null;
@@ -83,6 +90,7 @@ export type Database = {
           phone?: string | null;
           police_records_photo?: string | null;
           profile_photo?: string | null;
+          vehicle_id?: string | null; // Added vehicle_id
         };
         Update: {
           address?: string | null;
@@ -96,8 +104,17 @@ export type Database = {
           phone?: string | null;
           police_records_photo?: string | null;
           profile_photo?: string | null;
+          vehicle_id?: string | null; // Added vehicle_id
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "drivers_vehicle_id_fkey";
+            columns: ["vehicle_id"];
+            isOne: true;
+            referencedRelation: "vehicles";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       expenses: {
         Row: {
@@ -128,12 +145,12 @@ export type Database = {
           activity_id?: string | null;
           amount?: number | null;
           category?: string | null;
-          created_at?: string;
+          created_at: string;
           date?: string | null;
           description?: string | null;
           driver_id?: string | null;
           id?: string;
-          status?: Database["public"]["Enums"]["payment_status"] | null;
+          status: Database["public"]["Enums"]["payment_status"] | null;
           vehicle_id?: string | null;
         };
         Relationships: [
@@ -263,18 +280,21 @@ export type Database = {
         Row: {
           email: string | null;
           id: string;
+          organization_id: string | null;
           password: string | null;
           role: string | null;
         };
         Insert: {
           email?: string | null;
           id: string;
+          organization_id?: string | null;
           password?: string | null;
           role?: string | null;
         };
         Update: {
           email?: string | null;
           id?: string;
+          organization_id?: string | null;
           password?: string | null;
           role?: string | null;
         };
@@ -282,58 +302,94 @@ export type Database = {
       };
       vehicles: {
         Row: {
+          car_ownership: string | null;
+          car_payment_day: number | null;
           color: string | null;
           created_at: string;
           dashboard_image_url: string | null;
+          deposit: number | null;
+          driver_id: string | null;
           front_image_url: string | null;
+          fuel_type: string | null;
+          gps: boolean | null;
           id: string;
+          insurance_policy_number: string | null;
+          insurance_provider: string | null;
           license_plate: string | null;
+          left_image_url: string | null;
           make: string | null;
           mileage: number | null;
           model: string | null;
           observations: string | null;
+          organization_id: string | null;
           rear_image_url: string | null;
+          registration_expiry_date: string | null;
           right_image_url: string | null;
           status: string | null;
+          transmission_type: string | null;
+          vehicle_type: string | null;
           vin: string | null;
           year: number | null;
-          left_image_url: string | null;
         };
         Insert: {
+          car_ownership?: string | null;
+          car_payment_day?: number | null;
           color?: string | null;
           created_at?: string;
           dashboard_image_url?: string | null;
+          deposit?: number | null;
+          driver_id?: string | null;
           front_image_url?: string | null;
+          fuel_type?: string | null;
+          gps?: boolean | null;
           id?: string;
+          insurance_policy_number?: string | null;
+          insurance_provider?: string | null;
           license_plate?: string | null;
+          left_image_url?: string | null;
           make?: string | null;
           mileage?: number | null;
           model?: string | null;
           observations?: string | null;
+          organization_id?: string | null;
           rear_image_url?: string | null;
+          registration_expiry_date?: string | null;
           right_image_url?: string | null;
           status?: string | null;
+          transmission_type?: string | null;
+          vehicle_type?: string | null;
           vin?: string | null;
           year?: number | null;
-          left_image_url?: string | null;
         };
         Update: {
+          car_ownership?: string | null;
+          car_payment_day?: number | null;
           color?: string | null;
           created_at?: string;
           dashboard_image_url?: string | null;
+          deposit?: number | null;
+          driver_id?: string | null;
           front_image_url?: string | null;
+          fuel_type?: string | null;
+          gps?: boolean | null;
           id?: string;
+          insurance_policy_number?: string | null;
+          insurance_provider?: string | null;
           license_plate?: string | null;
+          left_image_url?: string | null;
           make?: string | null;
           mileage?: number | null;
           model?: string | null;
           observations?: string | null;
+          organization_id?: string | null;
           rear_image_url?: string | null;
+          registration_expiry_date?: string | null;
           right_image_url?: string | null;
           status?: string | null;
+          transmission_type?: string | null;
+          vehicle_type?: string | null;
           vin?: string | null;
           year?: number | null;
-          left_image_url?: string | null;
         };
         Relationships: [];
       };

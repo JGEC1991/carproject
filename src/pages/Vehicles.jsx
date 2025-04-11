@@ -20,6 +20,12 @@ const Vehicles = () => {
     { key: 'license_plate', title: 'Matricula', sortable: true },
     { key: 'vin', title: 'VIN', sortable: true },
     { key: 'status', title: 'Estado', sortable: true },
+    { key: 'vehicle_type', title: 'Tipo', sortable: true },
+    { key: 'fuel_type', title: 'Combustible', sortable: true },
+    { key: 'transmission_type', title: 'Transmision', sortable: true },
+    { key: 'insurance_provider', title: 'Aseguradora', sortable: true },
+    { key: 'insurance_policy_number', title: 'Poliza', sortable: true },
+    { key: 'registration_expiry_date', title: 'Vencimiento', sortable: true },
     { key: 'mantenimiento', title: 'Mantenimiento', sortable: false, render: (vehicle) => maintenanceStatuses[vehicle.id] || "Cargando..." },
   ]
 

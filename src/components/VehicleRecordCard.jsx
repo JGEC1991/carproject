@@ -41,6 +41,12 @@ function VehicleRecordCard({ vehicleId, isEditMode = false, userRole }) {
   const [mileage, setMileage] = useState('');
   const [status, setStatus] = useState('');
   const [observations, setObservations] = useState('');
+  const [vehicleType, setVehicleType] = useState('');
+  const [fuelType, setFuelType] = useState('');
+  const [transmissionType, setTransmissionType] = useState('');
+  const [insuranceProvider, setInsuranceProvider] = useState('');
+  const [insurancePolicyNumber, setInsurancePolicyNumber] = useState('');
+  const [registrationExpiryDate, setRegistrationExpiryDate] = useState('');
   const [activities, setActivities] = useState([]);
 
   useEffect(() => {
@@ -58,6 +64,12 @@ function VehicleRecordCard({ vehicleId, isEditMode = false, userRole }) {
       setCarOwnership(vehicle.car_ownership || 'Propio');
       setCarPaymentDay(vehicle.car_payment_day || '');
       setDeposit(vehicle.deposit || 0);
+      setVehicleType(vehicle.vehicle_type || '');
+      setFuelType(vehicle.fuel_type || '');
+      setTransmissionType(vehicle.transmission_type || '');
+      setInsuranceProvider(vehicle.insurance_provider || '');
+      setInsurancePolicyNumber(vehicle.insurance_policy_number || '');
+      setRegistrationExpiryDate(vehicle.registration_expiry_date || '');
     }
   }, [vehicle]);
 
@@ -87,6 +99,12 @@ function VehicleRecordCard({ vehicleId, isEditMode = false, userRole }) {
           car_ownership: carOwnership,
           car_payment_day: carOwnership === 'Propio' ? null : carPaymentDay,
           deposit: deposit,
+          vehicle_type: vehicleType,
+          fuel_type: fuelType,
+          transmission_type: transmissionType,
+          insurance_provider: insuranceProvider,
+          insurance_policy_number: insurancePolicyNumber,
+          registration_expiry_date: registrationExpiryDate,
         })
         .eq('id', vehicleId);
       if (updateError) {
@@ -338,6 +356,12 @@ function VehicleRecordCard({ vehicleId, isEditMode = false, userRole }) {
           mileage={mileage}
           status={status}
           observations={observations}
+          vehicleType={vehicleType}
+          fuelType={fuelType}
+          transmissionType={transmissionType}
+          insuranceProvider={insuranceProvider}
+          insurancePolicyNumber={insurancePolicyNumber}
+          registrationExpiryDate={registrationExpiryDate}
           setMake={setMake}
           setModel={setModel}
           setColor={setColor}
@@ -347,6 +371,12 @@ function VehicleRecordCard({ vehicleId, isEditMode = false, userRole }) {
           setMileage={setMileage}
           setStatus={setStatus}
           setObservations={setObservations}
+          setVehicleType={setVehicleType}
+          setFuelType={setFuelType}
+          setTransmissionType={setTransmissionType}
+          setInsuranceProvider={setInsuranceProvider}
+          setInsurancePolicyNumber={setInsurancePolicyNumber}
+          setRegistrationExpiryDate={setRegistrationExpiryDate}
         />
       )}
 
