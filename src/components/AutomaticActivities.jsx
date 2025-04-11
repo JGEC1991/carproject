@@ -226,11 +226,17 @@ const AutomaticActivities = () => {
         }
         return { ...prevState, day_of_week: newDays };
       });
-    } else {
+    } else if (name === 'day_of_month') {
+      // Ensure day_of_month is parsed as an integer
+      setNewActivity(prevState => ({
+        ...prevState,
+        day_of_month: value === '' ? null : parseInt(value, 10),
+      }));
+    }
+     else {
       setNewActivity(prevState => ({
         ...prevState,
         [name]: value,
-        day_of_month: name === 'cadence' && value !== 'monthly' ? null : value,
       }));
     }
   };
@@ -311,7 +317,7 @@ const AutomaticActivities = () => {
           activity_type: newActivity.activity_type,
           cadence: newActivity.cadence,
           day_of_week: newActivity.day_of_week.length > 0 ? newActivity.day_of_week : null,
-          day_of_month: newActivity.cadence === 'monthly' ? parseInt(newActivity.day_of_month, 10) : null,
+          day_of_month: newActivity.cadence === 'monthly' ? newActivity.day_of_month : null,
           start_date: newActivity.start_date || null,
           description: newActivity.description,
           status: newActivity.status,
@@ -329,7 +335,7 @@ const AutomaticActivities = () => {
             activity_type: newActivity.activity_type,
             cadence: newActivity.cadence,
             day_of_week: newActivity.day_of_week.length > 0 ? newActivity.day_of_week : null,
-            day_of_month: newActivity.cadence === 'monthly' ? parseInt(newActivity.day_of_month, 10) : null,
+            day_of_month: newActivity.cadence === 'monthly' ? newActivity.day_of_month : null,
             start_date: newActivity.start_date || null,
             description: newActivity.description,
             status: newActivity.status,
@@ -471,7 +477,7 @@ const AutomaticActivities = () => {
               {newActivity.cadence === 'monthly' && (
                 <div>
                   <label htmlFor="day_of_month" className="block text-gray-700 text-sm font-bold mb-2">Dia del mes</label>
-                  <input type="number" id="day_of_month" name="day_of_month" value={newActivity.day_of_month} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" min="1" max="31" />
+                  <input type="number" id="day_of_month" name="day_of_month" value={newActivity.day_of_month === null ? '' : newActivity.day_of_month} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" min="1" max="31" />
                 </div>
               )}
               <div>
