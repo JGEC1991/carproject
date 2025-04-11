@@ -251,12 +251,12 @@ export type Database = {
         };
         Update: {
           amount?: number | null;
-          created_at?: string;
+          created_at: string;
           date?: string | null;
           description?: string | null;
           driver_id?: string | null;
           id?: string;
-          status?: Database["public"]["Enums"]["payment_status"] | null;
+          status: Database["public"]["Enums"]["payment_status"] | null;
           vehicle_id?: string | null;
         };
         Relationships: [
@@ -330,6 +330,11 @@ export type Database = {
           vehicle_type: string | null;
           vin: string | null;
           year: number | null;
+          front_image_date: string | null;
+          rear_image_date: string | null;
+          right_image_date: string | null;
+          left_image_date: string | null;
+          dashboard_image_date: string | null;
         };
         Insert: {
           car_ownership?: string | null;
@@ -360,6 +365,11 @@ export type Database = {
           vehicle_type?: string | null;
           vin?: string | null;
           year?: number | null;
+          front_image_date?: string | null;
+          rear_image_date?: string | null;
+          right_image_date?: string | null;
+          left_image_date?: string | null;
+          dashboard_image_date?: string | null;
         };
         Update: {
           car_ownership?: string | null;
@@ -390,6 +400,11 @@ export type Database = {
           vehicle_type?: string | null;
           vin?: string | null;
           year?: number | null;
+          front_image_date?: string | null;
+          rear_image_date?: string | null;
+          right_image_date?: string | null;
+          left_image_date?: string | null;
+          dashboard_image_date?: string | null;
         };
         Relationships: [];
       };

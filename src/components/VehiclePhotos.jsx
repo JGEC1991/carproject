@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '../../supabaseClient';
 
 function VehiclePhotos({ vehicle, frontPhoto, setFrontPhoto, rearPhoto, setRearPhoto, rightPhoto, setRightPhoto, leftPhoto, setLeftPhoto, dashboardPhoto, setDashboardPhoto, handleImageClick, timeAgo, handleUpload }) {
   const { t } = useTranslation('vehicleRecordCard');
@@ -11,6 +12,26 @@ function VehiclePhotos({ vehicle, frontPhoto, setFrontPhoto, rearPhoto, setRearP
     const photoDate = new Date(photo.lastModified).toISOString().split('T')[0];
 
     return photoDate === today;
+  };
+
+  const updateVehiclePhotoDate = async (vehicleId, column) => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const { data, error } = await supabase
+        .from('vehicles')
+        .update({ [column]: today })
+        .eq('id', vehicleId);
+
+      if (error) {
+        console.error('Error updating vehicle photo date:', error);
+        alert(error.message);
+      } else {
+        console.log('Vehicle photo date updated successfully:', data);
+      }
+    } catch (error) {
+      console.error('Error updating vehicle photo date:', error.message);
+      alert(error.message);
+    }
   };
 
   return (
@@ -28,6 +49,7 @@ function VehiclePhotos({ vehicle, frontPhoto, setFrontPhoto, rearPhoto, setRearP
                 if (handleCheckPhotoDate(file)) {
                   setFrontPhoto(file);
                   handleUpload(file, 'front', setFrontPhoto, 'front_image_url');
+                  updateVehiclePhotoDate(vehicle?.id, 'front_image_date');
                 } else {
                   alert('Solo se permiten fotos tomadas en la fecha actual.');
                   e.target.value = null; // Clear the input
@@ -41,6 +63,9 @@ function VehiclePhotos({ vehicle, frontPhoto, setFrontPhoto, rearPhoto, setRearP
                 <img src={vehicle.front_image_url} alt={t('Frontal')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.front_image_url)} style={{ width: '130%', height: '130%' }} />
                 {vehicle?.front_image_date && (
                   <p className="text-xs text-gray-500 mt-1">Subido: {timeAgo(vehicle.front_image_date)}</p>
+                )}
+                {!vehicle?.front_image_date && (
+                  <p className="text-xs text-gray-500 mt-1">Subido: {t('No disponible')}</p>
                 )}
               </>
             )}
@@ -56,6 +81,7 @@ function VehiclePhotos({ vehicle, frontPhoto, setFrontPhoto, rearPhoto, setRearP
                 if (handleCheckPhotoDate(file)) {
                   setRearPhoto(file);
                   handleUpload(file, 'rear', setRearPhoto, 'rear_image_url');
+                  updateVehiclePhotoDate(vehicle?.id, 'rear_image_date');
                 } else {
                   alert('Solo se permiten fotos tomadas en la fecha actual.');
                   e.target.value = null; // Clear the input
@@ -69,6 +95,9 @@ function VehiclePhotos({ vehicle, frontPhoto, setFrontPhoto, rearPhoto, setRearP
                 <img src={vehicle.rear_image_url} alt={t('Trasera')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.rear_image_url)} style={{ width: '130%', height: '130%' }} />
                 {vehicle?.rear_image_date && (
                   <p className="text-xs text-gray-500 mt-1">Subido: {timeAgo(vehicle.rear_image_date)}</p>
+                )}
+                {!vehicle?.rear_image_date && (
+                  <p className="text-xs text-gray-500 mt-1">Subido: {t('No disponible')}</p>
                 )}
               </>
             )}
@@ -84,6 +113,7 @@ function VehiclePhotos({ vehicle, frontPhoto, setFrontPhoto, rearPhoto, setRearP
                 if (handleCheckPhotoDate(file)) {
                   setRightPhoto(file);
                   handleUpload(file, 'right', setRightPhoto, 'right_image_url');
+                  updateVehiclePhotoDate(vehicle?.id, 'right_image_date');
                 } else {
                   alert('Solo se permiten fotos tomadas en la fecha actual.');
                   e.target.value = null; // Clear the input
@@ -97,6 +127,9 @@ function VehiclePhotos({ vehicle, frontPhoto, setFrontPhoto, rearPhoto, setRearP
                 <img src={vehicle.right_image_url} alt={t('Derecha')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.right_image_url)} style={{ width: '130%', height: '130%' }} />
                 {vehicle?.right_image_date && (
                   <p className="text-xs text-gray-500 mt-1">Subido: {timeAgo(vehicle.right_image_date)}</p>
+                )}
+                 {!vehicle?.right_image_date && (
+                  <p className="text-xs text-gray-500 mt-1">Subido: {t('No disponible')}</p>
                 )}
               </>
             )}
@@ -112,6 +145,7 @@ function VehiclePhotos({ vehicle, frontPhoto, setFrontPhoto, rearPhoto, setRearP
                 if (handleCheckPhotoDate(file)) {
                   setLeftPhoto(file);
                   handleUpload(file, 'left', setLeftPhoto, 'left_image_url');
+                  updateVehiclePhotoDate(vehicle?.id, 'left_image_date');
                 } else {
                   alert('Solo se permiten fotos tomadas en la fecha actual.');
                   e.target.value = null; // Clear the input
@@ -125,6 +159,9 @@ function VehiclePhotos({ vehicle, frontPhoto, setFrontPhoto, rearPhoto, setRearP
                 <img src={vehicle.left_image_url} alt={t('Izquierda')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.left_image_url)} style={{ width: '130%', height: '130%' }} />
                 {vehicle?.left_image_date && (
                   <p className="text-xs text-gray-500 mt-1">Subido: {timeAgo(vehicle.left_image_date)}</p>
+                )}
+                {!vehicle?.left_image_date && (
+                  <p className="text-xs text-gray-500 mt-1">Subido: {t('No disponible')}</p>
                 )}
               </>
             )}
@@ -140,6 +177,7 @@ function VehiclePhotos({ vehicle, frontPhoto, setFrontPhoto, rearPhoto, setRearP
                 if (handleCheckPhotoDate(file)) {
                   setDashboardPhoto(file);
                   handleUpload(file, 'dashboard', setDashboardPhoto, 'dashboard_image_url');
+                  updateVehiclePhotoDate(vehicle?.id, 'dashboard_image_date');
                 } else {
                   alert('Solo se permiten fotos tomadas en la fecha actual.');
                   e.target.value = null; // Clear the input
@@ -153,6 +191,9 @@ function VehiclePhotos({ vehicle, frontPhoto, setFrontPhoto, rearPhoto, setRearP
                 <img src={vehicle.dashboard_image_url} alt={t('Tablero')} className="mt-2 rounded-lg w-full h-40 object-cover cursor-pointer" onClick={() => handleImageClick(vehicle.dashboard_image_url)} style={{ width: '130%', height: '130%' }} />
                 {vehicle?.dashboard_image_date && (
                   <p className="text-xs text-gray-500 mt-1">Subido: {timeAgo(vehicle.dashboard_image_date)}</p>
+                )}
+                {!vehicle?.dashboard_image_date && (
+                  <p className="text-xs text-gray-500 mt-1">Subido: {t('No disponible')}</p>
                 )}
               </>
             )}
