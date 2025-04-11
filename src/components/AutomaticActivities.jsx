@@ -230,7 +230,7 @@ const AutomaticActivities = () => {
       setNewActivity(prevState => ({
         ...prevState,
         [name]: value,
-        day_of_month: name === 'cadence' && value !== 'monthly' ? null : prevState.day_of_month,
+        day_of_month: name === 'cadence' && value !== 'monthly' ? null : value,
       }));
     }
   };
@@ -311,7 +311,7 @@ const AutomaticActivities = () => {
           activity_type: newActivity.activity_type,
           cadence: newActivity.cadence,
           day_of_week: newActivity.day_of_week.length > 0 ? newActivity.day_of_week : null,
-          day_of_month: newActivity.cadence !== 'monthly' ? null : newActivity.day_of_month,
+          day_of_month: newActivity.cadence === 'monthly' ? parseInt(newActivity.day_of_month, 10) : null,
           start_date: newActivity.start_date || null,
           description: newActivity.description,
           status: newActivity.status,
@@ -329,7 +329,7 @@ const AutomaticActivities = () => {
             activity_type: newActivity.activity_type,
             cadence: newActivity.cadence,
             day_of_week: newActivity.day_of_week.length > 0 ? newActivity.day_of_week : null,
-            day_of_month: newActivity.cadence !== 'monthly' ? null : newActivity.day_of_month,
+            day_of_month: newActivity.cadence === 'monthly' ? parseInt(newActivity.day_of_month, 10) : null,
             start_date: newActivity.start_date || null,
             description: newActivity.description,
             status: newActivity.status,
