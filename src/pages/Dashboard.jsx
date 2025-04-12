@@ -150,6 +150,10 @@ const Dashboard = () => {
     value,
   }));
 
+  const balanceData = [{ name: 'Balance', value: balance }];
+
+  const balanceColor = balance >= 0 ? "#00C49F" : "#FF8042";
+
   return (
     <div className="container mx-auto p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -181,9 +185,22 @@ const Dashboard = () => {
         {/* Revenue vs Expenses */}
         <div className="bg-white shadow rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-2">Balance</h2>
-          <p>Ingresos: ${revenueExpenses.revenue}</p>
-          <p>Gastos: ${revenueExpenses.expenses}</p>
-          <p>Balance: ${balance}</p>
+          <div className="flex flex-col">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-gray-700">Ingresos:</span>
+              <span className="font-semibold">${revenueExpenses.revenue}</span>
+            </div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-gray-700">Gastos:</span>
+              <span className="font-semibold">${revenueExpenses.expenses}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-700">Balance:</span>
+              <span className={`font-semibold ${balance >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                ${balance.toFixed(2)}
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Revenue by Status */}
@@ -199,14 +216,6 @@ const Dashboard = () => {
               <Bar dataKey="value" fill="#82ca9d" />
             </BarChart>
           </ResponsiveContainer>
-        </div>
-
-        {/* Activities by Type */}
-        <div className="bg-white shadow rounded-lg p-4">
-          <h2 className="text-lg font-semibold mb-2">Actividades por categoria</h2>
-          {Object.entries(activitiesByType).map(([type, count]) => (
-            <p key={type}>{type}: {count}</p>
-          ))}
         </div>
       </div>
 
