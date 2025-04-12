@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
     import { Link, useLocation, useNavigate } from 'react-router-dom';
     import { supabase } from '../supabaseClient';
 
-    const Sidebar = ({ userRole, isSidebarOpen, setIsSidebarOpen }) => {
+    const Sidebar = ({ userRole }) => { // Removed isSidebarOpen and setIsSidebarOpen props
       const location = useLocation();
-      const [collapsed, setCollapsed] = useState(false);
       const navigate = useNavigate();
 
       const isAdmin = userRole === 'admin';
@@ -38,20 +37,13 @@ import React, { useState, useEffect } from 'react';
         }
       };
 
+      // Sidebar is always expanded, width is fixed to w-64
       return (
-        <div className={`sidebar ${collapsed ? 'w-16' : 'w-64'} fixed inset-y-0 left-0 z-30 bg-gray-900 text-white transition-all duration-300 ease-in-out`}> {/* Changed bg-gray-800 to bg-gray-900 */}
+        <div className={`sidebar w-64 fixed inset-y-0 left-0 z-30 bg-gray-900 text-white`}> {/* Removed collapsed class logic and transition */}
           <div className="flex items-center justify-between px-4 py-5 border-b border-gray-700">
-            {!collapsed && (
-              <div className="text-xl font-bold text-white">CarFleetPro</div> // Changed CarFleet to CarFleetPro
-            )}
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              className="p-1 rounded-md hover:bg-gray-700 focus:outline-none"
-            >
-              <span className="material-icons">
-                {collapsed ? 'chevron_right' : 'chevron_left'}
-              </span>
-            </button>
+            {/* Always show the title */}
+            <div className="text-xl font-bold text-white">CarFleetPro</div>
+            {/* Removed collapse button */}
           </div>
 
           <nav className="mt-5">
@@ -62,10 +54,11 @@ import React, { useState, useEffect } from 'react';
                     to={item.path}
                     className={`flex items-center px-4 py-3 rounded-md transition-colors duration-200
                       ${location.pathname === item.path ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}
-                      ${collapsed ? 'justify-center' : 'justify-start'}`}
+                      justify-start`} // Always justify-start
                   >
                     <span className="material-icons">{item.icon}</span>
-                    {!collapsed && <span className="ml-3">{item.label}</span>}
+                    {/* Always show the label */}
+                    <span className="ml-3">{item.label}</span>
                   </Link>
                 </li>
               ))}
@@ -75,11 +68,11 @@ import React, { useState, useEffect } from 'react';
           <div className="absolute bottom-0 w-full p-4 border-t border-gray-700">
             <button
               onClick={handleLogout}
-              className={`flex items-center text-gray-300 hover:text-white transition-colors duration-200
-                ${collapsed ? 'justify-center' : 'justify-start'}`}
+              className={`flex items-center text-gray-300 hover:text-white transition-colors duration-200 justify-start`} // Always justify-start
             >
               <span className="material-icons">logout</span>
-              {!collapsed && <span className="ml-3">Cerrar Sesion</span>}
+              {/* Always show the label */}
+              <span className="ml-3">Cerrar Sesion</span>
             </button>
           </div>
         </div>

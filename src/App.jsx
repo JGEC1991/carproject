@@ -8,7 +8,7 @@ import { BrowserRouter, Route, Routes, Link, Navigate } from 'react-router-dom';
     import Confirmation from './pages/Confirmation';
     import { useState, useEffect } from 'react';
     import { supabase } from './supabaseClient';
-    import Sidebar from './components/Sidebar'; // Added Sidebar import
+    import Sidebar from './components/Sidebar';
     import MyProfile from './pages/MyProfile';
     import VehicleRecord from './pages/Vehicles/[id]';
     import DriverRecord from './pages/Drivers/[id]';
@@ -21,9 +21,9 @@ import { BrowserRouter, Route, Routes, Link, Navigate } from 'react-router-dom';
       const [session, setSession] = useState(null);
       const [organizationName, setOrganizationName] = useState('Loading...');
       const [userName, setUserName] = useState('John Doe');
-      const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+      // Removed isSidebarOpen state
       const [emailConfirmed, setEmailConfirmed] = useState(false);
-      const [userRole, setUserRole] = useState(null); // Add userRole state
+      const [userRole, setUserRole] = useState(null);
 
       useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -41,7 +41,7 @@ import { BrowserRouter, Route, Routes, Link, Navigate } from 'react-router-dom';
             if (session?.user?.id) {
               const { data: user, error } = await supabase
                 .from('users')
-                .select('organization_id, name, role') // Fetch role
+                .select('organization_id, name, role')
                 .eq('id', session.user.id)
                 .single();
 
@@ -70,19 +70,19 @@ import { BrowserRouter, Route, Routes, Link, Navigate } from 'react-router-dom';
                   setOrganizationName('Organization Not Found');
                 }
                 setUserName(user.name || '');
-                setUserRole(user.role || 'user'); // Set userRole
+                setUserRole(user.role || 'user');
               } else {
                 setOrganizationName('');
-                setUserRole('user'); // Default role
+                setUserRole('user');
               }
             } else {
               setOrganizationName('');
-              setUserRole('user'); // Default role
+              setUserRole('user');
             }
           } catch (error) {
             console.error('Unexpected error:', error);
             setOrganizationName('Error');
-            setUserRole('user'); // Default role
+            setUserRole('user');
           }
         };
 
@@ -98,13 +98,11 @@ import { BrowserRouter, Route, Routes, Link, Navigate } from 'react-router-dom';
       }, [session]);
 
       useEffect(() => {
-        // Add Material Icons (This needs to be done only once)
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = 'https://fonts.googleapis.com/icon?family=Material+Icons';
         document.head.appendChild(link);
 
-        // Add Inter font
         const fontLink = document.createElement('link');
         fontLink.rel = 'stylesheet';
         fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap';
@@ -112,27 +110,30 @@ import { BrowserRouter, Route, Routes, Link, Navigate } from 'react-router-dom';
       }, []);
 
       const isAdmin = userRole === 'admin';
+      const sidebarWidth = '256px'; // Define sidebar width (64 * 4 = 256px for w-64)
 
       return (
         <>
           <BrowserRouter>
             {session ? (
-              <div className="flex h-screen bg-gray-100"> {/* Changed background color */}
-                <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} session={session} userRole={userRole} /> {/* Added Sidebar */}
+              <div className="flex h-screen bg-gray-100">
+                {/* Removed isSidebarOpen and setIsSidebarOpen props */}
+                <Sidebar session={session} userRole={userRole} />
 
-                <div className="flex flex-col flex-1" style={{ marginLeft: isSidebarOpen ? '256px' : '0', transition: 'margin-left 0.3s ease-in-out' }}>
-                  <header className="bg-gray-100 shadow h-16 flex items-center justify-between px-6 border-b border-gray-200"> {/* Improved styling */}
+                {/* Use fixed margin based on expanded sidebar width */}
+                <div className="flex flex-col flex-1" style={{ marginLeft: sidebarWidth }}>
+                  <header className="bg-gray-100 shadow h-16 flex items-center justify-between px-6 border-b border-gray-200">
                     <div>
-                      <span className="text-gray-800 text-base font-medium"> {/* Improved styling */}
+                      <span className="text-gray-800 text-base font-medium">
                         {organizationName}
                       </span>
                     </div>
-                    <button className="text-gray-800 focus:outline-none text-base font-medium"> {/* Improved styling */}
+                    <button className="text-gray-800 focus:outline-none text-base font-medium">
                       {userName}
                     </button>
                   </header>
 
-                  <main className="bg-gray-100 p-6"> {/*Improved styling */}
+                  <main className="bg-gray-100 p-6 overflow-y-auto"> {/* Added overflow-y-auto */}
                     <Routes>
                       <Route
                         path="/"
