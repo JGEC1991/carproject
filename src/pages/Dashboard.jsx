@@ -204,7 +204,7 @@ const Dashboard = () => {
         </div>
 
         {/* Revenue by Status */}
-        <div className="bg-white shadow rounded-lg p-4">
+        <div className="bg-white shadow rounded-lg p-4 lg:col-span-2">
           <h2 className="text-lg font-semibold mb-2">Ingresos por estado</h2>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={revenueByStatusData}>
